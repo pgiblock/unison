@@ -1,8 +1,8 @@
 /*
- * Lv2Manager.cpp - a class to manage loading and instantiation of lv2 plugins
+ * Lv2Manager.cpp
  *
- * Copyright (c) 2009 Martin Andrews <mdda/at/users.sourceforge.net>
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
+ * Copyright (c) 2009 Martin Andrews <mdda/at/users.sourceforge.net>
  *
  * This file is part of Unison - http://unison.sourceforge.net
  *
@@ -33,62 +33,27 @@
 #include <math.h>
 
 #include "unison/Lv2Manager.h"
+#include "unison/Lv2Plugin.h"
 
 // There is only one of these...
 Lv2Manager * Lv2Manager::m_instance = (Lv2Manager *)NULL;
 
 
 
-Lv2World::Lv2World () {
-	world=slv2_world_new();
-	slv2_world_load_all( world );
-
-	inputClass = slv2_value_new_uri( world, SLV2_PORT_CLASS_INPUT );
-	outputClass = slv2_value_new_uri(world, SLV2_PORT_CLASS_OUTPUT );
-	controlClass = slv2_value_new_uri( world, SLV2_PORT_CLASS_CONTROL );
-	audioClass = slv2_value_new_uri( world, SLV2_PORT_CLASS_AUDIO );
-	eventClass = slv2_value_new_uri( world, SLV2_PORT_CLASS_EVENT );
-	midiClass = slv2_value_new_uri( world, SLV2_EVENT_CLASS_MIDI );
-	inPlaceBroken = slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "inPlaceBroken" );
-	integer = slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "integer" );
-	toggled = slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "toggled" );
-	sampleRate = slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "sampleRate" );
-	gtkGui = slv2_value_new_uri( world, "http://lv2plug.in/ns/extensions/ui#GtkUI" );
-}
-
-
-
-Lv2World::~Lv2World () {
-	slv2_value_free( inputClass );
-	slv2_value_free( outputClass );
-	slv2_value_free( controlClass );
-	slv2_value_free( audioClass );
-	slv2_value_free( eventClass );
-	slv2_value_free( midiClass );
-	slv2_value_free( inPlaceBroken );
-	slv2_value_free( integer );
-	slv2_value_free( toggled );
-	slv2_value_free( sampleRate );
-	slv2_value_free( gtkGui );
-
-	slv2_world_free( world );
-}
-
-
-
-Lv2Manager::Lv2Manager()
+Lv2Manager::Lv2Manager() :
+	m_cacheFile("/tmp/unison-cache")
 {
-	if (m_lv2Bundle.world == NULL) {
+	if (m_lv2World.world == NULL) {
 		printf( "Failed to Initialize slv2_world\n" );
 		return;
 	}
 	printf( "Initialized slv2_world\n" );
 
 	// TODO: Replace with SQL?
-	loadFromCacheFile();
+	//loadFromCacheFile();
 
 	// slv2_world_load_all( m_world ); // No special path apart from LV2_PATH
-	m_pluginList = slv2_world_get_all_plugins( m_lv2Bundle.world );
+	m_pluginList = slv2_world_get_all_plugins( m_lv2World.world );
 
 	// TODO: Allow user to choose multiple paths
 	for (unsigned i=0; i < slv2_plugins_size( m_pluginList ); ++i) {
@@ -96,7 +61,7 @@ Lv2Manager::Lv2Manager()
 		addPlugins( p );  // This will just return if the plugin information is cached (after being loaded)
 	}
 
-	saveToCacheFile();
+	//saveToCacheFile();
 }
 
 
@@ -110,24 +75,25 @@ Lv2Manager::~Lv2Manager () {
 	}
 	*/
 
-	slv2_plugins_free( m_lv2Bundle.world, m_pluginList );
+	slv2_plugins_free( m_lv2World.world, m_pluginList );
 }
 
 
 
-Lv2PluginDescriptor Lv2Manager::getDescriptor (const lv2_key_t & _plugin) {
-	return m_lv2DescriptorMap.value( _plugin, NULL );
+Lv2PluginDescriptorPtr Lv2Manager::getDescriptor (const lv2_key_t & _plugin) {
+	// returns null on fail
+	return m_lv2DescriptorMap.value( _plugin );
 }
 
 
 
-void Lv2Manager::ensureLV2DataExists (Lv2PluginDescriptor *desc) {
+void Lv2Manager::ensureLV2DataExists (Lv2PluginDescriptor* desc) {
 	if (desc->plugin == NULL) {
 		printf( " Need to load actual plugin data for '%s'\n", (desc->uri).toAscii().constData() );
 
 		// use uri to get data
 		SLV2Value uri = slv2_value_new_uri(
-				m_lv2_bundle.world, (desc->uri).toAscii().constData() );
+				m_lv2World.world, (desc->uri).toAscii().constData() );
 
 		desc->plugin = slv2_plugins_get_by_uri( m_pluginList, uri );
 		slv2_value_free( uri );
@@ -153,8 +119,8 @@ void Lv2Manager::addPlugins (SLV2Plugin _plugin) {
 
 	printf( "Examining LV2 plugin URI : '%s'\n", uri.toAscii().constData() );
 
-	Lv2PluginDescriptorPtr descriptor( new Lv2PluginDescriptor );
-	descriptor->plugin = _plugin;
+	Lv2PluginDescriptorPtr descriptor(
+		new Lv2PluginDescriptor(m_lv2World, _plugin) );
 
 	// Investigate this plugin
 	descriptor->uri = uri;
@@ -166,10 +132,10 @@ void Lv2Manager::addPlugins (SLV2Plugin _plugin) {
 	slv2_value_free( data );
 
 	descriptor->inputChannels = slv2_plugin_get_num_ports_of_class( _plugin,
-	m_lv2Bundle.inputClass, m_lv2Bundle.audioClass, NULL);
+	m_lv2World.inputClass, m_lv2World.audioClass, NULL);
 
 	descriptor->outputChannels = slv2_plugin_get_num_ports_of_class( _plugin,
-	m_lv2Bundle.outputClass, m_lv2Bundle.audioClass, NULL);
+	m_lv2World.outputClass, m_lv2World.audioClass, NULL);
 
 	// This always seems to return 'Plugin', which isn't so useful to us
 	//	SLV2PluginClass pclass = slv2_plugin_get_class( _plugin );
@@ -195,7 +161,7 @@ void Lv2Manager::addPlugins (SLV2Plugin _plugin) {
 
 	m_lv2DescriptorMap.insert( key, descriptor );
 
-	printf( "  Finished that plugin : type=%d\n", (int)description->type );
+	printf( "  Finished that plugin : type=%d\n", (int)descriptor->type );
 
 	/*
 	const LADSPA_Descriptor * descriptor;
@@ -220,7 +186,7 @@ void Lv2Manager::addPlugins (SLV2Plugin _plugin) {
 
 
 void Lv2Manager::saveToCacheFile () {
-	QFile file( m_cacheFile );
+	/*QFile file( m_cacheFile );
 	QString line;
 
 	if (!file.open( QIODevice::WriteOnly )) {
@@ -245,38 +211,43 @@ void Lv2Manager::saveToCacheFile () {
 		stream << "\n";
 	}
 
-	file.close();
+	file.close();*/
 }
 
 
 
 void Lv2Manager::loadFromCacheFile () {
-	QFile file( m_cacheFile );
-	QString line;
+	/*QFile file( m_cacheFile );
+
 	if ( file.open( QIODevice::ReadOnly ) ) { // file opened successfully
 		QTextStream stream( &file );
 		while ( !stream.atEnd() ) {    // until end of file...
-			line = stream.readLine().trimmed();
-
-			// Skip lines that don't match ^[.*]$
-			if( line.startsWith( "[" ) && line.endsWith( "]" ) ) {
-				loadCacheEntry(stream);
-			}
+			loadCacheEntry(stream);
 		}
 		// Close the file
 		file.close();
 	}
-	return;
+	return;*/
 }
 
 
 
-void Lv2Manager::loadCacheEntry (const QTextStream& stream) {
+void Lv2Manager::loadCacheEntry (QTextStream& stream) {
+/*
+	QString line = stream.readLine().trimmed();
+
+	// Skip lines that don't match ^[.*]$
+	if( !line.startsWith( "[" ) || !line.endsWith( "]" ) ) {
+		return;
+	}
+
+
 	Lv2PluginDescriptorPtr desc =
-			Lv2PluginDescriptorPtr( new Lv2PluginDescriptor );
+			Lv2PluginDescriptorPtr( new Lv2PluginDescriptor(m_lv2World,  );
 
 	desc->plugin = NULL; // To ensure that we don't attempt to use it
 	desc->uri = line.mid( 1, line.length()-2 ); // Extract the URI
+	desc->world = m_lv2World;
 	printf( "Reading Data for '%s' from the Cache\n", desc->uri.toAscii().data() );
 
 	// Read in data for this uri - until we get to a blank line
@@ -313,9 +284,6 @@ void Lv2Manager::loadCacheEntry (const QTextStream& stream) {
 	}
 	// Dump the discovered data into the manager
 	lv2_key_t key = lv2_key_t( desc->uri );
-	m_lv2DescriptorMap.insert(key, desc);
+	m_lv2DescriptorMap.insert(key, desc);*/
 }
-
-
-#endif
 

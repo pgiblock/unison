@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <QtGui/QApplication>
+#include "unison/Lv2Manager.h"
 
 void printLogo();
 
@@ -13,8 +14,19 @@ int main (int argc, char ** argv) {
 
     app->setApplicationName( "Unison" );
     app->setOrganizationDomain( "unison.sourceforge.net" );
-    app->setOrganizationName( "The Unison Team" );
+	app->setOrganizationName( "The Unison Team" );
+
     printLogo();
+
+
+	// Init
+	Lv2Manager::initializeInstance();
+
+
+	Lv2Manager * man = Lv2Manager::instance();
+	man->saveToCacheFile();
+
+	Lv2PluginPtr plugin = man->getDescriptor("http://plugin.org.uk/swh-plugins/xfade")->createPlugin(48000);
 
     return app->exec();
 }

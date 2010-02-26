@@ -105,6 +105,7 @@ SET(CMAKE_C_FLAGS "-g -Wall -ftree-vectorize ${CMAKE_C_FLAGS}")
 SET(CMAKE_CXX_FLAGS "-g -fno-exceptions -Wall -ftree-vectorize ${CMAKE_CXX_FLAGS}")
 
 #Directories
+INCLUDE_DIRECTORIES(src)
 ADD_SUBDIRECTORY(src)
 
 #Pre-processing
