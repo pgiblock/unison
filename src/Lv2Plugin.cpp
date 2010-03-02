@@ -44,7 +44,6 @@ Lv2World::Lv2World () {
 }
 
 
-
 Lv2World::~Lv2World () {
 	slv2_value_free( inputClass );
 	slv2_value_free( outputClass );
@@ -63,8 +62,26 @@ Lv2World::~Lv2World () {
 
 
 
-Lv2PluginPtr Lv2PluginDescriptor::createPlugin(nframe_t sampleRate) {
-	return Lv2PluginPtr( new Lv2Plugin(world, plugin, sampleRate) );
+Lv2Port::Lv2Port (const Lv2World & world, SLV2Plugin plugin, uint32_t index) :
+	m_world(world),
+	m_plugin(plugin) {
+
+	// TODO: Error handling
+	m_port = slv2_plugin_get_port_by_index( plugin, index );
+
+	// set range and default
+	SLV2Value def, min, max;
+	slv2_port_get_range( m_plugin, m_port, &def , &min, &max );
+	m_defaultValue = slv2_value_as_float( def );
+	m_min   = slv2_value_as_float( min );
+	m_max   = slv2_value_as_float( max );
+	slv2_value_free( def );
+	slv2_value_free( min );
+	slv2_value_free( max );
+}
+
+
+Lv2Port::~Lv2Port () {
 }
 
 
@@ -87,27 +104,34 @@ Lv2Plugin::Lv2Plugin (const Lv2Plugin& other) :
 }
 
 
-Lv2Plugin::~Lv2Plugin() {
+Lv2Plugin::~Lv2Plugin () {
 	deactivate();
-	slv2_instance_free(m_instance);
+	slv2_instance_free( m_instance );
+	slv2_value_free( m_name );
+	slv2_value_free( m_authorName );
+	slv2_value_free( m_authorEmail );
+	slv2_value_free( m_authorHomepage );
 	m_instance = NULL;
 }
 
 
 void Lv2Plugin::init () {
 	m_activated = false;
-	m_instance = slv2_plugin_instantiate(m_plugin, m_sampleRate, NULL);
+	m_instance = slv2_plugin_instantiate( m_plugin, m_sampleRate, NULL );
 	assert(m_instance);
 
-	m_name = slv2_plugin_get_name(m_plugin);
+	m_name = slv2_plugin_get_name( m_plugin );
 	assert(m_name);
 
+	m_authorName = slv2_plugin_get_author_name( m_plugin );
+	m_authorEmail = slv2_plugin_get_author_email( m_plugin );
+	m_authorHomepage = slv2_plugin_get_author_homepage( m_plugin );
 }
 
 
 void Lv2Plugin::activate () {
 	if (!m_activated) {
-		slv2_instance_activate(m_instance);
+		slv2_instance_activate( m_instance );
 		m_activated = true;
 	}
 }
@@ -115,26 +139,69 @@ void Lv2Plugin::activate () {
 
 void Lv2Plugin::deactivate () {
 	if (m_activated) {
-		slv2_instance_deactivate(m_instance);
+		slv2_instance_deactivate( m_instance );
 		m_activated = false;
 	}
 }
 
 
+
 Lv2PluginDescriptor::Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin) :
-	world(world),
-	plugin(plugin) {
+	m_world(world),
+	m_plugin(plugin) {
+
+	SLV2Value data;
+
+	m_uri = QString( slv2_value_as_uri( slv2_plugin_get_uri( plugin ) ) );
+
+	data = slv2_plugin_get_name( plugin );
+	m_name = QString( slv2_value_as_string( data ) );
+	slv2_value_free( data );
+
+	data = slv2_plugin_get_author_name( plugin );
+    m_author = QString( slv2_value_as_string( data ) );
+    slv2_value_free( data );
+
+	m_audioInputs = slv2_plugin_get_num_ports_of_class( plugin,
+		world.inputClass, world.audioClass, NULL );
+
+	m_audioOutputs = slv2_plugin_get_num_ports_of_class( plugin,
+		world.outputClass, world.audioClass, NULL );
+
+	// TODO: break type-calculation into private Plugin helper fn
+	if (m_audioInputs > 0) {
+		if (m_audioOutputs > 0) {
+			m_type = TRANSFER;
+		}
+		else {
+			m_type = SINK;
+		}
+	}
+	else if (m_audioOutputs > 0) {
+		m_type = SOURCE;
+	}
+	else {
+		m_type = OTHER;
+	}
+
 }
 
 
 Lv2PluginDescriptor::Lv2PluginDescriptor (const Lv2PluginDescriptor& descriptor) :
-	world(descriptor.world),
-	plugin(descriptor.plugin),
-	uri(uri),
-	creator(creator),
-	name(name),
-	type(type),
-	inputChannels(inputChannels),
-	outputChannels(outputChannels) {
+	m_world(descriptor.m_world),
+	m_plugin(descriptor.m_plugin),
+	m_uri(descriptor.m_uri),
+	m_author(descriptor.m_author),
+	m_name(descriptor.m_name),
+	m_type(descriptor.m_type),
+	m_audioInputs(descriptor.m_audioInputs),
+	m_audioOutputs(descriptor.m_audioOutputs) {
 }
+
+
+Lv2PluginPtr Lv2PluginDescriptor::createPlugin (nframe_t sampleRate) const {
+	return Lv2PluginPtr( new Lv2Plugin( m_world, m_plugin, sampleRate ) );
+}
+
+
 

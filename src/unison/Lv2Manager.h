@@ -47,7 +47,7 @@
 
 const float NOHINT = -99342.2243f;
 
-//typedef QPair<QString, QString> lv2_key_t;
+// TODO: Rename or remove these bad typedefs from LMMS
 typedef QString lv2_key_t; // Just need the URI for LV2...
 typedef QList<lv2_key_t> l_lv2_key_t;
 

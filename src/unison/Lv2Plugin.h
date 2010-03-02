@@ -39,34 +39,96 @@ struct Lv2World {
 	Lv2World();
 	~Lv2World();
 
-	SLV2World world;
+	SLV2World world;         ///< The SLV2World itself
+
 	SLV2Value inputClass;    ///< Input port
 	SLV2Value outputClass;   ///< Output port
+
 	SLV2Value audioClass;    ///< Audio port
 	SLV2Value controlClass;  ///< Control port
 	SLV2Value eventClass;    ///< Event port
 	SLV2Value midiClass;     ///< MIDI event
-	SLV2Value inPlaceBroken; ///< If the plugin requires seperate buffers
-	SLV2Value integer;
-	SLV2Value toggled;
-	SLV2Value sampleRate;
-	SLV2Value gtkGui;
+
+	SLV2Value inPlaceBroken; ///< Plugin requires seperate buffers
+	SLV2Value integer;       ///< Integer restrictions for control ports
+	SLV2Value toggled;       ///< Boolean restriction for control ports
+	SLV2Value sampleRate;    ///< Port values are multiplied by sampling rate
+	SLV2Value gtkGui;        ///< GTK-based gui is available
 };
 
 
 
 /** The type of plugin, regarding I/O. */
-enum Lv2PluginType {
-	SOURCE,
-	TRANSFER,
-	VALID,
-	INVALID,
-	SINK,
-	OTHER
+enum PluginType {
+	SOURCE,                  ///< Plugin's audio ports are only for output
+	TRANSFER,                ///< Plugin has both input and output audio ports
+	VALID,                   ///< ???
+	INVALID,                 ///< ???
+	SINK,                    ///< Plugin's audio ports are only for input
+	OTHER                    ///< ???
 };
 
 
 
+/** A Port on a plugin.  I wonder if we should be calling slv2 functions, or
+	maybe we should just copy all the data into the class? */
+class Lv2Port {
+public:
+	Lv2Port(const Lv2World & m_world, SLV2Plugin plugin, uint32_t index);
+
+	~Lv2Port();
+
+	/* Port Interface */
+	QString name(size_t maxLength) const {
+		return QString::fromAscii(
+			slv2_value_as_string(slv2_port_get_name(m_plugin, m_port)));
+	}
+
+	float value() const {
+		return m_value;
+	}
+
+	void setValue(float value) {
+		m_value = value;
+	}
+
+	float defaultValue() const {
+		return m_defaultValue;
+	}
+
+	bool isBounded() const {
+		return true;
+	}
+
+	float minimum() const {
+		return m_min;
+	}
+
+	float maximum() const {
+		return m_max;
+	}
+
+	bool isToggled() const {
+		return slv2_port_has_property(m_plugin, m_port, m_world.toggled);
+	}
+
+private:
+	float m_value;
+	float m_defaultValue;
+	float m_min;
+	float m_max;
+
+	// Don't point to Lv2Plugin, a two-way rel is probably unwanted
+	const Lv2World & m_world;
+	SLV2Plugin m_plugin;
+	SLV2Port m_port;
+};
+
+
+
+/** Plugin implementation for an Lv2Plugin.  Most values are queried directly
+ *  from slv2 on demand.  It will probably be wise to cache some values when
+ *  it is safe to do so (like num-ports, port-descriptors, etc..) */
 class Lv2Plugin {
 public:
 	Lv2Plugin (Lv2World&, SLV2Plugin plugin, nframe_t sampleRate);
@@ -75,24 +137,59 @@ public:
 	~Lv2Plugin ();
 
 	/* Plugin interface */
-	QString uri() const {
-		return QString::fromAscii(
-			slv2_value_as_uri(slv2_plugin_get_uri(m_plugin)));
-	}
-
-	QString label() const {
-		return QString::fromAscii(slv2_value_as_string(m_name));
-	}
-
 	QString name() const {
 		return QString::fromAscii(slv2_value_as_string(m_name));
 	}
 
-	QString creator() const {
-		return QString::fromAscii(m_author ?
-			slv2_value_as_string(m_author) :
+	QString uniqueId() const {
+		return QString::fromAscii(
+			slv2_value_as_uri(slv2_plugin_get_uri(m_plugin)));
+	}
+
+	// TODO: PluginType type();
+
+	uint32_t audioInputCount() const {
+		return slv2_plugin_get_num_ports_of_class(m_plugin,
+			m_world.inputClass, m_world.audioClass, NULL);
+	}
+
+	uint32_t audioOutputCount() const {
+		return slv2_plugin_get_num_ports_of_class(m_plugin,
+			m_world.outputClass, m_world.audioClass, NULL);
+	}
+
+	QString authorName() const {
+		return QString::fromAscii(m_authorName ?
+			slv2_value_as_string(m_authorName) :
 			"Unknown");
 	}
+
+	QString authorEmail() const {
+		return QString::fromAscii(m_authorEmail ?
+			slv2_value_as_string(m_authorEmail) :
+			NULL);
+	}
+
+	QString authorHomepage() const {
+		return QString::fromAscii(m_authorHomepage ?
+			slv2_value_as_string(m_authorHomepage) :
+			NULL);
+	}
+
+	QString copyright() const {
+		return QString::fromAscii(m_copyright ?
+			slv2_value_as_string(m_copyright) :
+			NULL);
+	}
+
+	uint32_t portCount() const {
+		return slv2_plugin_get_num_ports(m_plugin);
+	}
+
+	void portAt(uint32_t idx) const {
+		// TODO: Figure out the lifecycle of a port
+	}
+
 
 	void activate ();
 	void deactivate ();
@@ -100,17 +197,20 @@ public:
 	QDomNode& loadState();
 	int      saveState (const QDomNode& node);
 
+
 private:
 	Lv2World&      m_world;
 	SLV2Plugin     m_plugin;
-	nframe_t      m_sampleRate;
+	nframe_t       m_sampleRate;
 
 	SLV2Instance   m_instance;
 	SLV2Value      m_name;
-	SLV2Value      m_author;
+	SLV2Value      m_authorName;
+	SLV2Value      m_authorEmail;
+	SLV2Value      m_authorHomepage;
+	SLV2Value      m_copyright;
 
 	bool           m_activated;
-
 
 	void init ();
 };
@@ -128,18 +228,45 @@ public:
 	Lv2PluginDescriptor(Lv2World& world, SLV2Plugin plugin);
 	Lv2PluginDescriptor(const Lv2PluginDescriptor& descriptor);
 
-	Lv2World& world;
-	SLV2Plugin plugin;
-	QString uri;
+	QString name() const {
+		return m_name;
+	}
 
-	// TODO: Not LV2-Specific add uniqueId
-	QString creator;
-	QString name;
-	Lv2PluginType type;
-	uint16_t inputChannels;
-	uint16_t outputChannels;
+	QString uniqueId() const {
+		return m_uri;
+	}
 
-	Lv2PluginPtr createPlugin(nframe_t sampleRate);
+	PluginType type() const {
+		return m_type;
+	}
+
+	uint32_t audioInputCount() const {
+		return m_audioInputs;
+	}
+
+	uint32_t audioOutputCount() const {
+		return m_audioOutputs;
+	}
+
+	QString authorName() const {
+		return m_author;
+	}
+
+	Lv2PluginPtr createPlugin(nframe_t sampleRate) const;
+
+	// TODO: Lv2World and SLV2Plugin Ptr accessors?
+
+private:
+	Lv2World& m_world;
+	SLV2Plugin m_plugin;
+
+	// TODO: Not LV2-Specific
+	QString m_uri;
+	QString m_author;
+	QString m_name;
+	PluginType m_type;
+	uint16_t m_audioInputs;
+	uint16_t m_audioOutputs;
 };
 
 /** A Safe pointer to a plugin descriptor. */

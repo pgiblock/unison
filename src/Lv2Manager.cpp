@@ -88,6 +88,7 @@ Lv2PluginDescriptorPtr Lv2Manager::getDescriptor (const lv2_key_t & _plugin) {
 
 
 void Lv2Manager::ensureLV2DataExists (Lv2PluginDescriptor* desc) {
+/*
 	if (desc->plugin == NULL) {
 		printf( " Need to load actual plugin data for '%s'\n", (desc->uri).toAscii().constData() );
 
@@ -103,65 +104,35 @@ void Lv2Manager::ensureLV2DataExists (Lv2PluginDescriptor* desc) {
 			printf( " Failed to load actual plugin data for '%s'\n", (desc->uri).toAscii().constData() );
 		}
 	}
+	*/
 }
 
 
 
 
-void Lv2Manager::addPlugins (SLV2Plugin _plugin) {
-	QString uri = QString( slv2_value_as_uri( slv2_plugin_get_uri( _plugin ) ) );
-	lv2_key_t key = lv2_key_t( uri );
+void Lv2Manager::addPlugins (SLV2Plugin plugin) {
+	lv2_key_t key = slv2_value_as_uri( slv2_plugin_get_uri( plugin ) );
+	printf("Found LV2 plugin URI : '%s'\n", qPrintable(key));
 
 	if (m_lv2DescriptorMap.contains( key )) {
-		printf( "Already in Cache LV2 plugin URI : '%s'\n", uri.toAscii().constData() );
+		printf("  Already in Cache.\n");
 		return;
 	}
 
-	printf( "Examining LV2 plugin URI : '%s'\n", uri.toAscii().constData() );
-
 	Lv2PluginDescriptorPtr descriptor(
-		new Lv2PluginDescriptor(m_lv2World, _plugin) );
-
-	// Investigate this plugin
-	descriptor->uri = uri;
-
-	// Any data accessed within the plugin itself causes the whole thing to be 'unwrapped'
-	SLV2Value data = slv2_plugin_get_name( _plugin );
-	descriptor->name = QString( slv2_value_as_string( data ) );
-	// printf( " LV2 plugin Name : '%s'\n", slv2_value_as_string( data ) );
-	slv2_value_free( data );
-
-	descriptor->inputChannels = slv2_plugin_get_num_ports_of_class( _plugin,
-	m_lv2World.inputClass, m_lv2World.audioClass, NULL);
-
-	descriptor->outputChannels = slv2_plugin_get_num_ports_of_class( _plugin,
-	m_lv2World.outputClass, m_lv2World.audioClass, NULL);
+		new Lv2PluginDescriptor(m_lv2World, plugin) );
 
 	// This always seems to return 'Plugin', which isn't so useful to us
 	//	SLV2PluginClass pclass = slv2_plugin_get_class( _plugin );
 	//	SLV2Value label = slv2_plugin_class_get_label( pclass );
 	//	printf( "Plugin Class is : '%s'\n", slv2_value_as_string( label ) );
 
-	printf( "  Audio (input, output)=(%d,%d)\n", descriptor->inputChannels, descriptor->outputChannels );
+	printf("  Audio (input, output)=(%d,%d)\n",
+		descriptor->audioInputCount(), descriptor->audioOutputCount());
 
-	if (descriptor->outputChannels > 0) {
-		if (descriptor->inputChannels > 0) {
-			descriptor->type = TRANSFER;
-		}
-		else {
-			descriptor->type = SOURCE;
-		}
-	}
-	else if (descriptor->inputChannels > 0) {
-		descriptor->type = SINK;
-	}
-	else {
-		descriptor->type = OTHER;
-	}
+	m_lv2DescriptorMap.insert(key, descriptor);
 
-	m_lv2DescriptorMap.insert( key, descriptor );
-
-	printf( "  Finished that plugin : type=%d\n", (int)descriptor->type );
+	printf("  Type=%d\n", (int)descriptor->type());
 
 	/*
 	const LADSPA_Descriptor * descriptor;
