@@ -45,6 +45,9 @@
 #include <slv2/scalepoints.h>
 #endif
 
+namespace Unison {
+
+
 const float NOHINT = -99342.2243f;
 
 class QTextStream;
@@ -99,5 +102,8 @@ private:
 
 	static PluginManager * m_instance;
 } ;
+
+
+} // Unison
 
 #endif // PLUGIN_MANAGER_H

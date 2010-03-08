@@ -28,8 +28,11 @@
 
 #include <stdint.h>
 
+namespace Unison {
+
 typedef uint32_t nframe_t;
 typedef uint32_t ntick_t;
 
+} // Unison
 
 #endif // TYPES_H

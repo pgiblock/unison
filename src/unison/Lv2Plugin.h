@@ -22,15 +22,15 @@
  *
  */
 
-#ifndef LV2PLUGIN_H
-#define LV2PLUGIN_H
+#ifndef LV2_PLUGIN_H
+#define LV2_PLUGIN_H
 
-//#include <QtCore/QSharedPointer>
-//#include <QtXml/QDomNode>
 #include <slv2/slv2.h>
 
 #include "unison/Plugin.h"
 #include "unison/types.h"
+
+namespace Unison {
 
 
 /** The SLV2World, and various cached (as symbols, fast) URIs.
@@ -221,4 +221,7 @@ private:
 };
 
 
-#endif // LV2PLUGIN_H
+} // Unison
+
+
+#endif // LV2_PLUGIN_H

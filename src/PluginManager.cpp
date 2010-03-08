@@ -35,6 +35,9 @@
 #include "unison/PluginManager.h"
 #include "unison/Lv2Plugin.h"
 
+using namespace Unison;
+
+
 // There is only one of these...
 PluginManager * PluginManager::m_instance = static_cast<PluginManager *>(NULL);
 

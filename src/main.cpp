@@ -23,6 +23,7 @@ int main (int argc, char ** argv) {
 
 
 	// Init
+	using namespace Unison;
 	PluginManager::initializeInstance();
 
 	PluginManager * man = PluginManager::instance();

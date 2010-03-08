@@ -24,6 +24,8 @@
 
 #include "unison/Lv2Plugin.h"
 
+using namespace Unison;
+
 
 Lv2World::Lv2World () {
 	world=slv2_world_new();

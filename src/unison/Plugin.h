@@ -31,6 +31,7 @@
 
 #include "unison/types.h"
 
+namespace Unison {
 
 
 /** The type of plugin, regarding I/O. */
@@ -181,5 +182,8 @@ protected:
 
 /** A Safe pointer to a plugin descriptor. */
 typedef QSharedPointer<PluginDescriptor> PluginDescriptorPtr;
+
+
+} // Unison
 
 #endif // PLUGIN_H
