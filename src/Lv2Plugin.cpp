@@ -63,6 +63,7 @@ Lv2World::~Lv2World () {
 
 
 Lv2Port::Lv2Port (const Lv2World & world, SLV2Plugin plugin, uint32_t index) :
+	Port(),
 	m_world(world),
 	m_plugin(plugin) {
 
@@ -87,6 +88,7 @@ Lv2Port::~Lv2Port () {
 
 
 Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframe_t sampleRate) :
+	Plugin(),
 	m_world(world),
 	m_plugin(plugin),
 	m_sampleRate(sampleRate) {
@@ -96,6 +98,7 @@ Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframe_t sampleRate) :
 
 
 Lv2Plugin::Lv2Plugin (const Lv2Plugin& other) :
+	Plugin(other),
 	m_world(other.m_world),
 	m_plugin(other.m_plugin),
 	m_sampleRate(other.m_sampleRate) {
@@ -145,14 +148,13 @@ void Lv2Plugin::deactivate () {
 }
 
 
-
 Lv2PluginDescriptor::Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin) :
 	m_world(world),
 	m_plugin(plugin) {
 
 	SLV2Value data;
 
-	m_uri = QString( slv2_value_as_uri( slv2_plugin_get_uri( plugin ) ) );
+	m_uniqueId = QString( slv2_value_as_uri( slv2_plugin_get_uri( plugin ) ) );
 
 	data = slv2_plugin_get_name( plugin );
 	m_name = QString( slv2_value_as_string( data ) );
@@ -188,19 +190,14 @@ Lv2PluginDescriptor::Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin) :
 
 
 Lv2PluginDescriptor::Lv2PluginDescriptor (const Lv2PluginDescriptor& descriptor) :
+	PluginDescriptor(descriptor),
 	m_world(descriptor.m_world),
-	m_plugin(descriptor.m_plugin),
-	m_uri(descriptor.m_uri),
-	m_author(descriptor.m_author),
-	m_name(descriptor.m_name),
-	m_type(descriptor.m_type),
-	m_audioInputs(descriptor.m_audioInputs),
-	m_audioOutputs(descriptor.m_audioOutputs) {
+	m_plugin(descriptor.m_plugin) {
 }
 
 
-Lv2PluginPtr Lv2PluginDescriptor::createPlugin (nframe_t sampleRate) const {
-	return Lv2PluginPtr( new Lv2Plugin( m_world, m_plugin, sampleRate ) );
+PluginPtr Lv2PluginDescriptor::createPlugin (nframe_t sampleRate) const {
+	return PluginPtr( new Lv2Plugin( m_world, m_plugin, sampleRate ) );
 }
 
 

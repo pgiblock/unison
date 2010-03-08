@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <QtGui/QApplication>
-#include "unison/Lv2Manager.h"
+#include "unison/PluginManager.h"
 
 void printLogo();
 void printDisclaimer();
@@ -23,15 +23,10 @@ int main (int argc, char ** argv) {
 
 
 	// Init
-	Lv2Manager::initializeInstance();
+	PluginManager::initializeInstance();
 
-
-	Lv2Manager * man = Lv2Manager::instance();
-	man->saveToCacheFile();
-
-	Lv2PluginPtr plugin = man->getDescriptor("http://plugin.org.uk/swh-plugins/xfade")->createPlugin(48000);
-
-	//plugin->
+	PluginManager * man = PluginManager::instance();
+	PluginPtr plugin = man->descriptor("http://plugin.org.uk/swh-plugins/xfade")->createPlugin(48000);
 
     return app->exec();
 }
