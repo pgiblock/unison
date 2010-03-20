@@ -1,5 +1,5 @@
 /*
- * types.h - Common types used in Unison
+ * Node.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -23,17 +23,38 @@
  */
 
 
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef NODE_H
+#define NODE_H
 
-#include <stdint.h>
+#include "unison/types.h"
+#include "unison/Port.h"
 
 namespace Unison {
 
-typedef uint32_t nframe_t;
-typedef uint32_t ntick_t;
+class ProcessingContext;
+
+/** Interface for all things that participate in the processing graph.
+ *  TODO: We probably want to add a StandardNode abstract class that handles
+ *  most features that don't vary across different Node classes. */
+class Node {
+public:
+	virtual ~Node () {};
+
+	/** @return the total number of ports of all kinds */
+	virtual uint32_t portCount () const = 0;
+
+	/* TODO: Return Port* or shared pointer? */
+	virtual Port* port (uint32_t idx) const = 0;
+
+	virtual void activate () = 0;
+	virtual void deactivate () = 0;
+
+	virtual void process (const ProcessingContext & context) = 0;
+};
+
+/** A Safe pointer to a plugin. */
+typedef QSharedPointer<Node> NodePtr;
 
 } // Unison
 
-#endif // TYPES_H
-
+#endif // NODE_H

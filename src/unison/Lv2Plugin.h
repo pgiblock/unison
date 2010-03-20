@@ -59,62 +59,6 @@ struct Lv2World {
 
 
 
-/** A Port on a plugin.  I wonder if we should be calling slv2 functions, or
-	maybe we should just copy all the data into the class? */
-class Lv2Port : public Port {
-public:
-	Lv2Port (const Lv2World & m_world, SLV2Plugin plugin, uint32_t index);
-
-	~Lv2Port ();
-
-	/* Port Interface */
-	QString name (size_t maxLength) const {
-		return QString::fromAscii(
-			slv2_value_as_string( slv2_port_get_name( m_plugin, m_port ) ) );
-	}
-
-	float value () const {
-		return m_value;
-	}
-
-	void setValue (float value) {
-		m_value = value;
-	}
-
-	float defaultValue () const {
-		return m_defaultValue;
-	}
-
-	bool isBounded () const {
-		return true;
-	}
-
-	float minimum () const {
-		return m_min;
-	}
-
-	float maximum () const {
-		return m_max;
-	}
-
-	bool isToggled () const {
-		return slv2_port_has_property (m_plugin, m_port, m_world.toggled);
-	}
-
-private:
-	float m_value;
-	float m_defaultValue;
-	float m_min;
-	float m_max;
-
-	// Don't point to Lv2Plugin, a two-way rel is probably unwanted
-	const Lv2World & m_world;
-	SLV2Plugin m_plugin;
-	SLV2Port m_port;
-};
-
-
-
 /** Plugin implementation for an Lv2Plugin.  Most values are queried directly
  *  from slv2 on demand.  It will probably be wise to cache some values when
  *  it is safe to do so (like num-ports, port-descriptors, etc..) */
@@ -174,13 +118,17 @@ public:
 		return slv2_plugin_get_num_ports(m_plugin);
 	}
 
-	void port (uint32_t idx) const {
-		// TODO: Figure out the lifecycle of a port
-	}
+	Port* port (uint32_t idx) const;
 
+	/** @returns The underlying SLV2Plugin */
+	SLV2Plugin slv2Plugin() const {
+		return m_plugin;
+	}
 
 	void activate ();
 	void deactivate ();
+
+	void process(const ProcessingContext & context);
 
 	// TODO: loadState and saveState
 
@@ -218,6 +166,77 @@ public:
 private:
 	Lv2World& m_world;
 	SLV2Plugin m_plugin;
+};
+
+
+
+/** A Port on a plugin.  I wonder if we should be calling slv2 functions, or
+	maybe we should just copy all the data into the class? */
+class Lv2Port : public Port {
+public:
+	Lv2Port (const Lv2World & m_world, const Lv2Plugin * plugin, uint32_t index);
+
+	~Lv2Port ();
+
+	/* Port Interface */
+	QString name (size_t maxLength) const {
+		return QString::fromAscii( slv2_value_as_string(
+			slv2_port_get_name( m_plugin->slv2Plugin(), m_port ) ) );
+	}
+
+	float value () const {
+		return m_value;
+	}
+
+	void setValue (float value) {
+		m_value = value;
+	}
+
+	float defaultValue () const {
+		return m_defaultValue;
+	}
+
+	bool isBounded () const {
+		return true;
+	}
+
+	float minimum () const {
+		return m_min;
+	}
+
+	float maximum () const {
+		return m_max;
+	}
+
+	bool isToggled () const {
+		return slv2_port_has_property( m_plugin->slv2Plugin(), m_port,
+									   m_world.toggled );
+	}
+
+	bool isInput () const {
+		return slv2_port_is_a( m_plugin->slv2Plugin(), m_port,
+							   m_world.inputClass );
+	}
+
+	bool isOutput () const {
+		return slv2_port_is_a( m_plugin->slv2Plugin(), m_port,
+							   m_world.outputClass );
+	}
+
+	const Node* node () const {
+		return m_plugin;
+	}
+
+private:
+	float m_value;
+	float m_defaultValue;
+	float m_min;
+	float m_max;
+
+	// Don't point to Lv2Plugin, a two-way rel is probably unwanted
+	const Lv2World & m_world;
+	const Lv2Plugin * m_plugin;
+	SLV2Port m_port;
 };
 
 

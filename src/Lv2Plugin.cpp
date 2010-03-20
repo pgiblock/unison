@@ -23,6 +23,7 @@
  */
 
 #include "unison/Lv2Plugin.h"
+#include "unison/ProcessingContext.h"
 
 using namespace Unison;
 
@@ -64,23 +65,32 @@ Lv2World::~Lv2World () {
 
 
 
-Lv2Port::Lv2Port (const Lv2World & world, SLV2Plugin plugin, uint32_t index) :
+Lv2Port::Lv2Port (const Lv2World & world, const Lv2Plugin * plugin, uint32_t index) :
 	Port(),
 	m_world(world),
-	m_plugin(plugin) {
+	m_plugin(plugin),
+	m_defaultValue(0),
+	m_min(0),
+	m_max(0) {
 
 	// TODO: Error handling
-	m_port = slv2_plugin_get_port_by_index( plugin, index );
+	m_port = slv2_plugin_get_port_by_index( plugin->slv2Plugin(), index );
 
 	// set range and default
 	SLV2Value def, min, max;
-	slv2_port_get_range( m_plugin, m_port, &def , &min, &max );
-	m_defaultValue = slv2_value_as_float( def );
-	m_min   = slv2_value_as_float( min );
-	m_max   = slv2_value_as_float( max );
-	slv2_value_free( def );
-	slv2_value_free( min );
-	slv2_value_free( max );
+	slv2_port_get_range( plugin->slv2Plugin(), m_port, &def , &min, &max );
+	if (def) {
+		m_defaultValue = slv2_value_as_float( def );
+		slv2_value_free( def );
+	}
+	if (min) {
+		m_min   = slv2_value_as_float( min );
+		slv2_value_free( min );
+	}
+	if (max) {
+		m_max   = slv2_value_as_float( max );
+		slv2_value_free( max );
+	}
 }
 
 
@@ -134,6 +144,12 @@ void Lv2Plugin::init () {
 }
 
 
+Port* Lv2Plugin::port (uint32_t idx) const {
+	// TODO: Don't create new Ports! Flyweight?
+	return new Lv2Port( m_world, this, idx );
+}
+
+
 void Lv2Plugin::activate () {
 	if (!m_activated) {
 		slv2_instance_activate( m_instance );
@@ -147,6 +163,11 @@ void Lv2Plugin::deactivate () {
 		slv2_instance_deactivate( m_instance );
 		m_activated = false;
 	}
+}
+
+
+void Lv2Plugin::process (const ProcessingContext & context) {
+	slv2_instance_run(m_instance, context.bufferSize());
 }
 
 

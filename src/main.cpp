@@ -2,6 +2,7 @@
 
 #include <QtGui/QApplication>
 #include "unison/PluginManager.h"
+#include "unison/ProcessingContext.h"
 
 void printLogo();
 void printDisclaimer();
@@ -15,7 +16,7 @@ int main (int argc, char ** argv) {
 
     app->setApplicationName( "Unison" );
     app->setOrganizationDomain( "unison.sourceforge.net" );
-	app->setOrganizationName( "The Unison Team" );
+	app->setOrganizationName( "Paul Giblock" );
 
     printLogo();
 	// If running in CLI mode, print a disclaimer
@@ -27,7 +28,33 @@ int main (int argc, char ** argv) {
 	PluginManager::initializeInstance();
 
 	PluginManager * man = PluginManager::instance();
-	PluginPtr plugin = man->descriptor("http://plugin.org.uk/swh-plugins/xfade")->createPlugin(48000);
+
+	std::cout << "Creating Plugins" << std::endl;
+	PluginPtr fx[2];
+	fx[0] = man->descriptor("http://plugin.org.uk/swh-plugins/analogueOsc")->createPlugin(48000);
+	fx[1] = man->descriptor("http://plugin.org.uk/swh-plugins/lfoPhaser")->createPlugin(48000);
+
+	std::cout << "Activating Plugins" << std::endl;
+	for (int i=0; i<2; ++i)	{ fx[i]->activate(); }
+
+	std::cout << "Deactivating Plugins" << std::endl;
+	for (int i=0; i<2; ++i) { fx[i]->deactivate(); }
+
+	std::cout << "Connecting Ports" << std::endl;
+	Port* fx0out = fx[0]->port(0);
+	Port* fx1in = NULL, * fx1out = NULL;
+
+	for (uint32_t i=0; i<fx[1]->portCount(); ++i) {
+		Port* p = fx[1]->port(i);
+		if (p->isInput())       { fx1in = p;  }
+		else if (p->isOutput()) { fx1out = p; }
+	}
+
+	std::cout << "Processing Nodes" << std::endl;
+	ProcessingContext context;
+	fx[0]->activate();
+	fx[0]->process(context);
+	fx[0]->deactivate();
 
     return app->exec();
 }

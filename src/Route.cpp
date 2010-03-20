@@ -1,5 +1,5 @@
 /*
- * types.h - Common types used in Unison
+ * Route.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,18 +22,14 @@
  *
  */
 
-
-#ifndef TYPES_H
-#define TYPES_H
-
-#include <stdint.h>
+#include "unison/Route.h"
 
 namespace Unison {
 
-typedef uint32_t nframe_t;
-typedef uint32_t ntick_t;
+Route::Route (Port* insert, Port* output) :
+	m_insertPort(insert),
+	m_outputPort(output) {
+
+}
 
 } // Unison
-
-#endif // TYPES_H
-

@@ -1,5 +1,5 @@
 /*
- * types.h - Common types used in Unison
+ * ProcessingContext.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -23,17 +23,24 @@
  */
 
 
-#ifndef TYPES_H
-#define TYPES_H
 
-#include <stdint.h>
+#ifndef PROCESSING_CONTEXT_H
+#define PROCESSING_CONTEXT_H
+
+#include "unison/types.h"
 
 namespace Unison {
 
-typedef uint32_t nframe_t;
-typedef uint32_t ntick_t;
+/** Abstracts parameters needed while rendering nodes.
+ *  Instead of relying on plugins to call out to various modules of unison, we
+ *  just pass all the needed information along in this handy context. */
+class ProcessingContext {
+public:
+	nframe_t bufferSize() const {
+		return 1024;
+	}
+};
 
 } // Unison
 
-#endif // TYPES_H
-
+#endif // PROCESSING_CONTEXT_H

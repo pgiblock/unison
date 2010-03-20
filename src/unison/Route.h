@@ -1,5 +1,5 @@
 /*
- * types.h - Common types used in Unison
+ * Route.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,18 +22,35 @@
  *
  */
 
-
-#ifndef TYPES_H
-#define TYPES_H
-
-#include <stdint.h>
+#ifndef ROUTE_H
+#define ROUTE_H
 
 namespace Unison {
 
-typedef uint32_t nframe_t;
-typedef uint32_t ntick_t;
+class Port;
+
+
+/** A direct connection between two ports.  TODO: Consider renaming since
+ *  'route' doesn't make it clear if this is a single or multi-hop route. */
+class Route {
+public:
+	Route (Port* insert, Port* output);
+	virtual ~Route () {};
+
+	Port* insertPort () const {
+		return m_insertPort;
+	}
+
+	Port* outputPort () const {
+		return m_outputPort;
+	}
+
+protected:
+	Port* const m_insertPort;
+	Port* const m_outputPort;
+
+};
 
 } // Unison
 
-#endif // TYPES_H
-
+#endif // PORT_H
