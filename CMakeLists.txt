@@ -101,8 +101,8 @@ ENDIF("${STATUS_LV2}" STREQUAL "OK")
 
 
 # Compiler flags
-SET(CMAKE_C_FLAGS "-g -Wall -ftree-vectorize ${CMAKE_C_FLAGS}")
-SET(CMAKE_CXX_FLAGS "-g -fno-exceptions -Wall -ftree-vectorize ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_C_FLAGS "-g -Wall -Wextra -ansi -ftree-vectorize ${CMAKE_C_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-g -fno-exceptions -Wall -Wextra -ansi -ftree-vectorize ${CMAKE_CXX_FLAGS}")
 
 #Directories
 INCLUDE_DIRECTORIES(src)
