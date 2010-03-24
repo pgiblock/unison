@@ -30,8 +30,8 @@
 
 namespace Unison {
 
-typedef uint32_t nframe_t;
-typedef uint32_t ntick_t;
+typedef uint32_t nframes_t;
+typedef uint32_t nticks_t;
 
 } // Unison
 

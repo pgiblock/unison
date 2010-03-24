@@ -64,7 +64,7 @@ struct Lv2World {
  *  it is safe to do so (like num-ports, port-descriptors, etc..) */
 class Lv2Plugin : public Plugin {
 public:
-	Lv2Plugin (Lv2World&, SLV2Plugin plugin, nframe_t sampleRate);
+	Lv2Plugin (Lv2World&, SLV2Plugin plugin, nframes_t sampleRate);
 	Lv2Plugin (const Lv2Plugin &);
 
 	~Lv2Plugin ();
@@ -125,6 +125,11 @@ public:
 		return m_plugin;
 	}
 
+	/** @returns The underlying SLV2Instance */
+	SLV2Instance slv2Instance() const {
+		return m_instance;
+	}
+
 	void activate ();
 	void deactivate ();
 
@@ -135,7 +140,8 @@ public:
 private:
 	Lv2World&      m_world;
 	SLV2Plugin     m_plugin;
-	nframe_t       m_sampleRate;
+	Port**          m_ports;
+	nframes_t       m_sampleRate;
 
 	SLV2Instance   m_instance;
 	SLV2Value      m_name;
@@ -159,7 +165,7 @@ public:
 	Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin);
 	Lv2PluginDescriptor (const Lv2PluginDescriptor& descriptor);
 
-	PluginPtr createPlugin (nframe_t sampleRate) const;
+	PluginPtr createPlugin (nframes_t sampleRate) const;
 
 	// TODO: Lv2World and SLV2Plugin Ptr accessors?
 
@@ -174,7 +180,7 @@ private:
 	maybe we should just copy all the data into the class? */
 class Lv2Port : public Port {
 public:
-	Lv2Port (const Lv2World & m_world, const Lv2Plugin * plugin, uint32_t index);
+	Lv2Port (const Lv2World & m_world, Lv2Plugin * plugin, uint32_t index);
 
 	~Lv2Port ();
 
@@ -183,6 +189,8 @@ public:
 		return QString::fromAscii( slv2_value_as_string(
 			slv2_port_get_name( m_plugin->slv2Plugin(), m_port ) ) );
 	}
+
+	void connectToBuffer(float * buf);
 
 	float value () const {
 		return m_value;
@@ -213,6 +221,22 @@ public:
 									   m_world.toggled );
 	}
 
+	Type type () const {
+		SLV2Plugin slv2Plugin = m_plugin->slv2Plugin();
+		if (slv2_port_is_a( slv2Plugin, m_port, m_world.controlClass )) {
+			return Port::CONTROL;
+		}
+		else if (slv2_port_is_a( slv2Plugin, m_port, m_world.audioClass )) {
+			return Port::AUDIO;
+		}
+		else if (slv2_port_is_a( slv2Plugin, m_port, m_world.midiClass )) {
+			return Port::MIDI;
+		}
+		else {
+			return Port::UNKNOWN;
+		}
+	}
+
 	bool isInput () const {
 		return slv2_port_is_a( m_plugin->slv2Plugin(), m_port,
 							   m_world.inputClass );
@@ -223,9 +247,8 @@ public:
 							   m_world.outputClass );
 	}
 
-	const Node* node () const {
-		return m_plugin;
-	}
+	const QSet<Node*> providers () const;
+	bool isSink() const;
 
 private:
 	float m_value;
@@ -235,8 +258,9 @@ private:
 
 	// Don't point to Lv2Plugin, a two-way rel is probably unwanted
 	const Lv2World & m_world;
-	const Lv2Plugin * m_plugin;
+	Lv2Plugin * m_plugin;
 	SLV2Port m_port;
+	uint32_t m_index;
 };
 
 

@@ -22,6 +22,7 @@
  *
  */
 
+#include <QSet>
 #include "unison/Lv2Plugin.h"
 #include "unison/ProcessingContext.h"
 
@@ -64,11 +65,11 @@ Lv2World::~Lv2World () {
 }
 
 
-
-Lv2Port::Lv2Port (const Lv2World & world, const Lv2Plugin * plugin, uint32_t index) :
+Lv2Port::Lv2Port (const Lv2World & world, Lv2Plugin * plugin, uint32_t index) :
 	Port(),
 	m_world(world),
 	m_plugin(plugin),
+	m_index(index),
 	m_defaultValue(0),
 	m_min(0),
 	m_max(0) {
@@ -98,8 +99,28 @@ Lv2Port::~Lv2Port () {
 }
 
 
+void Lv2Port::connectToBuffer(float *buf) {
+	slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buf);
+}
 
-Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframe_t sampleRate) :
+
+const QSet<Node*> Lv2Port::providers () const {
+	QSet<Node*> p;
+	if (isOutput()) {
+		p.insert( m_plugin );
+	}
+	// FIXME: Undefined
+	return p;
+}
+
+
+bool Lv2Port::isSink() const {
+	// At least right now, only Jack can have Sinks
+	return false;
+}
+
+
+Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframes_t sampleRate) :
 	Plugin(),
 	m_world(world),
 	m_plugin(plugin),
@@ -126,14 +147,26 @@ Lv2Plugin::~Lv2Plugin () {
 	slv2_value_free( m_authorName );
 	slv2_value_free( m_authorEmail );
 	slv2_value_free( m_authorHomepage );
+	for (size_t i=0; i<sizeof(m_ports)/sizeof(Port*); ++i) {
+		delete m_ports[i];
+	}
+	delete[] m_ports;
+
 	m_instance = NULL;
 }
 
 
 void Lv2Plugin::init () {
 	m_activated = false;
+	// TODO: Pass in features
 	m_instance = slv2_plugin_instantiate( m_plugin, m_sampleRate, NULL );
 	assert(m_instance);
+
+	// TODO: this is ugly. write copy ctors and assignment operators and cp by val.
+	m_ports = new Port*[portCount()];
+	for (int i=0; i<portCount(); ++i) {
+		m_ports[i] = new Lv2Port( m_world, this, i );
+	}
 
 	m_name = slv2_plugin_get_name( m_plugin );
 	assert(m_name);
@@ -145,8 +178,7 @@ void Lv2Plugin::init () {
 
 
 Port* Lv2Plugin::port (uint32_t idx) const {
-	// TODO: Don't create new Ports! Flyweight?
-	return new Lv2Port( m_world, this, idx );
+	return m_ports[idx];
 }
 
 
@@ -219,7 +251,7 @@ Lv2PluginDescriptor::Lv2PluginDescriptor (const Lv2PluginDescriptor& descriptor)
 }
 
 
-PluginPtr Lv2PluginDescriptor::createPlugin (nframe_t sampleRate) const {
+PluginPtr Lv2PluginDescriptor::createPlugin (nframes_t sampleRate) const {
 	return PluginPtr( new Lv2Plugin( m_world, m_plugin, sampleRate ) );
 }
 

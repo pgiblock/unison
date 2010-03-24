@@ -101,8 +101,8 @@ ENDIF("${STATUS_LV2}" STREQUAL "OK")
 
 
 # Compiler flags
-SET(CMAKE_C_FLAGS "-g -Wall -Wextra -ansi -ftree-vectorize ${CMAKE_C_FLAGS}")
-SET(CMAKE_CXX_FLAGS "-g -fno-exceptions -Wall -Wextra -ansi -ftree-vectorize ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_C_FLAGS "-g -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_C_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-g -fno-exceptions -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_CXX_FLAGS}")
 
 #Directories
 INCLUDE_DIRECTORIES(src)
@@ -112,7 +112,7 @@ ADD_SUBDIRECTORY(src)
 QT4_AUTOMOC(${unison_srcs})
 
 #linking
-LINK_LIBRARIES(${JACK_LIBRARY} ${QT_LIBRARIES} ${RDF_LIBRARY} ${SLV2_LIBRARY})
+LINK_LIBRARIES(${JACK_LIBRARIES} ${QT_LIBRARIES} ${RDF_LIBRARY} ${SLV2_LIBRARY})
 
 #Output
 ADD_EXECUTABLE(unisonstudio ${unison_srcs} ${unison_includes})

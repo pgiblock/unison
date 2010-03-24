@@ -36,9 +36,18 @@ namespace Unison {
  *  just pass all the needed information along in this handy context. */
 class ProcessingContext {
 public:
-	nframe_t bufferSize() const {
-		return 1024;
+	ProcessingContext (nframes_t bufferSize) :
+		m_bufferSize(bufferSize)
+	{
 	}
+
+
+	nframes_t bufferSize () const
+	{
+		return m_bufferSize;
+	}
+
+	nframes_t m_bufferSize;
 };
 
 } // Unison

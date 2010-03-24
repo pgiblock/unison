@@ -82,7 +82,8 @@ public:
 };
 
 /** A Safe pointer to a plugin. */
-typedef QSharedPointer<Plugin> PluginPtr;
+//typedef QSharedPointer<Plugin> PluginPtr;
+typedef Plugin* PluginPtr;
 
 
 
@@ -103,7 +104,7 @@ public:
 
 	virtual ~PluginDescriptor() {}
 
-	virtual PluginPtr createPlugin (nframe_t sampleRate) const = 0;
+	virtual PluginPtr createPlugin (nframes_t sampleRate) const = 0;
 
 	QString name () const {
 		return m_name;
