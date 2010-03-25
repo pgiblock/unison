@@ -26,6 +26,8 @@
 #ifndef PORT_H
 #define PORT_H
 
+#include "unison/Node.h"
+
 namespace Unison
 {
 
@@ -35,6 +37,7 @@ class Port : public Node
 {
 public:
 	enum Type { AUDIO, CONTROL, MIDI, UNKNOWN };
+	enum Direction { INPUT, OUTPUT };
 
 	virtual ~Port () {};
 
@@ -47,10 +50,7 @@ public:
 
 	/* TODO: Replace isInput/Output() with direction() ? */
 	/** @returns true if this port is an input port */
-	virtual bool isInput() const = 0;
-
-	/** @returns true if this port is an input port */
-	virtual bool isOutput() const = 0;
+	virtual Direction direction() const = 0;
 
 	/** @returns the current value of a port. */
 	virtual float value () const = 0;

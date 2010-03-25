@@ -5,6 +5,7 @@
 #include <jack/jack.h>
 #include "unison/PluginManager.h"
 #include "unison/ProcessingContext.h"
+#include "unison/JackEngine.h"
 
 using namespace Unison;
 
@@ -13,138 +14,15 @@ void printDisclaimer();
 int processCb(jack_nframes_t nframes, void* data);
 
 // Engine stuff
-
 jack_client_t * jackClient;
+JackEngine * jackEngine;
 
-class JackPort;
-QList<JackPort*> jackPorts;
+// Node referencing
 Port* fxin[2][2];
 Port* fxout[2][2];
 QList<Processor*> processors;
 
 QAtomicPointer< QList<Processor*> > compiled;
-
-class JackPort : public Port
-{
-public:
-  JackPort(jack_port_t * port) :
-      Port(),
-      m_port(port)
-  {
-  }
-
-  QString name (size_t maxLength) const
-  {
-    return jack_port_short_name( m_port );
-  }
-  QString fullName () const
-  {
-    return jack_port_name( m_port );
-  }
-  bool isInput () const
-  {
-    // TODO Might be swapped
-    return jack_port_flags( m_port ) & JackPortIsInput;
-  }
-  bool isOutput () const
-  {
-    // TODO Might be swapped
-    return jack_port_flags( m_port ) & JackPortIsOutput;
-  }
-  Type type () const
-  {
-    return Port::AUDIO; // TODO!
-  }
-  void connectToBuffer (float * buf)
-  {
-    // TODO
-  }
-  float value () const
-  {
-    return 0.0f;
-  }
-  void setValue (float value)
-  {
-  }
-  float defaultValue () const
-  {
-    return 0.0f;
-  }
-  bool isBounded () const
-  {
-    return false;
-  }
-  float minimum () const
-  {
-    return 0.0f;
-  }
-  float maximum () const
-  {
-    return 0.0f;
-  }
-  bool isToggled () const{
-    return false;
-  }
-
-  const QSet<Node*> dependencies () const
-  {
-    QSet<Node*> dependencies;
-
-    if (isInput())
-    {
-      // Return internal connections
-    }
-    else if (isOutput())
-    {
-      const char** name = jack_port_get_connections( m_port );
-      // Within all connected ports
-      while (name != NULL)
-      {
-        // See if we own the port
-        foreach (JackPort* jp, jackPorts)
-        {
-          if (jp->fullName() == *name)
-          {
-            dependencies += jp;
-          }
-        }
-      }
-    }
-    return dependencies;
-  }
-
-
-  const QSet<Node*> dependents () const
-  {
-    QSet<Node*> dependents;
-
-    if (isInput())
-    {
-      const char** name = jack_port_get_connections( m_port );
-      // Within all connected ports
-      while (name != NULL)
-      {
-        // See if we own the port
-        foreach (JackPort* jp, jackPorts)
-        {
-          if (jp->fullName() == *name)
-          {
-            dependents += jp;
-          }
-        }
-      }
-    }
-    else if (isOutput())
-    {
-      // Return internal connections
-    }
-    return dependents;
-  }
-
-private:
-  jack_port_t* m_port;
-};
-
 
 void compileRecursive (Node* n, QList<Processor*>& output)
 {
@@ -208,22 +86,19 @@ int main (int argc, char ** argv) {
 	printDisclaimer();
 
 	// JACK stuff
-	jack_client_t* jackClient =
-		jack_client_open("Unison Studio", JackNullOption, NULL);
+	jackClient = jack_client_open("Unison Studio", JackNullOption, NULL);
+	if (!jackClient) { printf("Failed to connect to JACK."); }
+	else { printf("Connected to JACK.\n"); }
 
-	if (!jackClient)
-		printf("Failed to connect to JACK.");
-	else
-		printf("Connected to JACK.\n");
-
+        jackEngine = new JackEngine( jackClient );
 	jack_set_process_callback(jackClient, &processCb, NULL);
 
-	jackPorts.append(new JackPort(jack_port_register(jackClient, "Master/out 1", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0)));
-	jackPorts.append(new JackPort(jack_port_register(jackClient, "Master/out 2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0)));
-	jackPorts.append(new JackPort(jack_port_register(jackClient, "Master/in 1", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0)));
-	jackPorts.append(new JackPort(jack_port_register(jackClient, "Master/in 2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0)));
-	jackPorts.append(new JackPort(jack_port_register(jackClient, "Channel/out 1", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0)));
-	jackPorts.append(new JackPort(jack_port_register(jackClient, "Channel/out 2", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0)));
+        jackEngine->registerPort("Master/out 1", Port::INPUT);
+	jackEngine->registerPort("Master/out 2", Port::INPUT);
+	jackEngine->registerPort("Master/in 1", Port::OUTPUT);
+	jackEngine->registerPort("Master/in 2", Port::INPUT);
+	jackEngine->registerPort("Channel/out 1", Port::OUTPUT);
+	jackEngine->registerPort("Channel/out 2", Port::OUTPUT);
 
 	// Init
 	PluginManager::initializeInstance();
@@ -247,8 +122,17 @@ int main (int argc, char ** argv) {
 		for (uint32_t i=0; i<n->portCount(); ++i) {
 			Port* p = n->port(i);
 			if (p->type() == Port::AUDIO) {
-				if (p->isInput())       { fxin[f][inCnt++] = p;  }
-				else if (p->isOutput()) { fxout[f][outCnt++] = p; }
+                          switch (p->direction()) {
+                            case Port::INPUT:
+                              fxin[f][inCnt++] = p;
+                              break;
+                            case Port::OUTPUT:
+                              fxout[f][outCnt++] = p;
+                              break;
+                            default:
+                              //TODO: Programming error!
+                              break;
+                          }
 			}
 			else if (p->type() == Port::CONTROL) {
 				// MEMLEAK

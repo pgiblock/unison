@@ -1,5 +1,5 @@
 /*
- * Node.h
+ * JackEngine.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,31 +22,45 @@
  *
  */
 
+#ifndef JACK_ENGINE_H
+#define JACK_ENGINE_H
 
-#ifndef NODE_H
-#define NODE_H
+#include <QVarLengthArray>
 
-#include <QSet>
-#include <QSharedPointer>
-#include "unison/types.h"
+#include "unison/JackPort.h"
 
-namespace Unison {
+namespace Unison
+{
 
-/** Interface for all things that participate in the processing graph.
- *  TODO: We probably want to add a StandardNode abstract class that handles
- *  most features that don't vary across different Node classes. */
-class Node {
-public:
-	virtual ~Node () {};
+  class JackEngine
+  {
+  public:
+    // TODO: This temporary constructor just makes JackEngine behave as a
+    // wrapper around an seperately manage jack_client. This is good for testing.
+    JackEngine (jack_client_t* client) :
+      m_client( client )
+    {
+    }
 
-	/** Returns a set?? */
-	virtual const QSet<Node*> dependencies () const = 0;
-	virtual const QSet<Node*> dependents () const = 0;
-};
+    jack_client_t* client () const {
+      return m_client;
+    }
 
-/** A Safe pointer to a plugin. */
-typedef QSharedPointer<Node> NodePtr;
+    const JackPort* registerPort (QString name, Port::Direction direction);
+
+    uint32_t myPortCount () const;
+    JackPort* myPort (uint32_t index) const;
+    JackPort* myPort (QString name) const;
+
+  private:
+
+    jack_client_t* m_client;
+    QVarLengthArray<JackPort*> m_myPorts;
+  };
 
 } // Unison
 
-#endif // NODE_H
+
+#endif // JACK_ENGINE_H
+
+// vim: et ts=8 sw=2 sts=2 noai

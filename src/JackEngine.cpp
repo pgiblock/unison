@@ -1,5 +1,5 @@
 /*
- * Node.h
+ * JackEngine.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,31 +22,48 @@
  *
  */
 
+#include <jack/jack.h>
 
-#ifndef NODE_H
-#define NODE_H
+#include "unison/JackEngine.h"
 
-#include <QSet>
-#include <QSharedPointer>
-#include "unison/types.h"
 
 namespace Unison {
 
-/** Interface for all things that participate in the processing graph.
- *  TODO: We probably want to add a StandardNode abstract class that handles
- *  most features that don't vary across different Node classes. */
-class Node {
-public:
-	virtual ~Node () {};
+	const JackPort* JackEngine::registerPort (QString name,
+			Port::Direction direction) {
+		JackPortFlags flag;
+		switch (direction) {
+			case Port::INPUT:
+				flag = JackPortIsOutput;
+				break;
+			case Port::OUTPUT:
+			default:
+				flag = JackPortIsInput;
+				break;
+		}
 
-	/** Returns a set?? */
-	virtual const QSet<Node*> dependencies () const = 0;
-	virtual const QSet<Node*> dependents () const = 0;
-};
+		jack_port_t* port = jack_port_register(
+				client(), name.toLatin1(), JACK_DEFAULT_AUDIO_TYPE, flag, 0);
+		if (port) {
+			JackPort* myPort = new JackPort(*this, port);
+			m_myPorts.append( myPort );
+			return myPort;
+		}
+		return NULL;
+	}
 
-/** A Safe pointer to a plugin. */
-typedef QSharedPointer<Node> NodePtr;
+	uint32_t JackEngine::myPortCount () const {
+		return m_myPorts.count();
+	}
+
+    JackPort* JackEngine::myPort (uint32_t index) const {
+		return m_myPorts[index];
+	}
+
+    JackPort* JackEngine::myPort (QString name) const {
+		return NULL; // TODO: implement
+	}
 
 } // Unison
 
-#endif // NODE_H
+// vim: et ts=8 sw=2 sts=2 noai

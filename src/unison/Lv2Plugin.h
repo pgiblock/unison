@@ -25,6 +25,7 @@
 #ifndef LV2_PLUGIN_H
 #define LV2_PLUGIN_H
 
+#include <QVarLengthArray>
 #include <slv2/slv2.h>
 
 #include "unison/Plugin.h"
@@ -143,7 +144,7 @@ public:
 private:
 	Lv2World&      m_world;
 	SLV2Plugin     m_plugin;
-	Port**          m_ports;   // QVarLengthArray
+	QVarLengthArray<Port*> m_ports;   // QVarLengthArray
 	nframes_t       m_sampleRate;
 
 	SLV2Instance   m_instance;
@@ -183,7 +184,7 @@ private:
 	maybe we should just copy all the data into the class? */
 class Lv2Port : public Port {
 public:
-	Lv2Port (const Lv2World & m_world, Lv2Plugin * plugin, uint32_t index);
+	Lv2Port (const Lv2World & world, Lv2Plugin * plugin, uint32_t index);
 
 	~Lv2Port ();
 
@@ -240,14 +241,14 @@ public:
 		}
 	}
 
-	bool isInput () const {
-		return slv2_port_is_a( m_plugin->slv2Plugin(), m_port,
-							   m_world.inputClass );
-	}
-
-	bool isOutput () const {
-		return slv2_port_is_a( m_plugin->slv2Plugin(), m_port,
-							   m_world.outputClass );
+	Port::Direction direction () const {
+		SLV2Plugin plugin = m_plugin->slv2Plugin();
+		if (slv2_port_is_a( plugin, m_port, m_world.inputClass )) {
+			return Port::INPUT;
+		}
+		if (slv2_port_is_a( plugin, m_port, m_world.outputClass )) {
+			return Port::OUTPUT;
+		}
 	}
 
 	const QSet<Node*> dependencies () const;

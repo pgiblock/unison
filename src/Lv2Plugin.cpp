@@ -106,11 +106,13 @@ void Lv2Port::connectToBuffer(float *buf) {
 
 const QSet<Node*> Lv2Port::dependencies () const {
 	QSet<Node*> p;
-	if (isInput()) {
-      // Return internal connections
-	}
-	else if (isOutput()) {
+	switch (direction()) {
+	case INPUT:
+	// Return internal connections
+		break;
+	case OUTPUT:
 		p.insert( m_plugin );
+		break;
 	}
 	return p;
 }
@@ -118,11 +120,13 @@ const QSet<Node*> Lv2Port::dependencies () const {
 
 const QSet<Node*> Lv2Port::dependents () const {
 	QSet<Node*> p;
-	if (isInput()) {
+	switch (direction()) {
+	case INPUT:
 		p.insert( m_plugin );
-	}
-	else if (isOutput()) {
+		break;
+	case OUTPUT:
 	// Return internal connections
+		break;
 	}
 	return p;
 }
@@ -154,10 +158,9 @@ Lv2Plugin::~Lv2Plugin () {
 	slv2_value_free( m_authorName );
 	slv2_value_free( m_authorEmail );
 	slv2_value_free( m_authorHomepage );
-	for (size_t i=0; i<sizeof(m_ports)/sizeof(Port*); ++i) {
+	for (size_t i=0; i<m_ports.count(); ++i) {
 		delete m_ports[i];
 	}
-	delete[] m_ports;
 
 	m_instance = NULL;
 }
@@ -170,8 +173,9 @@ void Lv2Plugin::init () {
 	assert(m_instance);
 
 	// TODO: this is ugly. write copy ctors and assignment operators and cp by val.
-	m_ports = new Port*[portCount()];
-	for (int i=0; i<portCount(); ++i) {
+	uint32_t count = portCount();
+	m_ports.resize( count );
+	for (int i = 0; i < count; ++i) {
 		m_ports[i] = new Lv2Port( m_world, this, i );
 	}
 
@@ -215,7 +219,7 @@ const QSet<Node*> Lv2Plugin::dependencies () const {
 	uint32_t count = portCount();
 	for (int i=0; i<count; ++i) {
 		Port * p  = port(i);
-		if (p->isInput()) { n += p; }
+		if (p->direction() == Port::INPUT) { n += p; }
 	}
 	return n;
 }
@@ -226,7 +230,7 @@ const QSet<Node*> Lv2Plugin::dependents () const {
 	uint32_t count = portCount();
 	for (int i=0; i<count; ++i) {
 		Port * p  = port(i);
-		if (p->isOutput()) { n += p; }
+		if (p->direction() == Port::OUTPUT) { n += p; }
 	}
 	return n;
 }
