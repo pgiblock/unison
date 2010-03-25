@@ -135,12 +135,15 @@ public:
 
 	void process(const ProcessingContext & context);
 
+	const QSet<Node*> dependencies () const;
+	const QSet<Node*> dependents () const;
+
 	// TODO: loadState and saveState
 
 private:
 	Lv2World&      m_world;
 	SLV2Plugin     m_plugin;
-	Port**          m_ports;
+	Port**          m_ports;   // QVarLengthArray
 	nframes_t       m_sampleRate;
 
 	SLV2Instance   m_instance;
@@ -247,8 +250,8 @@ public:
 							   m_world.outputClass );
 	}
 
-	const QSet<Node*> providers () const;
-	bool isSink() const;
+	const QSet<Node*> dependencies () const;
+	const QSet<Node*> dependents () const;
 
 private:
 	float m_value;

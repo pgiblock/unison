@@ -26,16 +26,12 @@
 #ifndef PORT_H
 #define PORT_H
 
-#include <QSet>
-
 namespace Unison
 {
 
-class Node;
-
 /** A Port interface on a plugin.  Encapsulates audio, control, midi, and
  *  possibly other port types we may eventually be interested in. */
-class Port
+class Port : public Node
 {
 public:
 	enum Type { AUDIO, CONTROL, MIDI, UNKNOWN };
@@ -55,8 +51,6 @@ public:
 
 	/** @returns true if this port is an input port */
 	virtual bool isOutput() const = 0;
-
-	virtual void connectToBuffer(float * buf) = 0;
 
 	/** @returns the current value of a port. */
 	virtual float value () const = 0;
@@ -82,39 +76,10 @@ public:
 	/** @returns true if this port is toggled between on and off */
 	virtual bool isToggled () const = 0;
 
-	/** Returns Nodes responsible for providing the port with a value.
-	 *  This does not relate to connections.  A port generally only has one
-	 *  provider, the parent node.  However, a JACK port may have many nodes
-	 *  connected behind it.  This is an easy way to handle that situation.
-	 *  This may be handy for composite-nodes (patches) down the road.
-	 *
-	 *  @returns nodes to process() for this port */
-	virtual const QSet<Node*> providers () const = 0;
-	//virtual const Node* node () const = 0;
+	virtual void connectToBuffer(float * buf) = 0;
 
-	/** @returns the set of OutputPorts attached to this input port,
-	 *  otherwise, an empty set */
-	// TODO: Isolate connections better
-	virtual const QSet<Port*> connectedPorts() const {
-		return m_connectedPorts;
-	}
-
-	// This sucks right here
-	virtual const bool connectTo(Port* port) {
-		if (!m_connectedPorts.contains(port)) {
-			m_connectedPorts.insert(port);
-			return true;
-		}
-		return false;
-	}
-
-	/** @returns true if this port has no dependents, that is, the port is a
-	 *  'pure' sink.  Nodes with all output ports attached to sink'd
-	 *  input-ports can be processed before any other node. */
-	virtual bool isSink() const = 0;
 
 protected:
-	QSet<Port*> m_connectedPorts;
 };
 
 } // Unison

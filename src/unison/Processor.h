@@ -1,5 +1,5 @@
 /*
- * Node.h
+ * Processor.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -23,28 +23,45 @@
  */
 
 
-#ifndef NODE_H
-#define NODE_H
+#ifndef PROCESSOR_H
+#define PROCESSOR_H
 
-#include "unison/types.h"
+#include "unison/Node.h"
+#include "unison/Port.h"
 
 namespace Unison {
 
-/** Interface for all things that participate in the processing graph.
- *  TODO: We probably want to add a StandardNode abstract class that handles
+class ProcessingContext;
+
+/** Interface for all Nodes that need to have some degree of processing
+ *  performed on them.
+ *  TODO: We probably want to add a StandardProcessor abstract class that handles
  *  most features that don't vary across different Node classes. */
-class Node {
-public:
-	virtual ~Node () {};
 
-	/** Returns a set?? */
-	virtual const QSet<Node*> dependencies () const = 0;
-	virtual const QSet<Node*> dependents () const = 0;
+class Processor : public Node {
+  public:
+    virtual ~Processor () {};
+
+    /** @return the total number of ports of all kinds */
+    virtual uint32_t portCount () const = 0;
+
+    /* TODO: Return Port* or shared pointer? */
+    virtual Port* port (uint32_t idx) const = 0;
+
+    virtual void activate () = 0;
+    virtual void deactivate () = 0;
+
+    virtual void process (const ProcessingContext & context) = 0;
+    bool isVisited()   { return m_visited; };
+    void visit()       { m_visited = true; };
+    void unvisit()     { m_visited = false; };
+
+  private:
+    bool m_visited;
 };
-
-/** A Safe pointer to a plugin. */
-typedef QSharedPointer<Node> NodePtr;
 
 } // Unison
 
-#endif // NODE_H
+#endif // PROCESSOR_H
+
+// vim: et ts=8 sw=2 sts=2 noai

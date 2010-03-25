@@ -104,21 +104,28 @@ void Lv2Port::connectToBuffer(float *buf) {
 }
 
 
-const QSet<Node*> Lv2Port::providers () const {
+const QSet<Node*> Lv2Port::dependencies () const {
 	QSet<Node*> p;
-	if (isOutput()) {
+	if (isInput()) {
+      // Return internal connections
+	}
+	else if (isOutput()) {
 		p.insert( m_plugin );
 	}
-	// FIXME: Undefined
 	return p;
 }
 
 
-bool Lv2Port::isSink() const {
-	// At least right now, only Jack can have Sinks
-	return false;
+const QSet<Node*> Lv2Port::dependents () const {
+	QSet<Node*> p;
+	if (isInput()) {
+		p.insert( m_plugin );
+	}
+	else if (isOutput()) {
+	// Return internal connections
+	}
+	return p;
 }
-
 
 Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframes_t sampleRate) :
 	Plugin(),
@@ -200,6 +207,28 @@ void Lv2Plugin::deactivate () {
 
 void Lv2Plugin::process (const ProcessingContext & context) {
 	slv2_instance_run(m_instance, context.bufferSize());
+}
+
+
+const QSet<Node*> Lv2Plugin::dependencies () const {
+	QSet<Node*> n;
+	uint32_t count = portCount();
+	for (int i=0; i<count; ++i) {
+		Port * p  = port(i);
+		if (p->isInput()) { n += p; }
+	}
+	return n;
+}
+
+
+const QSet<Node*> Lv2Plugin::dependents () const {
+	QSet<Node*> n;
+	uint32_t count = portCount();
+	for (int i=0; i<count; ++i) {
+		Port * p  = port(i);
+		if (p->isOutput()) { n += p; }
+	}
+	return n;
 }
 
 

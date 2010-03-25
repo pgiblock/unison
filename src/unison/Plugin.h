@@ -30,7 +30,7 @@
 #include <QtXml/QDomNode>
 
 #include "unison/types.h"
-#include "unison/Node.h"
+#include "unison/Processor.h"
 
 namespace Unison {
 
@@ -50,7 +50,9 @@ enum PluginType {
 /** Interface for audio, control, and maybe other "graphed" plugins for Unison.
  *  All accessors are virtual since some plugin types may be able to query the
  *  values directly from the underlying resource. */
-class Plugin : public Node {
+// TODO: Consider splitting Plugin from Processor. And allow for Plugin to
+// create a processor "instance".
+class Plugin : public Processor {
 public:
 	virtual ~Plugin () {};
 

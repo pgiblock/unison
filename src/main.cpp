@@ -20,126 +20,175 @@ class JackPort;
 QList<JackPort*> jackPorts;
 Port* fxin[2][2];
 Port* fxout[2][2];
-QList<Node*> nodes;
-QAtomicPointer<QList<Node*>> compiled;
+QList<Processor*> processors;
+
+QAtomicPointer< QList<Processor*> > compiled;
 
 class JackPort : public Port
 {
 public:
-	JackPort(jack_port_t * port) :
-		Port(),
-		m_port(port)
-	{
-	}
+  JackPort(jack_port_t * port) :
+      Port(),
+      m_port(port)
+  {
+  }
 
-	QString name (size_t maxLength) const {
-		return jack_port_short_name( m_port );
-	}
+  QString name (size_t maxLength) const
+  {
+    return jack_port_short_name( m_port );
+  }
+  QString fullName () const
+  {
+    return jack_port_name( m_port );
+  }
+  bool isInput () const
+  {
+    // TODO Might be swapped
+    return jack_port_flags( m_port ) & JackPortIsInput;
+  }
+  bool isOutput () const
+  {
+    // TODO Might be swapped
+    return jack_port_flags( m_port ) & JackPortIsOutput;
+  }
+  Type type () const
+  {
+    return Port::AUDIO; // TODO!
+  }
+  void connectToBuffer (float * buf)
+  {
+    // TODO
+  }
+  float value () const
+  {
+    return 0.0f;
+  }
+  void setValue (float value)
+  {
+  }
+  float defaultValue () const
+  {
+    return 0.0f;
+  }
+  bool isBounded () const
+  {
+    return false;
+  }
+  float minimum () const
+  {
+    return 0.0f;
+  }
+  float maximum () const
+  {
+    return 0.0f;
+  }
+  bool isToggled () const{
+    return false;
+  }
 
-	QString fullName () const {
-		return jack_port_name( m_port );
-	}
+  const QSet<Node*> dependencies () const
+  {
+    QSet<Node*> dependencies;
 
-	bool isInput () const {
-		// TODO Might be swapped
-		return jack_port_flags( m_port ) & JackPortIsInput;
-	}
+    if (isInput())
+    {
+      // Return internal connections
+    }
+    else if (isOutput())
+    {
+      const char** name = jack_port_get_connections( m_port );
+      // Within all connected ports
+      while (name != NULL)
+      {
+        // See if we own the port
+        foreach (JackPort* jp, jackPorts)
+        {
+          if (jp->fullName() == *name)
+          {
+            dependencies += jp;
+          }
+        }
+      }
+    }
+    return dependencies;
+  }
 
-	bool isOutput () const {
-		// TODO Might be swapped
-		return jack_port_flags( m_port ) & JackPortIsOutput;
-	}
 
-	bool isSink () const {
-		return true; // TODO!
-	}
+  const QSet<Node*> dependents () const
+  {
+    QSet<Node*> dependents;
 
-	Type type () const {
-		return Port::AUDIO; // TODO!
-	}
-
-	void connectToBuffer (float * buf) {
-		// TODO
-	}
-	float value () const {
-		return 0.0f;
-	}
-	void setValue (float value) {
-	}
-	float defaultValue () const {
-		return 0.0f;
-	}
-	bool isBounded () const {
-		return false;
-	}
-	float minimum () const {
-		return 0.0f;
-	}
-	float maximum () const {
-		return 0.0f;
-	}
-	bool isToggled () const {
-		return false;
-	}
-
-	const QSet<Node*> providers () const {
-		QSet<Node*> providers;
-
-		// TODO: This really sucks. rethink the orientation and duty of JackPort
-		if (isOutput()) {
-			const char** name = jack_port_get_connections( m_port );
-			// Within all connected ports
-			while (name != NULL) {
-				// Look for (input) ports belonging to us
-				foreach (JackPort* jp, jackPorts) {
-					if (jp->fullName() == *name) {
-						// Then, get connections to the jack ports
-						foreach (Port* p, jp->connectedPorts()) {
-							// And add providers for those ports
-							providers += p->providers();
-						}
-					}
-				}
-				++name;
-			}
-		}
-		else if (isInput()) {
-		}
-		return providers;
-	}
+    if (isInput())
+    {
+      const char** name = jack_port_get_connections( m_port );
+      // Within all connected ports
+      while (name != NULL)
+      {
+        // See if we own the port
+        foreach (JackPort* jp, jackPorts)
+        {
+          if (jp->fullName() == *name)
+          {
+            dependents += jp;
+          }
+        }
+      }
+    }
+    else if (isOutput())
+    {
+      // Return internal connections
+    }
+    return dependents;
+  }
 
 private:
-	jack_port_t* m_port;
+  jack_port_t* m_port;
 };
 
-/*
-void compileRecursive (Node* n, QList<Node*> output) {
-	for (uint32_t i = 0; i < n->portCount(); ++i) {
-		foreach (Node * provider, n->port(i)->providers()) {
-			compileRecursive( provider, output );
-		}
-	}
-	output.append( n );
-}*/
 
-void compileRecursive (Node* n, QList<Node*>& output) {
-	for (uint32_t i = 0; i < n->portCount(); ++i) {
-		Port * port = n->port(i);
-		// TODO: These Connections are going the wrong damn way!!!!!!
-		// They should be providers, not dependents!
-		foreach (Port * connectedPort, port->connectedPorts()) {
-			foreach (Node * provider, connectedPort->providers()) {
-				compileRecursive( provider, output );
-			}
-		}
-	}
-	output.append( n );
+void compileRecursive (Node* n, QList<Processor*>& output)
+{
+  // TODO: Dynamic cast is bad. any better way to do this other
+  // than moving process(), visit(), isVisited() etc to Node?
+  Processor* p = dynamic_cast<Processor*>( n );
+  if (p == NULL || !p->isVisited()) {
+    if (p) { p->visit(); }
+    foreach (Node* dep, n->dependencies()) {
+      compileRecursive( dep, output );
+    }
+    if (p) { output.append( p ); }
+  }
 }
+/*
+  Alternate compilation method:
+  create set of all nodes - these are "untraversed".
+  remove from traversed, recurse into dependents, add to compiled-list
+*/
 
 
-void compile (Node* n, QList<Node*>& output) {
-	compileRecursive( n, output );
-	output.append( n );
+void compile (QList<Processor*> input, QList<Processor*>& output) {
+
+  // Mark everything as unvisited
+  QListIterator<Processor*> i( input );
+  while (i.hasNext()) {
+    i.next()->unvisit();
+  }
+
+  // Process nodes that are pure-sinks first
+  i.toFront();
+  while (i.hasNext()) {
+    Processor* p = i.next();
+    if (p->dependents().count() == 0) {
+      compileRecursive( p, output );
+    }
+  }
+
+  // Then process everything else
+  i.toFront();
+  while (i.hasNext()) {
+    Processor* p = i.next();
+    compileRecursive( p, output );
+  }
 }
 
 
@@ -182,18 +231,18 @@ int main (int argc, char ** argv) {
 	PluginManager * man = PluginManager::instance();
 
 	std::cout << "Creating Plugins" << std::endl;
-	nodes.append(man->descriptor("http://plugin.org.uk/swh-plugins/vynil")
+	processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/vynil")
 			->createPlugin(48000));
-	nodes.append(man->descriptor("http://plugin.org.uk/swh-plugins/lfoPhaser")
+	processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/lfoPhaser")
 			->createPlugin(48000));
 
 	std::cout << "Activating Plugins" << std::endl;
-	foreach (Node* n, nodes) { n->activate(); }
+	foreach (Processor* n, processors) { n->activate(); }
 
-	std::cout << "Connecting Ports" << std::endl;
+	std::cout << "Referencing Ports" << std::endl;
 	float controls[] = {0.5f, 0.5f, 0.5f, 0.5f};
 	int f=0;
-	foreach (Node* n, nodes) {
+	foreach (Processor* n, processors) {
 		int inCnt=0, outCnt =0;
 		for (uint32_t i=0; i<n->portCount(); ++i) {
 			Port* p = n->port(i);
@@ -211,28 +260,20 @@ int main (int argc, char ** argv) {
 		f++;
 	}
 
-	// fx[0] -> fx[1] -> jackPorts[0]
-
+	std::cout << "Connecting Ports" << std::endl;
+	/*
 	fxin[1][0]->connectTo(fxout[0][0]);
 	jackPorts[0]->connectTo(fxout[1][0]);
+	fxin[2][0]->connectTo(jackPorts[1]);
+	jackMaster->connectTo(fxout[2][0]);
+	*/
 
-	compiled = new QList<Node*>;
-	compileRecursive(nodes[1], compiled);
+	std::cout << "Compiling" << std::endl;
+	/*
+	compiled = new QList<Processor*>;
+	compile(processors, compiled);
+	*/
 
-	printf("%d tasks\n", compiled.count());
-
-	return 0;
-/*
-// todo:
-list<Node> nodes;
-list<Connection> connections;
-
-node.
-
-	graph.connect(fxOut[0][0], fxIn[1][0]);
-	graph.connect(fxOut[1][0], jackPort[0]);
-	graph.connect(fxOut[1][1], jackPort[1]);
-*/
 
 	std::cout << "Processing Nodes" << std::endl;
 	jack_activate(jackClient);
@@ -245,9 +286,10 @@ node.
 	jack_client_close(jackClient);
 
 	std::cout << "Deactivating Plugins" << std::endl;
-	foreach (Node * n, nodes) { n->deactivate(); }
-
+	foreach (Processor * p, processors) { p->deactivate(); }
 	delete compiled;
+
+	std::cout << "Bye!" << std::endl;
 	return 0;
 }
 
@@ -316,3 +358,5 @@ void printDisclaimer() {
 		"This is free software, and you are welcome to redistribute it\n"
 		"under certain conditions; type `show c' for details.\n\n";
 }
+
+// vim: et ts=8 sw=2 sts=2 noai
