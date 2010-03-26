@@ -108,6 +108,10 @@ namespace Unison {
 
     const QSet<Node*> dependents () const;
 
+    jack_port_t* jackPort () const {
+      return m_port;
+    }
+
   private:
     JackEngine& m_engine;
     jack_port_t* m_port;

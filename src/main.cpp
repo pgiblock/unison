@@ -20,6 +20,7 @@ JackEngine * jackEngine;
 // Node referencing
 Port* fxin[2][2];
 Port* fxout[2][2];
+JackPort* jackPorts[6];
 QList<Processor*> processors;
 
 QAtomicPointer< QList<Processor*> > compiled;
@@ -93,12 +94,12 @@ int main (int argc, char ** argv) {
         jackEngine = new JackEngine( jackClient );
 	jack_set_process_callback(jackClient, &processCb, NULL);
 
-        jackEngine->registerPort("Master/out 1", Port::INPUT);
-	jackEngine->registerPort("Master/out 2", Port::INPUT);
-	jackEngine->registerPort("Master/in 1", Port::OUTPUT);
-	jackEngine->registerPort("Master/in 2", Port::INPUT);
-	jackEngine->registerPort("Channel/out 1", Port::OUTPUT);
-	jackEngine->registerPort("Channel/out 2", Port::OUTPUT);
+        jackPorts[0] = jackEngine->registerPort("Master/out 1", Port::INPUT);
+	jackPorts[1] = jackEngine->registerPort("Master/out 2", Port::INPUT);
+	jackPorts[2] = jackEngine->registerPort("Master/in 1", Port::OUTPUT);
+	jackPorts[3] = jackEngine->registerPort("Master/in 2", Port::OUTPUT);
+	jackPorts[4] = jackEngine->registerPort("Channel/out 1", Port::INPUT);
+	jackPorts[5] = jackEngine->registerPort("Channel/out 2", Port::INPUT);
 
 	// Init
 	PluginManager::initializeInstance();
@@ -145,19 +146,20 @@ int main (int argc, char ** argv) {
 	}
 
 	std::cout << "Connecting Ports" << std::endl;
-	/*
-	fxin[1][0]->connectTo(fxout[0][0]);
-	jackPorts[0]->connectTo(fxout[1][0]);
-	fxin[2][0]->connectTo(jackPorts[1]);
-	jackMaster->connectTo(fxout[2][0]);
-	*/
+	fxout[0][0]->connect(fxin[1][0]);
+	fxout[1][0]->connect(jackPorts[0]);
+	fxout[0][1]->connect(jackPorts[1]);
+
+	//jackPorts[4]->connect(fxout[1][0]); // To channel out
+	//fxin[2][0]->connect(jackPorts[2]);  // To master In
+	//jackPorts[0]->connect(fxout[2][0]); // To master out
+
 
 	std::cout << "Compiling" << std::endl;
-	/*
-	compiled = new QList<Processor*>;
-	compile(processors, compiled);
-	*/
-
+	QList<Processor*>* compiledSwap = new QList<Processor*>();
+	compile( processors, *compiledSwap );
+        compiledSwap = compiled.fetchAndStoreRelaxed( compiledSwap );
+        delete compiledSwap;
 
 	std::cout << "Processing Nodes" << std::endl;
 	jack_activate(jackClient);
@@ -182,34 +184,30 @@ int processCb (jack_nframes_t nframes, void* data)
 {
 	ProcessingContext context( nframes );
 
-	/*
 	float* inBuf = new float[nframes];
 	for (nframes_t i=0; i<nframes; ++i) {
 		inBuf[i] = 0.0f;
 	}
 
+	float* jackBuff0 = (float*)jack_port_get_buffer(jackPorts[0]->jackPort(), nframes);
+	float* jackBuff1 = (float*)jack_port_get_buffer(jackPorts[1]->jackPort(), nframes);
+
+        // Vynil input - silent
+	fxin[0][0]->connectToBuffer(inBuf);
+	fxin[0][1]->connectToBuffer(inBuf);
+
+        // LFO input
+        fxout[0][0]->connectToBuffer(jackBuff0);
+        fxout[0][1]->connectToBuffer(jackBuff1);
+        fxin[1][0]->connectToBuffer(jackBuff0);
+        fxout[1][0]->connectToBuffer(jackBuff0);
+
 	// Processing loop
-	foreach (Node * node, compiled) {
+	foreach (Processor * node, *compiled) {
 		node->process(context);
 	}
 
-	fxin[0][0]->connectToBuffer(inBuf);
-	fxin[0][1]->connectToBuffer(inBuf);
-	fxout[0][0]->connectToBuffer((float*)jack_port_get_buffer(chanOut[0], nframes));
-	fxout[0][1]->connectToBuffer((float*)jack_port_get_buffer(chanOut[1], nframes));
-
-	printf("%lld  ->  %lld\n",
-		jack_port_get_buffer(chanOut[0], nframes),
-		jack_port_get_buffer(masterIn[0], nframes));
-	// Copies
-	//fxin[1][0]->connectToBuffer(jackBuf0);
-	//fxout[1][0]->connectToBuffer(jackBuf0);
-
-	//fxin[1][0]->connectToBuffer((float*)jack_port_get_buffer(masterIn[0], nframes));
-	//fxout[1][0]->connectToBuffer((float*)jack_port_get_buffer(masterOut[0], nframes));
-
-	// Process channel
-
+        /*
 	// Process mixer
 	memcpy( jack_port_get_buffer(masterOut[0], nframes),
 			jack_port_get_buffer(masterIn[0], nframes),
@@ -217,8 +215,8 @@ int processCb (jack_nframes_t nframes, void* data)
 	memcpy( jack_port_get_buffer(masterOut[1], nframes),
 			jack_port_get_buffer(masterIn[1], nframes),
 			nframes * sizeof(float) );
+        */
 
-	*/
 	return 0;
 }
 

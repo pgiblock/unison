@@ -78,8 +78,12 @@ public:
 
 	virtual void connectToBuffer(float * buf) = 0;
 
+	void connect (Port* other);
+	void disconnect (Port* other);
+	bool isConnected (Port* other);
 
-protected:
+private:
+	QSet<Port*> connectedPorts;
 };
 
 } // Unison

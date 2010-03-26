@@ -29,7 +29,7 @@
 
 namespace Unison {
 
-	const JackPort* JackEngine::registerPort (QString name,
+	JackPort* JackEngine::registerPort (QString name,
 			Port::Direction direction) {
 		JackPortFlags flag;
 		switch (direction) {

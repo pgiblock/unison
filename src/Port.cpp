@@ -1,5 +1,5 @@
 /*
- * JackEngine.h
+ * Port.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,45 +22,25 @@
  *
  */
 
-#ifndef JACK_ENGINE_H
-#define JACK_ENGINE_H
+#include "unison/Port.h"
 
-#include <QVarLengthArray>
+namespace Unison {
 
-#include "unison/JackPort.h"
+  void Port::connect (Port* other) {
+    // TODO: Check for existing connection and cycles!!!
+    connectedPorts += other;
+    other->connectedPorts += this;
+  }
 
-namespace Unison
-{
+  void Port::disconnect (Port* other) {
+    connectedPorts -= other;
+    other->connectedPorts -= this;
+  }
 
-  class JackEngine
-  {
-  public:
-    // TODO: This temporary constructor just makes JackEngine behave as a
-    // wrapper around an seperately manage jack_client. This is good for testing.
-    JackEngine (jack_client_t* client) :
-      m_client( client )
-    {
-    }
-
-    jack_client_t* client () const {
-      return m_client;
-    }
-
-    JackPort* registerPort (QString name, Port::Direction direction);
-
-    uint32_t myPortCount () const;
-    JackPort* myPort (uint32_t index) const;
-    JackPort* myPort (QString name) const;
-
-  private:
-
-    jack_client_t* m_client;
-    QVarLengthArray<JackPort*> m_myPorts;
-  };
+  bool Port::isConnected (Port* other) {
+    return connectedPorts.contains( other );
+  }
 
 } // Unison
-
-
-#endif // JACK_ENGINE_H
 
 // vim: et ts=8 sw=2 sts=2 noai
