@@ -39,9 +39,6 @@ class ProcessingContext;
 class Port : public Node
 {
 public:
-	enum Type { AUDIO=1, CONTROL=2, MIDI=4, UNKNOWN=0 };
-	enum Direction { INPUT=1, OUTPUT=2 };
-
 	Port ();
 	virtual ~Port () {};
 
@@ -50,11 +47,11 @@ public:
 
 	/* TODO: Return an std::set of types instead??? */
 	/** @returns the type of port */
-	virtual Type type() const = 0;
+	virtual PortType type() const = 0;
 
 	/* TODO: Replace isInput/Output() with direction() ? */
 	/** @returns true if this port is an input port */
-	virtual Direction direction() const = 0;
+	virtual PortDirection direction() const = 0;
 
 	/** @returns the current value of a port. */
 	virtual float value () const = 0;
@@ -85,8 +82,7 @@ public:
 	 *  or from some other source.
 	 *  TODO: What is the contract regarding InputPort who don't reuse
 	 *  the connected Buffer? */
-	virtual void aquireBuffer (
-			const ProcessingContext & context, BufferProvider & provider) = 0;
+	virtual void aquireBuffer (BufferProvider & provider) = 0;
 
 	/** Called in Process thread to retrieve the buffer for this Port */
 	SharedBufferPtr buffer () {
@@ -100,6 +96,9 @@ public:
 	void connect (Port* other);
 	void disconnect (Port* other);
 	bool isConnected (Port* other) const;
+	QSet<Port* const> connectedPorts () const {
+		return m_connectedPorts;
+	}
 
 	/** @returns Either the connected Nodes or the interfaced Nodes */
 	const QSet<Node* const> dependencies () const;

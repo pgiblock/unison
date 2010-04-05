@@ -28,6 +28,7 @@ namespace Unison {
 
   Port::Port () :
     Node(),
+    m_buffer(NULL),
     m_connectedPorts() {
   }
 

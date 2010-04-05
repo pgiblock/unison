@@ -46,7 +46,7 @@ namespace Unison
       return m_client;
     }
 
-    JackPort* registerPort (QString name, Port::Direction direction);
+    JackPort* registerPort (QString name, PortDirection direction);
 
     int myPortCount () const;
     JackPort* myPort (int index) const;

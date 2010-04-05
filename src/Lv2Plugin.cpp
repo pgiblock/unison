@@ -114,32 +114,33 @@ void Lv2Port::connectToBuffer() {
 }
 
 
-void Lv2Port::aquireBuffer (
-        const ProcessingContext & context, BufferProvider & provider)
+void Lv2Port::aquireBuffer (BufferProvider & provider)
 {
 	int numConnections = dependencies().count();
 	//std::cout << qPrintable(m_plugin->name()) << ": " << qPrintable(name()) << ": ";
 	switch (direction()) {
 	case INPUT:
-		if (type() == Port::AUDIO && numConnections == 0) {
+		if (type() == AUDIO_PORT && numConnections == 0) {
 			// Use silence
 			//std::cout << " need silence!" << std::endl;
-			m_buffer = provider.zeroBuffer();
+			m_buffer = provider.zeroAudioBuffer();
 		}
 		else if (numConnections == 1) {
 			// Use the other port's buffer
 			//std::cout << " need to share!" << std::endl;
+			// TODO: ensure type is the same? or at least make sure on connect
 			Port* other = (Port*) *(dependencies().begin());
 			m_buffer = other->buffer();
 		}
-		else {
+
+		if (!m_buffer) {
 			// Return internal port
 			//std::cout << " need to create (I)!" << std::endl;
-			m_buffer = provider.aquire(context.bufferSize());
+			m_buffer = provider.aquire(type(), 1024);
 		}
 
 		// TODO: Remove this hack
-		if (type() == Port::CONTROL) {
+		if (type() == CONTROL_PORT) {
 			float * data = (float*)m_buffer->data();
 			data[0] = maximum();
 		}
@@ -148,7 +149,17 @@ void Lv2Port::aquireBuffer (
 	case OUTPUT:
 		// Return internal port
 		//std::cout << " need to create (O)!" << std::endl;
-		m_buffer = provider.aquire(context.bufferSize());
+		if (numConnections == 1) {
+			// Use the other port's buffer
+			//std::cout << " need to share!" << std::endl;
+			// TODO: ensure type is the same? or at least make sure on connect
+			Port* other = (Port*) *(dependents().begin());
+			m_buffer = other->buffer();
+		}
+
+		if (!m_buffer) {
+			m_buffer = provider.aquire(type(), 1024);
+		}
 		break;
 	}
 }
@@ -241,7 +252,7 @@ const QSet<Node* const> Lv2Plugin::dependencies () const {
 	int count = portCount();
 	for (int i=0; i<count; ++i) {
 		Port * p  = port(i);
-		if (p->direction() == Port::INPUT) { n += p; }
+		if (p->direction() == INPUT) { n += p; }
 	}
 	return n;
 }
@@ -252,7 +263,7 @@ const QSet<Node* const> Lv2Plugin::dependents () const {
 	int count = portCount();
 	for (int i=0; i<count; ++i) {
 		Port * p  = port(i);
-		if (p->direction() == Port::OUTPUT) { n += p; }
+		if (p->direction() == OUTPUT) { n += p; }
 	}
 	return n;
 }

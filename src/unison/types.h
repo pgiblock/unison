@@ -33,6 +33,9 @@ namespace Unison {
 typedef uint32_t nframes_t;
 typedef uint32_t nticks_t;
 
+enum PortType { AUDIO_PORT=1, CONTROL_PORT=2, MIDI_PORT=4, UNKNOWN_PORT=0 };
+enum PortDirection { INPUT=1, OUTPUT=2 };
+
 } // Unison
 
 #endif // TYPES_H

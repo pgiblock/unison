@@ -42,12 +42,12 @@ namespace Unison {
     ~JackBufferProvider()
     {}
 
-    SharedBufferPtr aquire (nframes_t nframes) {
+    SharedBufferPtr aquire (PortType type, nframes_t nframes) {
       // TODO assert(false)
       return NULL;
     }
 
-    SharedBufferPtr zeroBuffer () const {
+    SharedBufferPtr zeroAudioBuffer () const {
       // TODO assert(false)
       return NULL;
   }
@@ -79,17 +79,17 @@ namespace Unison {
       return jack_port_name( m_port );
     }
 
-    Port::Direction direction() const
+    PortDirection direction() const
     {
       JackPortFlags flags = (JackPortFlags)jack_port_flags( m_port );
-      if (flags & JackPortIsInput)  { return Port::INPUT;  }
-      if (flags & JackPortIsOutput) { return Port::OUTPUT; }
+      if (flags & JackPortIsInput)  { return INPUT;  }
+      if (flags & JackPortIsOutput) { return OUTPUT; }
       // TODO: It is a programmer error to reach this line
     }
 
-    Type type () const
+    PortType type () const
     {
-      return Port::AUDIO; // TODO!
+      return AUDIO_PORT; // TODO!
     }
 
     float value () const
@@ -131,12 +131,12 @@ namespace Unison {
       return m_port;
     }
 
-    void aquireBuffer (
-        const ProcessingContext & context, BufferProvider & provider)
+    void aquireBuffer (BufferProvider & provider)
     {
-      nframes_t size = context.bufferSize();
+      // TODO use a callback for buffer-size
+      nframes_t size = 1024; //jack_get_buffer_size(m_engine.jackClient());
       void* jackBuffer = jack_port_get_buffer(m_port, size);
-      m_buffer = new BufferImpl(*m_jackBufferProvider, size, jackBuffer);
+      m_buffer = new AudioBuffer(*m_jackBufferProvider, size, jackBuffer);
     }
 
     void connectToBuffer ()

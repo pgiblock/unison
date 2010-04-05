@@ -80,7 +80,7 @@ void compile (QList<Processor*> input, QList<CompiledProcessor>& output) {
     // For each output port
     for (int j = 0; j < proc->portCount(); ++j) {
       Port* port = proc->port(j);
-      if (port->direction() == Port::OUTPUT) {
+      if (port->direction() == OUTPUT) {
         // For all connected Ports.
         QSetIterator<Node* const> k( port->dependents() );
         while (k.hasNext()) {
@@ -130,19 +130,18 @@ int main (int argc, char ** argv) {
         jackEngine = new JackEngine( jackClient );
 	jack_set_process_callback(jackClient, &processCb, NULL);
 
-        jackPorts[0] = jackEngine->registerPort("Master/out 1", Port::INPUT);
-	jackPorts[1] = jackEngine->registerPort("Master/out 2", Port::INPUT);
-	jackPorts[2] = jackEngine->registerPort("Master/in 1", Port::OUTPUT);
-	jackPorts[3] = jackEngine->registerPort("Master/in 2", Port::OUTPUT);
-	jackPorts[4] = jackEngine->registerPort("Channel/out 1", Port::INPUT);
-	jackPorts[5] = jackEngine->registerPort("Channel/out 2", Port::INPUT);
+        jackPorts[0] = jackEngine->registerPort("Master/out 1", INPUT);
+	jackPorts[1] = jackEngine->registerPort("Master/out 2", INPUT);
+	jackPorts[2] = jackEngine->registerPort("Master/in 1", OUTPUT);
+	jackPorts[3] = jackEngine->registerPort("Master/in 2", OUTPUT);
+	jackPorts[4] = jackEngine->registerPort("Channel/out 1", INPUT);
+	jackPorts[5] = jackEngine->registerPort("Channel/out 2", INPUT);
 
 	// Init
 	PluginManager::initializeInstance();
 
         pool = new PooledBufferProvider();
         pool->setBufferLength(jack_get_buffer_size(jackClient));
-        pool->hackInit(64);
 
         PluginManager * man = PluginManager::instance();
 
@@ -162,12 +161,12 @@ int main (int argc, char ** argv) {
 		int inCnt=0, outCnt =0;
 		for (int i=0; i<n->portCount(); ++i) {
 			Port* p = n->port(i);
-			if (p->type() == Port::AUDIO) {
+			if (p->type() == AUDIO_PORT) {
                           switch (p->direction()) {
-                            case Port::INPUT:
+                            case INPUT:
                               fxin[f][inCnt++] = p;
                               break;
-                            case Port::OUTPUT:
+                            case OUTPUT:
                               fxout[f][outCnt++] = p;
                               break;
                             default:
@@ -180,10 +179,11 @@ int main (int argc, char ** argv) {
 	}
 
 	std::cout << "Connecting Ports" << std::endl;
-	fxout[1][0]->connect(fxin[0][0]);
-	fxout[0][0]->connect(jackPorts[0]);
-	fxout[1][1]->connect(jackPorts[1]);
+	fxout[1][0]->connect(fxin[0][0]);  // Vinyl to LFO
+	fxout[0][0]->connect(jackPorts[4]); // LFO to Channel-L
+	jackPorts[5]->connect(fxout[1][1]); // Vinyl to Channel-R
 
+        //fxout[1][1]->connect(jackPorts[1]);
 	//jackPorts[4]->connect(fxout[1][0]); // To channel out
 	//fxin[2][0]->connect(jackPorts[2]);  // To master In
 	//jackPorts[0]->connect(fxout[2][0]); // To master out
@@ -199,6 +199,18 @@ int main (int argc, char ** argv) {
 		std::cout << qPrintable(i->processor->name()) << " -- ";
 	}
 	std::cout << std::endl;
+
+
+        std::cout << "Aquiring 'fixed' buffers" << std::endl;
+	foreach (CompiledProcessor cp, *compiled) {
+          for (int i=0; i<cp.processor->portCount(); ++i) {
+            Port *port = cp.processor->port(i);
+            std::cout << "Next port: " << qPrintable(port->name()) << std::endl;
+            port->aquireBuffer(*pool);
+            port->connectToBuffer();
+          }
+	}
+
 
 	std::cout << "Processing Nodes" << std::endl;
 	jack_activate(jackClient);
@@ -227,22 +239,24 @@ int processCb (jack_nframes_t nframes, void* data)
         // Aquire JACK buffers
         for (int i=0; i<sizeof jackPorts / sizeof jackPorts[0]; ++i) {
           Port *port = jackPorts[i];
-          port->aquireBuffer(context, *pool);
+          port->aquireBuffer(*pool);
           port->connectToBuffer();
+
+          // Re-aquire buffers on ports connected to JACK
+	  foreach (Port *other, port->connectedPorts()) {
+            other->aquireBuffer(*pool);
+            other->connectToBuffer();
+          }
         }
 
 	// Processing loop
 	foreach (CompiledProcessor cp, *compiled) {
-          for (int i=0; i<cp.processor->portCount(); ++i) {
-            Port *port = cp.processor->port(i);
-            port->aquireBuffer(context, *pool);
-            port->connectToBuffer();
-          }
 	  cp.processor->process(context);
 	}
 
 
         // Copy output to JACK
+        /*
         memcpy( jackPorts[4]->buffer()->data(),
             fxout[1][0]->buffer()->data(),
             nframes * sizeof(float) );
@@ -250,7 +264,7 @@ int processCb (jack_nframes_t nframes, void* data)
         memcpy( jackPorts[5]->buffer()->data(),
             fxout[1][1]->buffer()->data(),
             nframes * sizeof(float) );
-
+            */
 	return 0;
 }
 

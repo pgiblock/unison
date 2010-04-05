@@ -28,7 +28,7 @@
 #include <iostream>
 #include <malloc.h>
 
-#include <QVector>
+#include <QStack>
 #include <QSharedPointer>
 
 #include "prg/Uncopyable.h"
@@ -43,20 +43,13 @@ const nframes_t MAX_BUFFER_LENGTH = 4096;
 
 class Buffer : PRG::Uncopyable {
 public:
-	Buffer (BufferProvider &provider, nframes_t length) :
-		m_provider(provider),
-		m_length(length)
+	Buffer (BufferProvider &provider) :
+		m_provider(provider)
 	{}
 
 	virtual ~Buffer () {};
 
-	nframes_t length () {
-		return m_length;
-	}
-
-	virtual void setLength (nframes_t len) {
-		m_length = len;
-	}
+	virtual PortType type() = 0;
 
 	virtual void* data() = 0;
 
@@ -64,37 +57,45 @@ public:
 
 protected:
 	BufferProvider & m_provider;
-	nframes_t m_length;
 
 	friend class SharedBufferPtr;
 };
 
 
-/** TODO: individual impl isn't really needed anymore */
-class BufferImpl : public Buffer {
+class AudioBuffer : public Buffer {
 public:
-	BufferImpl (BufferProvider &provider, nframes_t length) :
-		Buffer(provider, length)
+	AudioBuffer (BufferProvider &provider, nframes_t length) :
+		Buffer(provider),
+		m_length(length)
 	{
-		m_data = malloc(length * sizeof(float));
+		m_data = (float*)malloc(length * sizeof(float));
 	}
 
-	BufferImpl (BufferProvider &provider, nframes_t length, void * data) :
-		Buffer(provider, length)
+	AudioBuffer (BufferProvider &provider, nframes_t length, void * data) :
+		Buffer(provider),
+		m_length(length)
 	{
-		m_data = data;
+		m_data = (float*)data;
 	}
 
-	~BufferImpl ()
+	~AudioBuffer ()
 	{
 		free(m_data);
+	}
+
+	PortType type () {
+		return AUDIO_PORT;
+	}
+
+	nframes_t length () {
+		return m_length;
 	}
 
 	void setLength (nframes_t len)
 	{
-		Buffer::setLength(len);
+		m_length = len;
 		free(m_data);
-		m_data = malloc(len * sizeof(float));
+		m_data = (float*)malloc(len * sizeof(float));
 	}
 
 	void* data()
@@ -108,22 +109,47 @@ public:
 	}
 
 protected:
-	void* m_data;
+	int m_length;
+	float* m_data;
 };
 
 
 
-class AudioBuffer : public Buffer {
+class ControlBuffer : public Buffer {
+public:
+	ControlBuffer (BufferProvider &provider) :
+		Buffer(provider)
+	{
+		m_data = 0.0f;
+	}
 
+	~ControlBuffer()
+	{}
+
+	PortType type () {
+		return CONTROL_PORT;
+	}
+
+	void* data()
+	{
+		return &m_data;
+	}
+
+	const void* data() const
+	{
+		return &m_data;
+	}
+
+protected:
+	float m_data;
 };
-
 
 
 class BufferProvider {
 public:
 	virtual ~BufferProvider() {};
-	virtual SharedBufferPtr aquire (nframes_t nframes) = 0;
-	virtual SharedBufferPtr zeroBuffer () const = 0;
+	virtual SharedBufferPtr aquire (PortType type, nframes_t nframes) = 0;
+	virtual SharedBufferPtr zeroAudioBuffer () const = 0;
 
 protected:
 	virtual void release (Buffer * buf) = 0;
@@ -152,7 +178,8 @@ protected:
 class PooledBufferProvider : public BufferProvider {
 public:
 	PooledBufferProvider () :
-		m_buffers(),
+		m_audioBuffers(),
+		m_controlBuffers(),
 		m_zeroBuffer(NULL),
 		m_periodLength(),
 		m_next(0)
@@ -161,6 +188,7 @@ public:
 	~PooledBufferProvider() {
 	}
 
+	/*
 	void hackInit (int poolSize) {
 		m_buffers.resize(poolSize);
 		for (int i=0; i<poolSize; ++i) {
@@ -170,23 +198,52 @@ public:
 				data[j] = 0.0f;
 			}
 		}
+	}*/
 
-		m_zeroBuffer = aquire (bufferLength());
+
+	SharedBufferPtr aquire (PortType type, nframes_t nframes) {
+		//TODO assert(nframes == m_periodLength); (or whatever)
+		QStack<Buffer*> * stack;
+		switch (type) {
+		case AUDIO_PORT:
+			stack = &m_audioBuffers;
+			break;
+		case CONTROL_PORT:
+			stack = &m_controlBuffers;
+			break;
+		default:
+			// TODO: assert(false);
+			return NULL;
+		}
+
+		if (!stack->isEmpty()) {
+			return stack->pop();
+		}
+
+		//TODO ensure we are not in processing thread
+		switch (type) {
+		case AUDIO_PORT:
+			std::cout << "New Audio Buffer " << nframes << " frames." << std::endl;
+			return new AudioBuffer(*this, nframes);
+		case CONTROL_PORT:
+			std::cout << "New Control Buffer" << std::endl;
+			return new ControlBuffer(*this);
+		default:
+			std::cout << "Couldn't create unknown port" << std::endl;
+			// TODO: assert(false);
+			return NULL;
+		}
 	}
 
 
-	SharedBufferPtr aquire (nframes_t nframes) {
-		//std::cout << "Aquiring buffer" << std::endl;
-		//TODO assert(nframes == m_periodLength);
-		return m_buffers[m_next++];
-	}
-
-	SharedBufferPtr zeroBuffer () const {
+	SharedBufferPtr zeroAudioBuffer () const {
 		return m_zeroBuffer;
 	}
 
 	void setBufferLength (nframes_t nframes) {
 		m_periodLength = nframes;
+
+		m_zeroBuffer = aquire (AUDIO_PORT, nframes);
 	/*
 		m_zeroBuffer = aquire (nframes);
 		for (int i=0; i<nframes; ++i) {
@@ -211,19 +268,31 @@ public:
 
 protected:
 	void release (Buffer * buf) {
-		if (buf->length() != bufferLength()) {
-			// FIXME
-			std::cout << "Deleting buffer, wrong size!" << std::endl;
-			delete buf;
-		}
-		else {
-			//std::cout << "Repooling buffer" << std::endl;
-			m_buffers[--m_next] = buf;
+		switch (buf->type()) {
+		case AUDIO_PORT:
+			if (((AudioBuffer*)buf)->length() != bufferLength()) {
+				// FIXME
+				std::cout << "Deleting buffer, wrong size!" << std::endl;
+				delete buf;
+			}
+			else {
+				m_audioBuffers.push(buf);
+			}
+			break;
+
+		case CONTROL_PORT:
+			m_controlBuffers.push(buf);
+			break;
+		default:
+			// TODO: Unhandled port!!
+			break;
 		}
 	}
 
 protected:
-	QVector<Buffer*> m_buffers;
+	// TODO: Use something RT-safe, instead of QStack
+	QStack<Buffer*> m_audioBuffers;
+	QStack<Buffer*> m_controlBuffers;
 	SharedBufferPtr m_zeroBuffer;
 	nframes_t m_periodLength;
 	int m_next;

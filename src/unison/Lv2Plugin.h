@@ -223,37 +223,36 @@ public:
 									   m_world.toggled );
 	}
 
-	Type type () const {
+	PortType type () const {
 		SLV2Plugin slv2Plugin = m_plugin->slv2Plugin();
 		if (slv2_port_is_a( slv2Plugin, m_port, m_world.controlClass )) {
-			return Port::CONTROL;
+			return CONTROL_PORT;
 		}
 		else if (slv2_port_is_a( slv2Plugin, m_port, m_world.audioClass )) {
-			return Port::AUDIO;
+			return AUDIO_PORT;
 		}
 		else if (slv2_port_is_a( slv2Plugin, m_port, m_world.midiClass )) {
-			return Port::MIDI;
+			return MIDI_PORT;
 		}
 		else {
-			return Port::UNKNOWN;
+			return UNKNOWN_PORT;
 		}
 	}
 
-	Port::Direction direction () const {
+	PortDirection direction () const {
 		SLV2Plugin plugin = m_plugin->slv2Plugin();
 		if (slv2_port_is_a( plugin, m_port, m_world.inputClass )) {
-			return Port::INPUT;
+			return INPUT;
 		}
 		if (slv2_port_is_a( plugin, m_port, m_world.outputClass )) {
-			return Port::OUTPUT;
+			return OUTPUT;
 		}
 		// TODO: Fail.
 	}
 
 	const QSet<Node* const> interfacedNodes () const;
 
-    void aquireBuffer (
-        const ProcessingContext & context, BufferProvider & provider);
+    void aquireBuffer (BufferProvider & provider);
 
 	void connectToBuffer();
 

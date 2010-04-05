@@ -30,13 +30,13 @@
 namespace Unison {
 
 	JackPort* JackEngine::registerPort (QString name,
-			Port::Direction direction) {
+			PortDirection direction) {
 		JackPortFlags flag;
 		switch (direction) {
-			case Port::INPUT:
+			case INPUT:
 				flag = JackPortIsOutput;
 				break;
-			case Port::OUTPUT:
+			case OUTPUT:
 			default:
 				flag = JackPortIsInput;
 				break;
