@@ -254,17 +254,6 @@ int processCb (jack_nframes_t nframes, void* data)
 	  cp.processor->process(context);
 	}
 
-
-        // Copy output to JACK
-        /*
-        memcpy( jackPorts[4]->buffer()->data(),
-            fxout[1][0]->buffer()->data(),
-            nframes * sizeof(float) );
-
-        memcpy( jackPorts[5]->buffer()->data(),
-            fxout[1][1]->buffer()->data(),
-            nframes * sizeof(float) );
-            */
 	return 0;
 }
 

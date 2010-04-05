@@ -23,10 +23,105 @@
  */
 
 #include "unison/BufferProvider.h"
+#include "unison/AudioBuffer.h"
+#include "unison/ControlBuffer.h"
 
-namespace Unison {
+namespace Unison
+{
+
+PooledBufferProvider::PooledBufferProvider () :
+  m_audioBuffers(),
+  m_controlBuffers(),
+  m_zeroBuffer(NULL),
+  m_periodLength(),
+  m_next(0)
+{}
 
 
+SharedBufferPtr PooledBufferProvider::aquire (
+    PortType type, nframes_t nframes)
+{
+  //TODO assert(nframes == m_periodLength); (or whatever)
+  QStack<Buffer*>* stack;
+  switch (type)
+  {
+    case AUDIO_PORT:
+      stack = &m_audioBuffers;
+      break;
+    case CONTROL_PORT:
+      stack = &m_controlBuffers;
+      break;
+    default:
+      // TODO: assert(false);
+      return NULL;
+  }
+
+  if (!stack->isEmpty())
+  {
+    return stack->pop();
+  }
+
+  //TODO ensure we are not in processing thread
+  switch (type)
+  {
+    case AUDIO_PORT:
+      std::cout << "New Audio Buffer " << nframes << " frames." << std::endl;
+      return new AudioBuffer(*this, nframes);
+    case CONTROL_PORT:
+      std::cout << "New Control Buffer" << std::endl;
+      return new ControlBuffer(*this);
+    default:
+      std::cout << "Couldn't create unknown port" << std::endl;
+      // TODO: assert(false);
+      return NULL;
+  }
+}
+
+
+SharedBufferPtr PooledBufferProvider::zeroAudioBuffer () const
+{
+  return m_zeroBuffer;
+}
+
+void PooledBufferProvider::setBufferLength (nframes_t nframes)
+{
+  m_periodLength = nframes;
+
+  m_zeroBuffer = aquire (AUDIO_PORT, nframes);
+}
+
+nframes_t PooledBufferProvider::bufferLength ()
+{
+  return m_periodLength;
+}
+
+void PooledBufferProvider::release (Buffer * buf)
+{
+  switch (buf->type())
+  {
+    case AUDIO_PORT:
+      if (((AudioBuffer*)buf)->length() != bufferLength())
+      {
+        // FIXME
+        std::cout << "Deleting buffer, wrong size!" << std::endl;
+        delete buf;
+      }
+      else
+      {
+        m_audioBuffers.push(buf);
+      }
+      break;
+
+    case CONTROL_PORT:
+      m_controlBuffers.push(buf);
+      break;
+
+    default:
+      // TODO: Unhandled port!!
+      break;
+  }
+}
 
 } // Unison
 
+// vim: et ts=8 sw=2 sts=2 noai

@@ -23,6 +23,7 @@
  */
 
 #include <jack/jack.h>
+#include "unison/AudioBuffer.h"
 #include "unison/JackEngine.h"
 #include "unison/JackPort.h"
 
@@ -30,6 +31,15 @@ namespace Unison {
 
   JackBufferProvider* JackPort::m_jackBufferProvider =
    new JackBufferProvider();
+
+
+  SharedBufferPtr JackBufferProvider::aquire (
+      const JackPort* port, nframes_t nframes)
+  {
+    void* jackBuffer = jack_port_get_buffer(port->jackPort(), nframes);
+    return new AudioBuffer(*this, nframes, jackBuffer);
+  }
+
 
   const QSet<Node* const> JackPort::interfacedNodes () const
   {

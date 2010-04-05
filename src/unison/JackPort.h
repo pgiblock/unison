@@ -25,13 +25,16 @@
 #ifndef JACK_PORT_H
 #define JACK_PORT_H
 
+#include <iostream>
 #include <jack/jack.h>
 
+#include "unison/BufferProvider.h" // for JBP
 #include "unison/Port.h"
 #include "unison/ProcessingContext.h"
 
 namespace Unison {
 
+  class JackPort;
   class JackEngine;
 
   class JackBufferProvider : public BufferProvider {
@@ -42,6 +45,8 @@ namespace Unison {
     ~JackBufferProvider()
     {}
 
+    SharedBufferPtr aquire (const JackPort * port, nframes_t nframes);
+
     SharedBufferPtr aquire (PortType type, nframes_t nframes) {
       // TODO assert(false)
       return NULL;
@@ -50,13 +55,14 @@ namespace Unison {
     SharedBufferPtr zeroAudioBuffer () const {
       // TODO assert(false)
       return NULL;
-  }
+    }
 
   protected:
     void release (Buffer * buf) {
-      // Do nothing, jack buffers don't need release
+      delete buf;
     }
   };
+
 
 
   class JackPort : public Port
@@ -135,8 +141,7 @@ namespace Unison {
     {
       // TODO use a callback for buffer-size
       nframes_t size = 1024; //jack_get_buffer_size(m_engine.jackClient());
-      void* jackBuffer = jack_port_get_buffer(m_port, size);
-      m_buffer = new AudioBuffer(*m_jackBufferProvider, size, jackBuffer);
+      m_buffer = m_jackBufferProvider->aquire(this, size);
     }
 
     void connectToBuffer ()
