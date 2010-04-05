@@ -48,8 +48,8 @@ namespace Unison
 
     JackPort* registerPort (QString name, Port::Direction direction);
 
-    uint32_t myPortCount () const;
-    JackPort* myPort (uint32_t index) const;
+    int myPortCount () const;
+    JackPort* myPort (int index) const;
     JackPort* myPort (QString name) const;
 
   private:

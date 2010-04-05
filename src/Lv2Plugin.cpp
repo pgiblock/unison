@@ -22,9 +22,11 @@
  *
  */
 
+#include <iostream> // for cout
 #include <QSet>
 #include "unison/Lv2Plugin.h"
 #include "unison/ProcessingContext.h"
+#include "unison/BufferProvider.h"
 
 using namespace Unison;
 
@@ -70,6 +72,7 @@ Lv2Port::Lv2Port (const Lv2World & world, Lv2Plugin * plugin, uint32_t index) :
 	m_world(world),
 	m_plugin(plugin),
 	m_index(index),
+	m_value(0),
 	m_defaultValue(0),
 	m_min(0),
 	m_max(0) {
@@ -99,36 +102,55 @@ Lv2Port::~Lv2Port () {
 }
 
 
-void Lv2Port::connectToBuffer(float *buf) {
-	slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buf);
-}
-
-
-const QSet<Node*> Lv2Port::dependencies () const {
-	QSet<Node*> p;
-	switch (direction()) {
-	case INPUT:
-	// Return internal connections
-		break;
-	case OUTPUT:
-		p.insert( m_plugin );
-		break;
-	}
+const QSet<Node* const> Lv2Port::interfacedNodes () const {
+	QSet<Node* const> p;
+	p.insert( m_plugin );
 	return p;
 }
 
 
-const QSet<Node*> Lv2Port::dependents () const {
-	QSet<Node*> p;
+void Lv2Port::connectToBuffer() {
+	slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buffer()->data());
+}
+
+
+void Lv2Port::aquireBuffer (
+        const ProcessingContext & context, BufferProvider & provider)
+{
+	int numConnections = dependencies().count();
+	//std::cout << qPrintable(m_plugin->name()) << ": " << qPrintable(name()) << ": ";
 	switch (direction()) {
 	case INPUT:
-		p.insert( m_plugin );
+		if (type() == Port::AUDIO && numConnections == 0) {
+			// Use silence
+			//std::cout << " need silence!" << std::endl;
+			m_buffer = provider.zeroBuffer();
+		}
+		else if (numConnections == 1) {
+			// Use the other port's buffer
+			//std::cout << " need to share!" << std::endl;
+			Port* other = (Port*) *(dependencies().begin());
+			m_buffer = other->buffer();
+		}
+		else {
+			// Return internal port
+			//std::cout << " need to create (I)!" << std::endl;
+			m_buffer = provider.aquire(context.bufferSize());
+		}
+
+		// TODO: Remove this hack
+		if (type() == Port::CONTROL) {
+			float * data = (float*)m_buffer->data();
+			data[0] = maximum();
+		}
+
 		break;
 	case OUTPUT:
-	// Return internal connections
+		// Return internal port
+		//std::cout << " need to create (O)!" << std::endl;
+		m_buffer = provider.aquire(context.bufferSize());
 		break;
 	}
-	return p;
 }
 
 Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframes_t sampleRate) :
@@ -158,7 +180,7 @@ Lv2Plugin::~Lv2Plugin () {
 	slv2_value_free( m_authorName );
 	slv2_value_free( m_authorEmail );
 	slv2_value_free( m_authorHomepage );
-	for (size_t i=0; i<m_ports.count(); ++i) {
+	for (int i=0; i<m_ports.count(); ++i) {
 		delete m_ports[i];
 	}
 
@@ -173,7 +195,7 @@ void Lv2Plugin::init () {
 	assert(m_instance);
 
 	// TODO: this is ugly. write copy ctors and assignment operators and cp by val.
-	uint32_t count = portCount();
+	int count = portCount();
 	m_ports.resize( count );
 	for (int i = 0; i < count; ++i) {
 		m_ports[i] = new Lv2Port( m_world, this, i );
@@ -188,7 +210,7 @@ void Lv2Plugin::init () {
 }
 
 
-Port* Lv2Plugin::port (uint32_t idx) const {
+Port* Lv2Plugin::port (int idx) const {
 	return m_ports[idx];
 }
 
@@ -214,9 +236,9 @@ void Lv2Plugin::process (const ProcessingContext & context) {
 }
 
 
-const QSet<Node*> Lv2Plugin::dependencies () const {
-	QSet<Node*> n;
-	uint32_t count = portCount();
+const QSet<Node* const> Lv2Plugin::dependencies () const {
+	QSet<Node* const> n;
+	int count = portCount();
 	for (int i=0; i<count; ++i) {
 		Port * p  = port(i);
 		if (p->direction() == Port::INPUT) { n += p; }
@@ -225,9 +247,9 @@ const QSet<Node*> Lv2Plugin::dependencies () const {
 }
 
 
-const QSet<Node*> Lv2Plugin::dependents () const {
-	QSet<Node*> n;
-	uint32_t count = portCount();
+const QSet<Node* const> Lv2Plugin::dependents () const {
+	QSet<Node* const> n;
+	int count = portCount();
 	for (int i=0; i<count; ++i) {
 		Port * p  = port(i);
 		if (p->direction() == Port::OUTPUT) { n += p; }

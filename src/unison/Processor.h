@@ -43,10 +43,10 @@ class Processor : public Node {
     virtual ~Processor () {};
 
     /** @return the total number of ports of all kinds */
-    virtual uint32_t portCount () const = 0;
+    virtual int portCount () const = 0;
 
     /* TODO: Return Port* or shared pointer? */
-    virtual Port* port (uint32_t idx) const = 0;
+    virtual Port* port (int idx) const = 0;
 
     virtual void activate () = 0;
     virtual void deactivate () = 0;
@@ -54,7 +54,7 @@ class Processor : public Node {
     virtual void process (const ProcessingContext & context) = 0;
     bool isVisited()   { return m_visited; };
     void visit()       { m_visited = true; };
-    void unvisit()     { m_visited = false; };
+	void unvisit()     { m_visited = false; };
 
   private:
     bool m_visited;

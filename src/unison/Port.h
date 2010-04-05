@@ -27,22 +27,26 @@
 #define PORT_H
 
 #include "unison/Node.h"
+#include "unison/BufferProvider.h"
 
 namespace Unison
 {
+
+class ProcessingContext;
 
 /** A Port interface on a plugin.  Encapsulates audio, control, midi, and
  *  possibly other port types we may eventually be interested in. */
 class Port : public Node
 {
 public:
-	enum Type { AUDIO, CONTROL, MIDI, UNKNOWN };
-	enum Direction { INPUT, OUTPUT };
+	enum Type { AUDIO=1, CONTROL=2, MIDI=4, UNKNOWN=0 };
+	enum Direction { INPUT=1, OUTPUT=2 };
 
+	Port ();
 	virtual ~Port () {};
 
 	/** @returns the name of port, for example "OSC1 Attack". */
-	virtual QString name (size_t maxLength) const = 0;
+	virtual QString name () const = 0;
 
 	/* TODO: Return an std::set of types instead??? */
 	/** @returns the type of port */
@@ -76,14 +80,46 @@ public:
 	/** @returns true if this port is toggled between on and off */
 	virtual bool isToggled () const = 0;
 
-	virtual void connectToBuffer(float * buf) = 0;
+	/** Called in Process thread to assign the buffer used by this port
+	 *  sub-classes may choose to assign a buffer from the BufferProvider
+	 *  or from some other source.
+	 *  TODO: What is the contract regarding InputPort who don't reuse
+	 *  the connected Buffer? */
+	virtual void aquireBuffer (
+			const ProcessingContext & context, BufferProvider & provider) = 0;
 
+	/** Called in Process thread to retrieve the buffer for this Port */
+	SharedBufferPtr buffer () {
+		return m_buffer;
+	}
+
+	/** TODO: can possibly be merged with assignBuffer */
+	virtual void connectToBuffer () = 0;
+
+	// Connection stuff
 	void connect (Port* other);
 	void disconnect (Port* other);
-	bool isConnected (Port* other);
+	bool isConnected (Port* other) const;
 
+	/** @returns Either the connected Nodes or the interfaced Nodes */
+	const QSet<Node* const> dependencies () const;
+
+	/** @returns Either the connected Nodes or the interfaced Nodes */
+	const QSet<Node* const> dependents () const;
+
+protected:
+	/** Used by subclasses to list the nodes directly "behind"
+	 *  this port.  For the most part this means either a single
+	 *  Processor, or some other ports (like in the case of JACK
+	 *  connections).
+	 *  @returns the set of nodes interfaced by this Port.
+	 */
+	virtual const QSet<Node* const> interfacedNodes () const = 0;
+
+protected:
+	SharedBufferPtr m_buffer;
 private:
-	QSet<Port*> connectedPorts;
+	QSet<Port* const> m_connectedPorts;
 };
 
 } // Unison

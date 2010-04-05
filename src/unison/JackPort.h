@@ -28,10 +28,36 @@
 #include <jack/jack.h>
 
 #include "unison/Port.h"
+#include "unison/ProcessingContext.h"
 
 namespace Unison {
 
   class JackEngine;
+
+  class JackBufferProvider : public BufferProvider {
+  public:
+    JackBufferProvider ()
+    {}
+
+    ~JackBufferProvider()
+    {}
+
+    SharedBufferPtr aquire (nframes_t nframes) {
+      // TODO assert(false)
+      return NULL;
+    }
+
+    SharedBufferPtr zeroBuffer () const {
+      // TODO assert(false)
+      return NULL;
+  }
+
+  protected:
+    void release (Buffer * buf) {
+      // Do nothing, jack buffers don't need release
+    }
+  };
+
 
   class JackPort : public Port
   {
@@ -43,7 +69,7 @@ namespace Unison {
     {
     }
 
-    QString name (size_t maxLength) const
+	QString name () const
     {
       return jack_port_short_name( m_port );
     }
@@ -64,11 +90,6 @@ namespace Unison {
     Type type () const
     {
       return Port::AUDIO; // TODO!
-    }
-
-    void connectToBuffer (float * buf)
-    {
-      // TODO
     }
 
     float value () const
@@ -104,17 +125,30 @@ namespace Unison {
       return false;
     }
 
-    const QSet<Node*> dependencies () const;
-
-    const QSet<Node*> dependents () const;
+    const QSet<Node* const> interfacedNodes () const;
 
     jack_port_t* jackPort () const {
       return m_port;
     }
 
+    void aquireBuffer (
+        const ProcessingContext & context, BufferProvider & provider)
+    {
+      nframes_t size = context.bufferSize();
+      void* jackBuffer = jack_port_get_buffer(m_port, size);
+      m_buffer = new BufferImpl(*m_jackBufferProvider, size, jackBuffer);
+    }
+
+    void connectToBuffer ()
+    {
+
+    }
+
   private:
     JackEngine& m_engine;
     jack_port_t* m_port;
+
+    static JackBufferProvider * m_jackBufferProvider;
   };
 
 

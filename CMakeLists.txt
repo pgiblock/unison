@@ -101,11 +101,11 @@ ENDIF("${STATUS_LV2}" STREQUAL "OK")
 
 
 # Compiler flags
-SET(CMAKE_C_FLAGS "-g -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_C_FLAGS}")
-SET(CMAKE_CXX_FLAGS "-g -fno-exceptions -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_CXX_FLAGS}")
+SET(CMAKE_C_FLAGS "-g -ggdb -O0 -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_C_FLAGS}")
+SET(CMAKE_CXX_FLAGS "-g -ggdb -O0 -fno-exceptions -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_CXX_FLAGS}")
 
 #Directories
-INCLUDE_DIRECTORIES(src)
+INCLUDE_DIRECTORIES(src libs)
 ADD_SUBDIRECTORY(src)
 
 #Pre-processing

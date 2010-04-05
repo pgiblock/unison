@@ -81,12 +81,12 @@ public:
 
 	// TODO: PluginType type();
 
-	uint32_t audioInputCount () const {
+	int audioInputCount () const {
 		return slv2_plugin_get_num_ports_of_class(
 			m_plugin, m_world.inputClass, m_world.audioClass, NULL );
 	}
 
-	uint32_t audioOutputCount () const {
+	int audioOutputCount () const {
 		return slv2_plugin_get_num_ports_of_class(
 			m_plugin, m_world.outputClass, m_world.audioClass, NULL );
 	}
@@ -115,11 +115,11 @@ public:
 			NULL );
 	}
 
-	uint32_t portCount () const {
+	int portCount () const {
 		return slv2_plugin_get_num_ports(m_plugin);
 	}
 
-	Port* port (uint32_t idx) const;
+	Port* port (int idx) const;
 
 	/** @returns The underlying SLV2Plugin */
 	SLV2Plugin slv2Plugin() const {
@@ -136,15 +136,15 @@ public:
 
 	void process(const ProcessingContext & context);
 
-	const QSet<Node*> dependencies () const;
-	const QSet<Node*> dependents () const;
+	const QSet<Node* const> dependencies () const;
+	const QSet<Node* const> dependents () const;
 
 	// TODO: loadState and saveState
 
 private:
 	Lv2World&      m_world;
 	SLV2Plugin     m_plugin;
-	QVarLengthArray<Port*> m_ports;   // QVarLengthArray
+	QVarLengthArray<Port*, 16> m_ports;
 	nframes_t       m_sampleRate;
 
 	SLV2Instance   m_instance;
@@ -189,12 +189,10 @@ public:
 	~Lv2Port ();
 
 	/* Port Interface */
-	QString name (size_t maxLength) const {
+	QString name () const {
 		return QString::fromAscii( slv2_value_as_string(
 			slv2_port_get_name( m_plugin->slv2Plugin(), m_port ) ) );
 	}
-
-	void connectToBuffer(float * buf);
 
 	float value () const {
 		return m_value;
@@ -249,22 +247,26 @@ public:
 		if (slv2_port_is_a( plugin, m_port, m_world.outputClass )) {
 			return Port::OUTPUT;
 		}
+		// TODO: Fail.
 	}
 
-	const QSet<Node*> dependencies () const;
-	const QSet<Node*> dependents () const;
+	const QSet<Node* const> interfacedNodes () const;
+
+    void aquireBuffer (
+        const ProcessingContext & context, BufferProvider & provider);
+
+	void connectToBuffer();
 
 private:
-	float m_value;
-	float m_defaultValue;
-	float m_min;
-	float m_max;
-
-	// Don't point to Lv2Plugin, a two-way rel is probably unwanted
 	const Lv2World & m_world;
 	Lv2Plugin * m_plugin;
 	SLV2Port m_port;
 	uint32_t m_index;
+
+	float m_value;
+	float m_defaultValue;
+	float m_min;
+	float m_max;
 };
 
 

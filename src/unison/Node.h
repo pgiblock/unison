@@ -40,8 +40,20 @@ public:
 	virtual ~Node () {};
 
 	/** Returns a set?? */
-	virtual const QSet<Node*> dependencies () const = 0;
-	virtual const QSet<Node*> dependents () const = 0;
+	virtual const QSet<Node* const> dependencies () const = 0;
+	virtual const QSet<Node* const> dependents () const = 0;
+
+	virtual QString name() const = 0;
+
+	/* TODO REMOVE?
+	bool isSink () const {
+		return dependents().count() == 0;
+	}
+
+	bool isSource () const {
+		return dependencies().count() == 0;
+	}
+	*/
 };
 
 /** A Safe pointer to a plugin. */

@@ -65,10 +65,10 @@ public:
 	// TODO: PluginType type(),  loadState(),  and saveState();
 
 	/** @returns the count of audio input channels. 2 for stereo, etc.. */
-	virtual uint32_t audioInputCount () const = 0;
+	virtual int audioInputCount () const = 0;
 
 	/** @returns the count of audio output channels. 2 for stereo, etc.. */
-	virtual uint32_t audioOutputCount () const = 0;
+	virtual int audioOutputCount () const = 0;
 
 	/** @returns the author, or company's name. Example "Paul Giblock". */
 	virtual QString authorName () const = 0;
@@ -120,11 +120,11 @@ public:
 		return m_type;
 	}
 
-	uint32_t audioInputCount () const {
+	int audioInputCount () const {
 		return m_audioInputs;
 	}
 
-	uint32_t audioOutputCount () const {
+	int audioOutputCount () const {
 		return m_audioOutputs;
 	}
 
@@ -137,8 +137,8 @@ protected:
 	QString m_author;
 	QString m_name;
 	PluginType m_type;
-	uint16_t m_audioInputs;
-	uint16_t m_audioOutputs;
+	int m_audioInputs;
+	int m_audioOutputs;
 };
 
 /** A Safe pointer to a plugin descriptor. */

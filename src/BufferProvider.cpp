@@ -1,5 +1,5 @@
 /*
- * JackEngine.cpp
+ * BufferProvider.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,48 +22,11 @@
  *
  */
 
-#include <jack/jack.h>
-
-#include "unison/JackEngine.h"
-
+#include "unison/BufferProvider.h"
 
 namespace Unison {
 
-	JackPort* JackEngine::registerPort (QString name,
-			Port::Direction direction) {
-		JackPortFlags flag;
-		switch (direction) {
-			case Port::INPUT:
-				flag = JackPortIsOutput;
-				break;
-			case Port::OUTPUT:
-			default:
-				flag = JackPortIsInput;
-				break;
-		}
 
-		jack_port_t* port = jack_port_register(
-				client(), name.toLatin1(), JACK_DEFAULT_AUDIO_TYPE, flag, 0);
-		if (port) {
-			JackPort* myPort = new JackPort(*this, port);
-			m_myPorts.append( myPort );
-			return myPort;
-		}
-		return NULL;
-	}
-
-	int JackEngine::myPortCount () const {
-		return m_myPorts.count();
-	}
-
-    JackPort* JackEngine::myPort (int index) const {
-		return m_myPorts[index];
-	}
-
-    JackPort* JackEngine::myPort (QString name) const {
-		return NULL; // TODO: implement
-	}
 
 } // Unison
 
-// vim: et ts=8 sw=2 sts=2 noai

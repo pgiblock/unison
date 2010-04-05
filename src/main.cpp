@@ -3,6 +3,7 @@
 #include <QtGui/QApplication>
 #include <QSet>
 #include <jack/jack.h>
+#include "unison/BufferProvider.h"
 #include "unison/PluginManager.h"
 #include "unison/ProcessingContext.h"
 #include "unison/JackEngine.h"
@@ -16,6 +17,7 @@ int processCb(jack_nframes_t nframes, void* data);
 // Engine stuff
 jack_client_t * jackClient;
 JackEngine * jackEngine;
+PooledBufferProvider * pool;
 
 // Node referencing
 Port* fxin[2][2];
@@ -23,19 +25,34 @@ Port* fxout[2][2];
 JackPort* jackPorts[6];
 QList<Processor*> processors;
 
-QAtomicPointer< QList<Processor*> > compiled;
+struct CompiledProcessor {
+  Processor * processor;
+};
 
-void compileRecursive (Node* n, QList<Processor*>& output)
+
+QAtomicPointer< QList<CompiledProcessor> > compiled;
+
+int numBuffers = 0;
+int numBuffersNeeded = 0;
+
+void compileRecursive (Node* n, QList<CompiledProcessor>& output)
 {
   // TODO: Dynamic cast is bad. any better way to do this other
   // than moving process(), visit(), isVisited() etc to Node?
   Processor* p = dynamic_cast<Processor*>( n );
   if (p == NULL || !p->isVisited()) {
-    if (p) { p->visit(); }
+    std::cout << "  " << qPrintable(n->name()) << std::endl;
+    if (p) {
+      p->visit();
+    }
     foreach (Node* dep, n->dependencies()) {
       compileRecursive( dep, output );
     }
-    if (p) { output.append( p ); }
+    if (p) {
+      CompiledProcessor cp;
+      cp.processor = p;
+      output.append(cp);
+    }
   }
 }
 /*
@@ -45,7 +62,7 @@ void compileRecursive (Node* n, QList<Processor*>& output)
 */
 
 
-void compile (QList<Processor*> input, QList<Processor*>& output) {
+void compile (QList<Processor*> input, QList<CompiledProcessor>& output) {
 
   // Mark everything as unvisited
   QListIterator<Processor*> i( input );
@@ -56,17 +73,36 @@ void compile (QList<Processor*> input, QList<Processor*>& output) {
   // Process nodes that are pure-sinks first
   i.toFront();
   while (i.hasNext()) {
-    Processor* p = i.next();
-    if (p->dependents().count() == 0) {
-      compileRecursive( p, output );
+    Processor* proc = i.next();
+
+    bool isSink = true;
+
+    // For each output port
+    for (int j = 0; j < proc->portCount(); ++j) {
+      Port* port = proc->port(j);
+      if (port->direction() == Port::OUTPUT) {
+        // For all connected Ports.
+        QSetIterator<Node* const> k( port->dependents() );
+        while (k.hasNext()) {
+          Port* otherPort = (Port*)k.next();
+          // Not a sink if a connected port has any dependents.
+          if (otherPort->dependents().count() != 0) {
+            isSink = false;
+            goto notSink;
+          }
+        }
+      }
+    }
+    notSink:
+    if (isSink) {
+      compileRecursive( proc, output );
     }
   }
 
-  // Then process everything else
-  i.toFront();
-  while (i.hasNext()) {
-    Processor* p = i.next();
-    compileRecursive( p, output );
+  // Then compile everything else
+  QListIterator<Processor*> p( input );
+  while (p.hasNext()) {
+    compileRecursive( p.next(), output );
   }
 }
 
@@ -104,12 +140,16 @@ int main (int argc, char ** argv) {
 	// Init
 	PluginManager::initializeInstance();
 
-	PluginManager * man = PluginManager::instance();
+        pool = new PooledBufferProvider();
+        pool->setBufferLength(jack_get_buffer_size(jackClient));
+        pool->hackInit(64);
+
+        PluginManager * man = PluginManager::instance();
 
 	std::cout << "Creating Plugins" << std::endl;
-	processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/vynil")
-			->createPlugin(48000));
 	processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/lfoPhaser")
+			->createPlugin(48000));
+	processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/vynil")
 			->createPlugin(48000));
 
 	std::cout << "Activating Plugins" << std::endl;
@@ -120,7 +160,7 @@ int main (int argc, char ** argv) {
 	int f=0;
 	foreach (Processor* n, processors) {
 		int inCnt=0, outCnt =0;
-		for (uint32_t i=0; i<n->portCount(); ++i) {
+		for (int i=0; i<n->portCount(); ++i) {
 			Port* p = n->port(i);
 			if (p->type() == Port::AUDIO) {
                           switch (p->direction()) {
@@ -135,20 +175,14 @@ int main (int argc, char ** argv) {
                               break;
                           }
 			}
-			else if (p->type() == Port::CONTROL) {
-				// MEMLEAK
-				float * val = new float(0.0f);
-				*val = p->maximum(); //p->defaultValue();
-				p->connectToBuffer(val);
-			}
 		}
 		f++;
 	}
 
 	std::cout << "Connecting Ports" << std::endl;
-	fxout[0][0]->connect(fxin[1][0]);
-	fxout[1][0]->connect(jackPorts[0]);
-	fxout[0][1]->connect(jackPorts[1]);
+	fxout[1][0]->connect(fxin[0][0]);
+	fxout[0][0]->connect(jackPorts[0]);
+	fxout[1][1]->connect(jackPorts[1]);
 
 	//jackPorts[4]->connect(fxout[1][0]); // To channel out
 	//fxin[2][0]->connect(jackPorts[2]);  // To master In
@@ -156,10 +190,15 @@ int main (int argc, char ** argv) {
 
 
 	std::cout << "Compiling" << std::endl;
-	QList<Processor*>* compiledSwap = new QList<Processor*>();
+	QList<CompiledProcessor>* compiledSwap = new QList<CompiledProcessor>();
 	compile( processors, *compiledSwap );
         compiledSwap = compiled.fetchAndStoreRelaxed( compiledSwap );
         delete compiledSwap;
+
+	for (QList<CompiledProcessor>::iterator i = compiled->begin(); i != compiled->end(); ++i) {
+		std::cout << qPrintable(i->processor->name()) << " -- ";
+	}
+	std::cout << std::endl;
 
 	std::cout << "Processing Nodes" << std::endl;
 	jack_activate(jackClient);
@@ -180,42 +219,37 @@ int main (int argc, char ** argv) {
 }
 
 
+
 int processCb (jack_nframes_t nframes, void* data)
 {
 	ProcessingContext context( nframes );
 
-	float* inBuf = new float[nframes];
-	for (nframes_t i=0; i<nframes; ++i) {
-		inBuf[i] = 0.0f;
-	}
-
-	float* jackBuff0 = (float*)jack_port_get_buffer(jackPorts[0]->jackPort(), nframes);
-	float* jackBuff1 = (float*)jack_port_get_buffer(jackPorts[1]->jackPort(), nframes);
-
-        // Vynil input - silent
-	fxin[0][0]->connectToBuffer(inBuf);
-	fxin[0][1]->connectToBuffer(inBuf);
-
-        // LFO input
-        fxout[0][0]->connectToBuffer(jackBuff0);
-        fxout[0][1]->connectToBuffer(jackBuff1);
-        fxin[1][0]->connectToBuffer(jackBuff0);
-        fxout[1][0]->connectToBuffer(jackBuff0);
+        // Aquire JACK buffers
+        for (int i=0; i<sizeof jackPorts / sizeof jackPorts[0]; ++i) {
+          Port *port = jackPorts[i];
+          port->aquireBuffer(context, *pool);
+          port->connectToBuffer();
+        }
 
 	// Processing loop
-	foreach (Processor * node, *compiled) {
-		node->process(context);
+	foreach (CompiledProcessor cp, *compiled) {
+          for (int i=0; i<cp.processor->portCount(); ++i) {
+            Port *port = cp.processor->port(i);
+            port->aquireBuffer(context, *pool);
+            port->connectToBuffer();
+          }
+	  cp.processor->process(context);
 	}
 
-        /*
-	// Process mixer
-	memcpy( jack_port_get_buffer(masterOut[0], nframes),
-			jack_port_get_buffer(masterIn[0], nframes),
-			nframes * sizeof(float) );
-	memcpy( jack_port_get_buffer(masterOut[1], nframes),
-			jack_port_get_buffer(masterIn[1], nframes),
-			nframes * sizeof(float) );
-        */
+
+        // Copy output to JACK
+        memcpy( jackPorts[4]->buffer()->data(),
+            fxout[1][0]->buffer()->data(),
+            nframes * sizeof(float) );
+
+        memcpy( jackPorts[5]->buffer()->data(),
+            fxout[1][1]->buffer()->data(),
+            nframes * sizeof(float) );
 
 	return 0;
 }

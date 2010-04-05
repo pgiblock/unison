@@ -28,66 +28,29 @@
 
 namespace Unison {
 
-  const QSet<Node*> JackPort::dependencies () const
+  JackBufferProvider* JackPort::m_jackBufferProvider =
+   new JackBufferProvider();
+
+  const QSet<Node* const> JackPort::interfacedNodes () const
   {
     const char** name = jack_port_get_connections( m_port );
     uint32_t count = m_engine.myPortCount();
-    QSet<Node*> dependencies;
 
-    switch (direction())
+    QSet<Node* const> dependencies;
+    // Within all connected ports
+    // TODO: move this routine into JackEngine
+    while (name != NULL)
     {
-    case INPUT:
-      // Return internal connections
-      break;
-
-    case OUTPUT:
-      // Within all connected ports
-      // TODO: move this routine into JackEngine
-      while (name != NULL)
-      {
-        // See if we own the port
-        for (uint32_t i = 0; i < count; ++i) {
-          JackPort* port = m_engine.myPort(i);
-          if (port->fullName() == *name)
-          {
-            dependencies += port;
-          }
+      // See if we own the port
+      for (uint32_t i = 0; i < count; ++i) {
+        JackPort* port = m_engine.myPort(i);
+        if (port->fullName() == *name)
+        {
+          dependencies += port;
         }
       }
-      break;
     }
     return dependencies;
-  }
-
-
-  const QSet<Node*> JackPort::dependents () const
-  {
-    const char** name = jack_port_get_connections( m_port );
-    uint32_t count = m_engine.myPortCount();
-    QSet<Node*> dependents;
-
-    switch (direction())
-    {
-    case INPUT:
-      // Within all connected ports
-      while (name != NULL)
-      {
-        // See if we own the port
-        for (uint32_t i = 0; i < count; ++i) {
-          JackPort* port = m_engine.myPort(i);
-          if (port->fullName() == *name)
-          {
-            dependents += port;
-          }
-        }
-      }
-      break;
-
-    case OUTPUT:
-      // Return internal connections
-      break;
-    }
-    return dependents;
   }
 
 } // Unison

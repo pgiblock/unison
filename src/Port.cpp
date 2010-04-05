@@ -26,20 +26,65 @@
 
 namespace Unison {
 
+  Port::Port () :
+    Node(),
+    m_connectedPorts() {
+  }
+
   void Port::connect (Port* other) {
     // TODO: Check for existing connection and cycles!!!
-    connectedPorts += other;
-    other->connectedPorts += this;
+    m_connectedPorts += other;
+    other->m_connectedPorts += this;
   }
 
   void Port::disconnect (Port* other) {
-    connectedPorts -= other;
-    other->connectedPorts -= this;
+    m_connectedPorts -= other;
+    other->m_connectedPorts -= this;
   }
 
-  bool Port::isConnected (Port* other) {
-    return connectedPorts.contains( other );
+  bool Port::isConnected (Port* other) const {
+    return m_connectedPorts.contains( other );
   }
+
+  const QSet<Node* const> Port::dependencies () const {
+    switch (direction()) {
+      case INPUT:
+      {
+        QSet<Node* const> p;
+        for (QSet<Port* const>::const_iterator i = m_connectedPorts.begin();
+             i != m_connectedPorts.end(); ++i) {
+          p.insert(*i);
+        }
+        return p;
+      }
+
+      case OUTPUT:
+      {
+        return interfacedNodes();
+      }
+    }
+  }
+
+
+
+const QSet<Node* const> Port::dependents () const {
+    switch (direction()) {
+      case INPUT:
+      {
+        return interfacedNodes();
+      }
+
+      case OUTPUT:
+      {
+	QSet<Node* const> p;
+        for (QSet<Port* const>::const_iterator i = m_connectedPorts.begin();
+            i != m_connectedPorts.end(); ++i) {
+          p.insert(*i);
+        }
+        return p;
+      }
+    }
+}
 
 } // Unison
 
