@@ -190,8 +190,10 @@ public:
 
 	/* Port Interface */
 	QString name () const {
-		return QString::fromAscii( slv2_value_as_string(
-			slv2_port_get_name( m_plugin->slv2Plugin(), m_port ) ) );
+		SLV2Value val = slv2_port_get_name( m_plugin->slv2Plugin(), m_port );
+		QString ret = QString::fromAscii( slv2_value_as_string(val) );
+		slv2_value_free( val );
+		return ret;
 	}
 
 	float value () const {

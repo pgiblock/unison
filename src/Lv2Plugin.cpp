@@ -51,6 +51,7 @@ Lv2World::Lv2World () {
 
 
 Lv2World::~Lv2World () {
+	std::cout << "REMOVE ME:  Detroying Lv2World!\n";
 	slv2_value_free( inputClass );
 	slv2_value_free( outputClass );
 	slv2_value_free( controlClass );
@@ -99,6 +100,7 @@ Lv2Port::Lv2Port (const Lv2World & world, Lv2Plugin * plugin, uint32_t index) :
 
 
 Lv2Port::~Lv2Port () {
+	// Is the LVPort just a handle to the Plugin?
 }
 
 
@@ -184,21 +186,6 @@ Lv2Plugin::Lv2Plugin (const Lv2Plugin& other) :
 }
 
 
-Lv2Plugin::~Lv2Plugin () {
-	deactivate();
-	slv2_instance_free( m_instance );
-	slv2_value_free( m_name );
-	slv2_value_free( m_authorName );
-	slv2_value_free( m_authorEmail );
-	slv2_value_free( m_authorHomepage );
-	for (int i=0; i<m_ports.count(); ++i) {
-		delete m_ports[i];
-	}
-
-	m_instance = NULL;
-}
-
-
 void Lv2Plugin::init () {
 	m_activated = false;
 	// TODO: Pass in features
@@ -218,6 +205,22 @@ void Lv2Plugin::init () {
 	m_authorName = slv2_plugin_get_author_name( m_plugin );
 	m_authorEmail = slv2_plugin_get_author_email( m_plugin );
 	m_authorHomepage = slv2_plugin_get_author_homepage( m_plugin );
+}
+
+
+Lv2Plugin::~Lv2Plugin () {
+	deactivate();
+	slv2_instance_free( m_instance );
+	slv2_value_free( m_name );
+	slv2_value_free( m_authorName );
+	slv2_value_free( m_authorEmail );
+	slv2_value_free( m_authorHomepage );
+	//slv2_value_free( m_copyright );
+	for (int i=0; i<m_ports.count(); ++i) {
+		delete m_ports[i];
+	}
+
+	m_instance = NULL;
 }
 
 

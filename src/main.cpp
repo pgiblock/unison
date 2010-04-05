@@ -110,6 +110,7 @@ void compile (QList<Processor*> input, QList<CompiledProcessor>& output) {
 int main (int argc, char ** argv) {
     bool createGui = false;
 
+    /* No need to create this yet
     QCoreApplication * app = createGui ?
         new QApplication( argc, argv ) :
         new QCoreApplication( argc, argv );
@@ -117,6 +118,7 @@ int main (int argc, char ** argv) {
     app->setApplicationName( "Unison" );
     app->setOrganizationDomain( "unison.sourceforge.net" );
 	app->setOrganizationName( "Paul Giblock" );
+    */
 
     printLogo();
 	// If running in CLI mode, print a disclaimer
@@ -214,7 +216,9 @@ int main (int argc, char ** argv) {
 
 	std::cout << "Processing Nodes" << std::endl;
 	jack_activate(jackClient);
-	char c;
+
+        //app->exec();
+        char c;
 	std::cin >> &c;
 
 	std::cout << "Disconnecting JACK" << std::endl;
@@ -224,7 +228,13 @@ int main (int argc, char ** argv) {
 
 	std::cout << "Deactivating Plugins" << std::endl;
 	foreach (Processor * p, processors) { p->deactivate(); }
+
+	std::cout << "Destroying Plugins" << std::endl;
+	foreach (Processor * p, processors) { delete p; }
 	delete compiled;
+
+        std::cout << "Destorying PluginManager (Do more gracefully)" << std::endl;
+        PluginManager::cleanupHack();
 
 	std::cout << "Bye!" << std::endl;
 	return 0;

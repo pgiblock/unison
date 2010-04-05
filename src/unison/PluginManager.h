@@ -84,6 +84,12 @@ public:
 		return m_instance;
 	}
 
+	/** TODO: Something better */
+	static void cleanupHack() {
+		delete m_instance;
+		m_instance = NULL;
+	}
+
 protected:
 	PluginManager ();
 	virtual ~PluginManager ();
