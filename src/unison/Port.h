@@ -82,7 +82,7 @@ public:
 	 *  or from some other source.
 	 *  TODO: What is the contract regarding InputPort who don't reuse
 	 *  the connected Buffer? */
-	virtual void aquireBuffer (BufferProvider & provider) = 0;
+	virtual void acquireBuffer (BufferProvider & provider) = 0;
 
 	/** Called in Process thread to retrieve the buffer for this Port */
 	SharedBufferPtr buffer () {

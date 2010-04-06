@@ -181,7 +181,9 @@ private:
 
 
 /** A Port on a plugin.  I wonder if we should be calling slv2 functions, or
-	maybe we should just copy all the data into the class? */
+	maybe we should just copy all the data into the class?  Another idea is
+	a PluginPort that does index-based accesses on a Plugin.  No Port subclass
+	is needed for Lv2, VST, DSSI, plugins.. */
 class Lv2Port : public Port {
 public:
 	Lv2Port (const Lv2World & world, Lv2Plugin * plugin, uint32_t index);
@@ -254,7 +256,7 @@ public:
 
 	const QSet<Node* const> interfacedNodes () const;
 
-    void aquireBuffer (BufferProvider & provider);
+    void acquireBuffer (BufferProvider & provider);
 
 	void connectToBuffer();
 

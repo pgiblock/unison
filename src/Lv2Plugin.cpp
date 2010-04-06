@@ -116,20 +116,19 @@ void Lv2Port::connectToBuffer() {
 }
 
 
-void Lv2Port::aquireBuffer (BufferProvider & provider)
+void Lv2Port::acquireBuffer (BufferProvider & provider)
 {
-	int numConnections = dependencies().count();
+	int numConnections;
 	//std::cout << qPrintable(m_plugin->name()) << ": " << qPrintable(name()) << ": ";
 	switch (direction()) {
 	case INPUT:
+		numConnections = dependencies().count();
 		if (type() == AUDIO_PORT && numConnections == 0) {
 			// Use silence
-			//std::cout << " need silence!" << std::endl;
 			m_buffer = provider.zeroAudioBuffer();
 		}
 		else if (numConnections == 1) {
 			// Use the other port's buffer
-			//std::cout << " need to share!" << std::endl;
 			// TODO: ensure type is the same? or at least make sure on connect
 			Port* other = (Port*) *(dependencies().begin());
 			m_buffer = other->buffer();
@@ -137,8 +136,7 @@ void Lv2Port::aquireBuffer (BufferProvider & provider)
 
 		if (!m_buffer) {
 			// Return internal port
-			//std::cout << " need to create (I)!" << std::endl;
-			m_buffer = provider.aquire(type(), 1024);
+			m_buffer = provider.acquire(type(), 1024);
 		}
 
 		// TODO: Remove this hack
@@ -149,18 +147,16 @@ void Lv2Port::aquireBuffer (BufferProvider & provider)
 
 		break;
 	case OUTPUT:
-		// Return internal port
-		//std::cout << " need to create (O)!" << std::endl;
+		numConnections = dependents().count();
 		if (numConnections == 1) {
 			// Use the other port's buffer
-			//std::cout << " need to share!" << std::endl;
 			// TODO: ensure type is the same? or at least make sure on connect
 			Port* other = (Port*) *(dependents().begin());
 			m_buffer = other->buffer();
 		}
 
 		if (!m_buffer) {
-			m_buffer = provider.aquire(type(), 1024);
+			m_buffer = provider.acquire(type(), 1024);
 		}
 		break;
 	}

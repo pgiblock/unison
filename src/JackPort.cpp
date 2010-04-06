@@ -33,7 +33,7 @@ namespace Unison {
    new JackBufferProvider();
 
 
-  SharedBufferPtr JackBufferProvider::aquire (
+  SharedBufferPtr JackBufferProvider::acquire (
       const JackPort* port, nframes_t nframes)
   {
     void* jackBuffer = jack_port_get_buffer(port->jackPort(), nframes);

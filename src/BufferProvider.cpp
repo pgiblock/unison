@@ -38,7 +38,7 @@ PooledBufferProvider::PooledBufferProvider () :
 {}
 
 
-SharedBufferPtr PooledBufferProvider::aquire (
+SharedBufferPtr PooledBufferProvider::acquire (
     PortType type, nframes_t nframes)
 {
   //TODO assert(nframes == m_periodLength); (or whatever)
@@ -87,7 +87,7 @@ void PooledBufferProvider::setBufferLength (nframes_t nframes)
 {
   m_periodLength = nframes;
 
-  m_zeroBuffer = aquire (AUDIO_PORT, nframes);
+  m_zeroBuffer = acquire (AUDIO_PORT, nframes);
 }
 
 nframes_t PooledBufferProvider::bufferLength ()

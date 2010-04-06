@@ -24,6 +24,7 @@ Port* fxin[2][2];
 Port* fxout[2][2];
 JackPort* jackPorts[6];
 QList<Processor*> processors;
+Processor* extraProcessor;
 
 struct CompiledProcessor {
   Processor * processor;
@@ -107,6 +108,54 @@ void compile (QList<Processor*> input, QList<CompiledProcessor>& output) {
 }
 
 
+/** A stupid function to alias ports so we can connect to them */
+void referencePorts () {
+  std::cout << "Referencing Ports" << std::endl;
+  int f=0;
+  foreach (Processor* n, processors) {
+          int inCnt=0, outCnt =0;
+          for (int i=0; i<n->portCount(); ++i) {
+                  Port* p = n->port(i);
+                  if (p->type() == AUDIO_PORT) {
+                    switch (p->direction()) {
+                      case INPUT:
+                        fxin[f][inCnt++] = p;
+                        break;
+                      case OUTPUT:
+                        fxout[f][outCnt++] = p;
+                        break;
+                      default:
+                        //TODO: Programming error!
+                        break;
+                    }
+                  }
+          }
+          f++;
+  }
+}
+
+
+void bigCompile () {
+  std::cout << "Compiling" << std::endl;
+  QList<CompiledProcessor>* compiledSwap = new QList<CompiledProcessor>();
+  compile( processors, *compiledSwap );
+
+  std::cout << "Aquiring 'fixed' buffers" << std::endl;
+  foreach (CompiledProcessor cp, *compiledSwap) {
+    for (int i=0; i<cp.processor->portCount(); ++i) {
+      Port *port = cp.processor->port(i);
+      std::cout << "Next port: " << qPrintable(port->name()) << std::endl;
+      port->acquireBuffer(*pool);
+      port->connectToBuffer();
+    }
+  }
+
+  // FIXME: this is probably not sufficient.
+  compiledSwap = compiled.fetchAndStoreRelaxed( compiledSwap );
+  delete compiledSwap;
+}
+
+
 int main (int argc, char ** argv) {
     bool createGui = false;
 
@@ -148,77 +197,45 @@ int main (int argc, char ** argv) {
         PluginManager * man = PluginManager::instance();
 
 	std::cout << "Creating Plugins" << std::endl;
-	processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/lfoPhaser")
-			->createPlugin(48000));
 	processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/vynil")
 			->createPlugin(48000));
+        extraProcessor = man->descriptor("http://calf.sourceforge.net/plugins/VintageDelay")
+			->createPlugin(48000);
 
 	std::cout << "Activating Plugins" << std::endl;
 	foreach (Processor* n, processors) { n->activate(); }
 
-	std::cout << "Referencing Ports" << std::endl;
-	float controls[] = {0.5f, 0.5f, 0.5f, 0.5f};
-	int f=0;
-	foreach (Processor* n, processors) {
-		int inCnt=0, outCnt =0;
-		for (int i=0; i<n->portCount(); ++i) {
-			Port* p = n->port(i);
-			if (p->type() == AUDIO_PORT) {
-                          switch (p->direction()) {
-                            case INPUT:
-                              fxin[f][inCnt++] = p;
-                              break;
-                            case OUTPUT:
-                              fxout[f][outCnt++] = p;
-                              break;
-                            default:
-                              //TODO: Programming error!
-                              break;
-                          }
-			}
-		}
-		f++;
-	}
+        referencePorts();
 
 	std::cout << "Connecting Ports" << std::endl;
-	fxout[1][0]->connect(fxin[0][0]);  // Vinyl to LFO
-	fxout[0][0]->connect(jackPorts[4]); // LFO to Channel-L
-	jackPorts[5]->connect(fxout[1][1]); // Vinyl to Channel-R
+	fxout[0][0]->connect(jackPorts[4]); // Vinyl to Channel-L
+	jackPorts[5]->connect(fxout[0][1]); // Vinyl to Channel-R
 
-        //fxout[1][1]->connect(jackPorts[1]);
-	//jackPorts[4]->connect(fxout[1][0]); // To channel out
-	//fxin[2][0]->connect(jackPorts[2]);  // To master In
-	//jackPorts[0]->connect(fxout[2][0]); // To master out
-
-
-	std::cout << "Compiling" << std::endl;
-	QList<CompiledProcessor>* compiledSwap = new QList<CompiledProcessor>();
-	compile( processors, *compiledSwap );
-        compiledSwap = compiled.fetchAndStoreRelaxed( compiledSwap );
-        delete compiledSwap;
-
-	for (QList<CompiledProcessor>::iterator i = compiled->begin(); i != compiled->end(); ++i) {
-		std::cout << qPrintable(i->processor->name()) << " -- ";
-	}
-	std::cout << std::endl;
-
-
-        std::cout << "Aquiring 'fixed' buffers" << std::endl;
-	foreach (CompiledProcessor cp, *compiled) {
-          for (int i=0; i<cp.processor->portCount(); ++i) {
-            Port *port = cp.processor->port(i);
-            std::cout << "Next port: " << qPrintable(port->name()) << std::endl;
-            port->aquireBuffer(*pool);
-            port->connectToBuffer();
-          }
-	}
-
+        bigCompile();
 
 	std::cout << "Processing Nodes" << std::endl;
 	jack_activate(jackClient);
 
         //app->exec();
         char c;
+	std::cin >> &c;
+
+        // Add
+	processors.append(extraProcessor);
+        referencePorts();
+
+        // Rewire
+	fxout[0][0]->disconnect(jackPorts[4]); // Vinyl from Channel-L
+	fxout[0][1]->disconnect(jackPorts[5]); // Vinyl from Channel-R
+        fxout[0][0]->connect(fxin[1][0]);  // Vinyl to Delay (L)
+	fxout[0][1]->connect(fxin[1][1]);  // Vinyl to Delay (R)
+	fxout[1][0]->connect(jackPorts[4]); // Delay to Channel-L
+	fxout[1][1]->connect(jackPorts[5]); // Delay to Channel-R
+
+        // Recompile
+        bigCompile();
+
+        //app->exec();
 	std::cin >> &c;
 
 	std::cout << "Disconnecting JACK" << std::endl;
@@ -249,12 +266,12 @@ int processCb (jack_nframes_t nframes, void* data)
         // Aquire JACK buffers
         for (int i=0; i<sizeof jackPorts / sizeof jackPorts[0]; ++i) {
           Port *port = jackPorts[i];
-          port->aquireBuffer(*pool);
+          port->acquireBuffer(*pool);
           port->connectToBuffer();
 
-          // Re-aquire buffers on ports connected to JACK
+          // Re-acquire buffers on ports connected to JACK
 	  foreach (Port *other, port->connectedPorts()) {
-            other->aquireBuffer(*pool);
+            other->acquireBuffer(*pool);
             other->connectToBuffer();
           }
         }

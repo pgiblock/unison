@@ -45,7 +45,7 @@ class BufferProvider
     virtual ~BufferProvider ()
     {};
 
-    virtual SharedBufferPtr aquire (PortType type, nframes_t nframes) = 0;
+    virtual SharedBufferPtr acquire (PortType type, nframes_t nframes) = 0;
     virtual SharedBufferPtr zeroAudioBuffer () const = 0;
 
   protected:
@@ -87,7 +87,7 @@ class PooledBufferProvider : public BufferProvider
     void setBufferLength (nframes_t nframes);
     nframes_t bufferLength ();
 
-    SharedBufferPtr aquire (PortType type, nframes_t nframes);
+    SharedBufferPtr acquire (PortType type, nframes_t nframes);
 
   protected:
     void release (Buffer * buf);

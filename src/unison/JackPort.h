@@ -45,9 +45,9 @@ namespace Unison {
     ~JackBufferProvider()
     {}
 
-    SharedBufferPtr aquire (const JackPort * port, nframes_t nframes);
+    SharedBufferPtr acquire (const JackPort * port, nframes_t nframes);
 
-    SharedBufferPtr aquire (PortType type, nframes_t nframes) {
+    SharedBufferPtr acquire (PortType type, nframes_t nframes) {
       // TODO assert(false)
       return NULL;
     }
@@ -137,11 +137,11 @@ namespace Unison {
       return m_port;
     }
 
-    void aquireBuffer (BufferProvider & provider)
+    void acquireBuffer (BufferProvider & provider)
     {
       // TODO use a callback for buffer-size
       nframes_t size = 1024; //jack_get_buffer_size(m_engine.jackClient());
-      m_buffer = m_jackBufferProvider->aquire(this, size);
+      m_buffer = m_jackBufferProvider->acquire(this, size);
     }
 
     void connectToBuffer ()
