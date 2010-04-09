@@ -30,35 +30,28 @@
 #include <QSharedPointer>
 #include "unison/types.h"
 
-namespace Unison {
+namespace Unison
+{
 
 /** Interface for all things that participate in the processing graph.
  *  TODO: We probably want to add a StandardNode abstract class that handles
  *  most features that don't vary across different Node classes. */
 class Node {
-public:
-	virtual ~Node () {};
+  public:
+    virtual ~Node () {};
 
-	/** Returns a set?? */
-	virtual const QSet<Node* const> dependencies () const = 0;
-	virtual const QSet<Node* const> dependents () const = 0;
+    /** Returns a set?? */
+    virtual const QSet<Node* const> dependencies () const = 0;
+    virtual const QSet<Node* const> dependents () const = 0;
 
-	virtual QString name() const = 0;
-
-	/* TODO REMOVE?
-	bool isSink () const {
-		return dependents().count() == 0;
-	}
-
-	bool isSource () const {
-		return dependencies().count() == 0;
-	}
-	*/
+    virtual QString name() const = 0;
 };
 
-/** A Safe pointer to a plugin. */
+/** A Safe pointer to a Node. */
 typedef QSharedPointer<Node> NodePtr;
 
 } // Unison
 
 #endif // NODE_H
+
+// vim: et ts=8 sw=2 sts=2 noai

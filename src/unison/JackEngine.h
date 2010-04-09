@@ -34,28 +34,28 @@ namespace Unison
 
   class JackEngine
   {
-  public:
-    // TODO: This temporary constructor just makes JackEngine behave as a
-    // wrapper around an seperately manage jack_client. This is good for testing.
-    JackEngine (jack_client_t* client) :
-      m_client( client )
-    {
-    }
+    public:
+      // TODO: This temporary constructor just makes JackEngine behave as a
+      // wrapper around an seperately manage jack_client. This is good for
+      // testing.
+      JackEngine (jack_client_t* client) :
+        m_client( client )
+      {
+      }
 
-    jack_client_t* client () const {
-      return m_client;
-    }
+      jack_client_t* client () const {
+        return m_client;
+      }
 
-    JackPort* registerPort (QString name, PortDirection direction);
+      JackPort* registerPort (QString name, PortDirection direction);
 
-    int myPortCount () const;
-    JackPort* myPort (int index) const;
-    JackPort* myPort (QString name) const;
+      int myPortCount () const;
+      JackPort* myPort (int index) const;
+      JackPort* myPort (QString name) const;
 
-  private:
-
-    jack_client_t* m_client;
-    QVarLengthArray<JackPort*> m_myPorts;
+    private:
+      jack_client_t* m_client;
+      QVarLengthArray<JackPort*> m_myPorts;
   };
 
 } // Unison

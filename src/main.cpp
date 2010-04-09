@@ -199,8 +199,13 @@ int main (int argc, char ** argv) {
 	std::cout << "Creating Plugins" << std::endl;
 	processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/vynil")
 			->createPlugin(48000));
-        extraProcessor = man->descriptor("http://calf.sourceforge.net/plugins/VintageDelay")
-			->createPlugin(48000);
+        extraProcessor = man->descriptor(
+            //"http://calf.sourceforge.net/plugins/VintageDelay"
+            //"http://calf.sourceforge.net/plugins/Reverb"
+            //"http://calf.sourceforge.net/plugins/RotarySpeaker"
+            //"http://calf.sourceforge.net/plugins/MultiChorus"
+            "http://calf.sourceforge.net/plugins/Flanger"
+            )->createPlugin(48000);
 
 	std::cout << "Activating Plugins" << std::endl;
 	foreach (Processor* n, processors) { n->activate(); }

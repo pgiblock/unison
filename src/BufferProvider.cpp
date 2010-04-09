@@ -32,9 +32,9 @@ namespace Unison
 PooledBufferProvider::PooledBufferProvider () :
   m_audioBuffers(),
   m_controlBuffers(),
-  m_zeroBuffer(NULL),
+  m_zeroBuffer( NULL ),
   m_periodLength(),
-  m_next(0)
+  m_next( 0 )
 {}
 
 
@@ -43,8 +43,7 @@ SharedBufferPtr PooledBufferProvider::acquire (
 {
   //TODO assert(nframes == m_periodLength); (or whatever)
   QStack<Buffer*>* stack;
-  switch (type)
-  {
+  switch (type) {
     case AUDIO_PORT:
       stack = &m_audioBuffers;
       break;
@@ -56,20 +55,18 @@ SharedBufferPtr PooledBufferProvider::acquire (
       return NULL;
   }
 
-  if (!stack->isEmpty())
-  {
+  if (!stack->isEmpty()) {
     return stack->pop();
   }
 
   //TODO ensure we are not in processing thread
-  switch (type)
-  {
+  switch (type) {
     case AUDIO_PORT:
       std::cout << "New Audio Buffer " << nframes << " frames." << std::endl;
-      return new AudioBuffer(*this, nframes);
+      return new AudioBuffer( *this, nframes );
     case CONTROL_PORT:
       std::cout << "New Control Buffer" << std::endl;
-      return new ControlBuffer(*this);
+      return new ControlBuffer( *this );
     default:
       std::cout << "Couldn't create unknown port" << std::endl;
       // TODO: assert(false);
@@ -83,32 +80,32 @@ SharedBufferPtr PooledBufferProvider::zeroAudioBuffer () const
   return m_zeroBuffer;
 }
 
+
 void PooledBufferProvider::setBufferLength (nframes_t nframes)
 {
   m_periodLength = nframes;
 
-  m_zeroBuffer = acquire (AUDIO_PORT, nframes);
+  m_zeroBuffer = acquire( AUDIO_PORT, nframes );
 }
+
 
 nframes_t PooledBufferProvider::bufferLength ()
 {
   return m_periodLength;
 }
 
+
 void PooledBufferProvider::release (Buffer * buf)
 {
-  switch (buf->type())
-  {
+  switch (buf->type()) {
     case AUDIO_PORT:
-      if (((AudioBuffer*)buf)->length() != bufferLength())
-      {
+      if (((AudioBuffer*)buf)->length() != bufferLength()) {
         // FIXME
         std::cout << "Deleting buffer, wrong size!" << std::endl;
         delete buf;
       }
-      else
-      {
-        m_audioBuffers.push(buf);
+      else {
+        m_audioBuffers.push( buf );
       }
       break;
 

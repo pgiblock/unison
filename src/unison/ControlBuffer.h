@@ -30,7 +30,12 @@
 namespace Unison
 {
 
-
+/** ControlBuffer represents a buffer used by Ports with type = CONTROL_PORT.
+ *  ControlBuffers have a fixed size of 1 value.  They can be used to
+ *  communicate control-port values across connections, but a Port should
+ *  still maintain a shadow of the current-value should the buffer ever be
+ *  reassigned.  Additionally, a currentValue is important for saving
+ *  non-controlled values to a project file. */
 class ControlBuffer : public Buffer
 {
   public:
@@ -42,7 +47,9 @@ class ControlBuffer : public Buffer
     ~ControlBuffer()
     {}
 
-    PortType type () {
+    /** @returns the type of buffer.  Always CONTROL_PORT. */
+    PortType type () const
+    {
       return CONTROL_PORT;
     }
 
@@ -61,7 +68,6 @@ class ControlBuffer : public Buffer
 };
 
 } // Unison
-
 
 #endif
 

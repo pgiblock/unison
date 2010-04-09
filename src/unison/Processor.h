@@ -29,7 +29,8 @@
 #include "unison/Node.h"
 #include "unison/Port.h"
 
-namespace Unison {
+namespace Unison
+{
 
 class ProcessingContext;
 
@@ -38,9 +39,11 @@ class ProcessingContext;
  *  TODO: We probably want to add a StandardProcessor abstract class that handles
  *  most features that don't vary across different Node classes. */
 
-class Processor : public Node {
+class Processor : public Node
+{
   public:
-    virtual ~Processor () {};
+    virtual ~Processor ()
+    {}
 
     /** @return the total number of ports of all kinds */
     virtual int portCount () const = 0;
@@ -52,9 +55,29 @@ class Processor : public Node {
     virtual void deactivate () = 0;
 
     virtual void process (const ProcessingContext & context) = 0;
-    bool isVisited()   { return m_visited; };
-    void visit()       { m_visited = true; };
-	void unvisit()     { m_visited = false; };
+
+    /** Has this node been visited (traversed)?  While compiling and perhaps
+     *  in other cases, it is useful to know if a processor has been visited
+     *  yet.  This is a leak of concerns, but much faster than most
+     *  alternatives.
+     *  @returns true if this node has been visited since the last unvisit */
+    bool isVisited()
+    {
+      return m_visited;
+
+    }
+
+    /** Mark this node as visited */
+    void visit()
+    {
+      m_visited = true;
+    }
+
+    /** Unmark this node as visited */
+    void unvisit()
+    {
+      m_visited = false;
+    };
 
   private:
     bool m_visited;

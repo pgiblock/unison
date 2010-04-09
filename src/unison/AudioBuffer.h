@@ -30,22 +30,37 @@
 
 #include "unison/Buffer.h"
 
-namespace Unison {
+namespace Unison
+{
 
-
-class AudioBuffer : public Buffer {
+/** AudioBuffer is a Buffer designed specifically for Audio.  Can be used to
+ *  connect two Ports with type=AUDIO_PORT.  AudioBuffer can be constructed two
+ *  ways, details are available in the constructor documentation. */
+class AudioBuffer : public Buffer
+{
   public:
+    /** Construct a new AudioBuffer and pass ownership to the specified
+     *  BufferProvider.  This constructor should only be called by the
+     *  BufferProvider when the pool underruns.  This function itself is not
+     *  RT-safe since malloc is called immediately. */
     AudioBuffer (BufferProvider& provider, nframes_t length) :
       Buffer(provider),
       m_length(length),
       m_ownsData(true)
     {
-      m_data = (float*)malloc(length * sizeof(float));
-      for (int i=0; i< length; ++i) {
+      m_data = (float*)malloc( length * sizeof(float) );
+      for (nframes_t i=0; i< length; ++i) {
         m_data[i] = 0.0f;
       }
     }
 
+
+    /** Constructs an AudioBuffer from existing data.  The data itself is not
+     *  managed by AudioBuffer, that is, the client is still responsible for
+     *  cleaning up the data.  AudioBuffer itself, on the otherhand, will be
+     *  deleted by the Provider when no more references exist.  This is used
+     *  to provide an AudioBuffer over data which Unison does not manage, for
+     *  example, memory returned by jack_port_get_buffer(). */
     AudioBuffer (BufferProvider& provider, nframes_t length, void * data) :
       Buffer(provider),
       m_length(length),
@@ -54,21 +69,29 @@ class AudioBuffer : public Buffer {
       m_data = (float*) data;
     }
 
+
     ~AudioBuffer ()
     {
       if (m_ownsData) { free(m_data); }
     }
 
-    PortType type ()
+
+    /** @returns the type of buffer.  Always AUDIO_PORT. */
+    PortType type () const
     {
       return AUDIO_PORT;
     }
 
-    nframes_t length ()
+
+    /** @returns the length of the buffer in frames */
+    nframes_t length () const
     {
       return m_length;
     }
 
+
+    /** Set the length of the buffer - currently unsupported.
+     *  @param len The new length, in samples */
     void setLength (nframes_t len)
     {
       if (m_ownsData) {
@@ -78,10 +101,12 @@ class AudioBuffer : public Buffer {
       }
     }
 
+
     void* data()
     {
       return m_data;
     }
+
 
     const void* data() const
     {
@@ -89,9 +114,9 @@ class AudioBuffer : public Buffer {
     }
 
   protected:
-    int m_length;
-    float* m_data;
-    bool m_ownsData;
+    int m_length;       ///< The length of the data buffer
+    float* m_data;      ///< Pointer to actual data
+    bool m_ownsData;    ///< true if we are responsible for freeing data
 };
 
 } // Unison

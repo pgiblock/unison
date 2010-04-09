@@ -30,14 +30,14 @@
 namespace Unison {
 
   JackBufferProvider* JackPort::m_jackBufferProvider =
-   new JackBufferProvider();
+      new JackBufferProvider();
 
 
   SharedBufferPtr JackBufferProvider::acquire (
       const JackPort* port, nframes_t nframes)
   {
     void* jackBuffer = jack_port_get_buffer(port->jackPort(), nframes);
-    return new AudioBuffer(*this, nframes, jackBuffer);
+    return new AudioBuffer( *this, nframes, jackBuffer );
   }
 
 
@@ -49,13 +49,11 @@ namespace Unison {
     QSet<Node* const> dependencies;
     // Within all connected ports
     // TODO: move this routine into JackEngine
-    while (name != NULL)
-    {
+    while (name != NULL) {
       // See if we own the port
       for (uint32_t i = 0; i < count; ++i) {
-        JackPort* port = m_engine.myPort(i);
-        if (port->fullName() == *name)
-        {
+        JackPort* port = m_engine.myPort( i );
+        if (port->fullName() == *name) {
           dependencies += port;
         }
       }

@@ -28,7 +28,8 @@
 
 #include <stdint.h>
 
-namespace Unison {
+namespace Unison
+{
 
 typedef uint32_t nframes_t;
 typedef uint32_t nticks_t;

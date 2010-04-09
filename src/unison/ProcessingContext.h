@@ -23,33 +23,36 @@
  */
 
 
-
 #ifndef PROCESSING_CONTEXT_H
 #define PROCESSING_CONTEXT_H
 
 #include "unison/types.h"
 
-namespace Unison {
+namespace Unison
+{
 
 /** Abstracts parameters needed while rendering nodes.
  *  Instead of relying on plugins to call out to various modules of unison, we
  *  just pass all the needed information along in this handy context. */
-class ProcessingContext {
-public:
-	ProcessingContext (nframes_t bufferSize) :
-		m_bufferSize(bufferSize)
-	{
-	}
+class ProcessingContext
+{
+  public:
+    ProcessingContext (nframes_t bufferSize) :
+      m_bufferSize(bufferSize)
+    {}
 
 
-	nframes_t bufferSize () const
-	{
-		return m_bufferSize;
-	}
+    nframes_t bufferSize () const
+    {
+      return m_bufferSize;
+    }
 
-	nframes_t m_bufferSize;
+  private:
+    nframes_t m_bufferSize;
 };
 
 } // Unison
 
 #endif // PROCESSING_CONTEXT_H
+
+// vim: et ts=8 sw=2 sts=2 noai

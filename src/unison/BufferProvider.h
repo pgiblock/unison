@@ -39,22 +39,51 @@ namespace Unison
 
 class SharedBufferPtr;
 
+
+/** BufferProvider manages Buffer allocation and freeing.  All buffers used
+ *  in Unison (at least by Ports) should be acquired through a BufferProvider.
+ *  The goal of BufferProvider is to remove buffer allocation from RT-critical
+ *  code.  The secondary goal is to decrease the number of heap allocations.
+ *  Implementations are free to pre-allocate data, allocate on demand, defer
+ *  freeing, just as long as everything is sane. */
 class BufferProvider
 {
   public:
     virtual ~BufferProvider ()
     {};
 
+    /** Aquire a buffer of request type and size.  This function is expected
+     *  to succeed.  Calling this function may cause a heap allocation.  More
+     *  thought needs to go into calling acquire() from RT code.
+     *  @param type The type of buffer to acquire
+     *  @param nframes The (minimum) size of the buffer to acquire
+     *  @returns The newly allocated, or recycled, buffer */
     virtual SharedBufferPtr acquire (PortType type, nframes_t nframes) = 0;
+
+    /** "Zero" buffers are handy for unconnected input-ports.  A Shared
+     *  pointer to shared data is returned since a zero buffer always has
+     *  the same data (all silence)
+     *  @returns A buffer, for read only, with all values = 0.0f */
     virtual SharedBufferPtr zeroAudioBuffer () const = 0;
 
   protected:
+    /** Releases the buffer, buf.  Visibility is protected since this function
+     *  should only be called by SharedBufferPtr when a buffer is no longer
+     *  referenced; in that case, the destructor of the buffer will be called.
+     *  @param buf The buffer to release */
     virtual void release (Buffer* buf) = 0;
+
     friend class SharedBufferPtr;
 };
 
 
 
+/** A Smart-pointer to a Buffer.  Provides a reference-counted pointer to a
+ *  Buffer.  This allows multiple Ports to refernce the same buffer without
+ *  the complexity of ownership.  The Buffer is returned to the BufferProvider
+ *  when no more references to this Buffer exist.
+ *  @seealso BufferProvider::release()
+ *  @TODO consider renaming */
 class SharedBufferPtr : public QSharedPointer<Buffer>
 {
   public:
@@ -75,6 +104,9 @@ class SharedBufferPtr : public QSharedPointer<Buffer>
 
 
 
+/** PooledBufferProvider is the 'default' implementation for BufferProviders.
+ *  It isn't as smart as it could be, but it at least provides reuse of
+ *  released buffers. */
 class PooledBufferProvider : public BufferProvider
 {
   public:
@@ -100,9 +132,7 @@ class PooledBufferProvider : public BufferProvider
     int m_next;
 };
 
-
 } // Unison
-
 
 #endif
 

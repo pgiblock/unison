@@ -32,55 +32,58 @@
 #include "unison/types.h"
 #include "unison/Processor.h"
 
-namespace Unison {
+namespace Unison
+{
 
-
-/** The type of plugin, regarding I/O. */
-enum PluginType {
-	SOURCE,                  ///< Plugin's audio ports are only for output
-	TRANSFER,                ///< Plugin has both input and output audio ports
-	VALID,                   ///< ???
-	INVALID,                 ///< ???
-	SINK,                    ///< Plugin's audio ports are only for input
-	OTHER                    ///< ???
+/** The type of plugin, regarding I/O.
+ *  TODO: Define this better or remove it (artifact from LMMS) */
+enum PluginType
+{
+  SOURCE,         ///< Plugin's audio ports are only for output
+  TRANSFER,       ///< Plugin has both input and output audio ports
+  VALID,          ///< ???
+  INVALID,        ///< ???
+  SINK,           ///< Plugin's audio ports are only for input
+  OTHER           ///< ???
 };
 
 
 
 /** Interface for audio, control, and maybe other "graphed" plugins for Unison.
  *  All accessors are virtual since some plugin types may be able to query the
- *  values directly from the underlying resource. */
-// TODO: Consider splitting Plugin from Processor. And allow for Plugin to
-// create a processor "instance".
-class Plugin : public Processor {
-public:
-	virtual ~Plugin () {};
+ *  values directly from the underlying resource.
+ *  TODO: Consider splitting Plugin from Processor. And allow for Plugin to
+ *  create a processor "instance". */
+class Plugin : public Processor
+{
+  public:
+    virtual ~Plugin () {};
 
-	/** @returns the name of the plugin. Such as, "Triple Oscillator" */
-	virtual QString name () const = 0;
+    /** @returns the name of the plugin. Such as, "Triple Oscillator" */
+    virtual QString name () const = 0;
 
-	/** @returns a uniqueId to be used when saving references to the plugin */
-	virtual QString uniqueId () const = 0;
+    /** @returns a uniqueId to be used when saving references to the plugin */
+    virtual QString uniqueId () const = 0;
 
-	// TODO: PluginType type(),  loadState(),  and saveState();
+    // TODO: PluginType type(),  loadState(),  and saveState();
 
-	/** @returns the count of audio input channels. 2 for stereo, etc.. */
-	virtual int audioInputCount () const = 0;
+    /** @returns the count of audio input channels. 2 for stereo, etc.. */
+    virtual int audioInputCount () const = 0;
 
-	/** @returns the count of audio output channels. 2 for stereo, etc.. */
-	virtual int audioOutputCount () const = 0;
+    /** @returns the count of audio output channels. 2 for stereo, etc.. */
+    virtual int audioOutputCount () const = 0;
 
-	/** @returns the author, or company's name. Example "Paul Giblock". */
-	virtual QString authorName () const = 0;
+    /** @returns the author, or company's name. Example "Paul Giblock". */
+    virtual QString authorName () const = 0;
 
-	/** @returns the email of the author or company. */
-	virtual QString authorEmail () const = 0;
+    /** @returns the email of the author or company. */
+    virtual QString authorEmail () const = 0;
 
-	/** @returns the homepage of the author or company. */
-	virtual QString authorHomepage() const = 0;
+    /** @returns the homepage of the author or company. */
+    virtual QString authorHomepage() const = 0;
 
-	/** @returns the copyright or license restricting usage of the plugin. */
-	virtual QString copyright() const = 0;
+    /** @returns the copyright or license restricting usage of the plugin. */
+    virtual QString copyright() const = 0;
 };
 
 /** A Safe pointer to a plugin. */
@@ -89,62 +92,73 @@ typedef Plugin* PluginPtr;
 
 
 
-class PluginDescriptor {
-public:
-	PluginDescriptor () {
-		// Not much sense initializing anything here since no defaults make
-		// sense and this class is abstract anyways.
-	}
+class PluginDescriptor
+{
+  public:
+    PluginDescriptor ()
+    {
+      // Not much sense initializing anything here since no defaults make
+      // sense and this class is abstract anyways.
+    }
 
-	PluginDescriptor (const PluginDescriptor& descriptor) :
-		m_uniqueId(descriptor.m_uniqueId),
-		m_author(descriptor.m_author),
-		m_name(descriptor.m_name),
-		m_type(descriptor.m_type),
-		m_audioInputs(descriptor.m_audioInputs),
-		m_audioOutputs(descriptor.m_audioOutputs) {}
+    PluginDescriptor (const PluginDescriptor& descriptor) :
+      m_uniqueId(descriptor.m_uniqueId),
+      m_author(descriptor.m_author),
+      m_name(descriptor.m_name),
+      m_type(descriptor.m_type),
+      m_audioInputs(descriptor.m_audioInputs),
+      m_audioOutputs(descriptor.m_audioOutputs)
+    {}
 
-	virtual ~PluginDescriptor() {}
+    virtual ~PluginDescriptor()
+    {}
 
-	virtual PluginPtr createPlugin (nframes_t sampleRate) const = 0;
+    virtual PluginPtr createPlugin (nframes_t sampleRate) const = 0;
 
-	QString name () const {
-		return m_name;
-	}
+    QString name () const
+    {
+      return m_name;
+    }
 
-	QString uniqueId () const {
-		return m_uniqueId;
-	}
+    QString uniqueId () const
+    {
+      return m_uniqueId;
+    }
 
-	PluginType type () const {
-		return m_type;
-	}
+    PluginType type () const
+    {
+      return m_type;
+    }
 
-	int audioInputCount () const {
-		return m_audioInputs;
-	}
+    int audioInputCount () const
+    {
+      return m_audioInputs;
+    }
 
-	int audioOutputCount () const {
-		return m_audioOutputs;
-	}
+    int audioOutputCount () const
+    {
+      return m_audioOutputs;
+    }
 
-	QString authorName () const {
-		return m_author;
-	}
+    QString authorName () const
+    {
+      return m_author;
+    }
 
-protected:
-	QString m_uniqueId;
-	QString m_author;
-	QString m_name;
-	PluginType m_type;
-	int m_audioInputs;
-	int m_audioOutputs;
+  protected:
+    QString m_uniqueId;
+    QString m_author;
+    QString m_name;
+    PluginType m_type;
+    int m_audioInputs;
+    int m_audioOutputs;
 };
 
 /** A Safe pointer to a plugin descriptor. */
 typedef QSharedPointer<PluginDescriptor> PluginDescriptorPtr;
 
-
 } // Unison
 
 #endif // PLUGIN_H
+
+// vim: et ts=8 sw=2 sts=2 noai

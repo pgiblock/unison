@@ -38,127 +38,128 @@ namespace Unison {
   class JackEngine;
 
   class JackBufferProvider : public BufferProvider {
-  public:
-    JackBufferProvider ()
-    {}
+    public:
+      JackBufferProvider ()
+      {}
 
-    ~JackBufferProvider()
-    {}
+      ~JackBufferProvider()
+      {}
 
-    SharedBufferPtr acquire (const JackPort * port, nframes_t nframes);
+      SharedBufferPtr acquire (const JackPort * port, nframes_t nframes);
 
-    SharedBufferPtr acquire (PortType type, nframes_t nframes) {
-      // TODO assert(false)
-      return NULL;
-    }
+      SharedBufferPtr acquire (PortType, nframes_t)
+      {
+        // TODO assert(false)
+        return NULL;
+      }
 
-    SharedBufferPtr zeroAudioBuffer () const {
-      // TODO assert(false)
-      return NULL;
-    }
+      SharedBufferPtr zeroAudioBuffer () const
+      {
+        // TODO assert(false)
+        return NULL;
+      }
 
-  protected:
-    void release (Buffer * buf) {
-      delete buf;
-    }
+    protected:
+      void release (Buffer * buf)
+      {
+        delete buf;
+      }
   };
 
 
 
   class JackPort : public Port
   {
-  public:
-    JackPort(JackEngine & engine, jack_port_t * port) :
-        Port(),
-        m_engine(engine),
-        m_port(port)
-    {
-    }
+    public:
+      JackPort(JackEngine & engine, jack_port_t * port) :
+          Port(),
+          m_engine(engine),
+          m_port(port)
+      {
+      }
 
-	QString name () const
-    {
-      return jack_port_short_name( m_port );
-    }
+      QString name () const
+      {
+        return jack_port_short_name( m_port );
+      }
 
-    QString fullName () const
-    {
-      return jack_port_name( m_port );
-    }
+      QString fullName () const
+      {
+        return jack_port_name( m_port );
+      }
 
-    PortDirection direction() const
-    {
-      JackPortFlags flags = (JackPortFlags)jack_port_flags( m_port );
-      if (flags & JackPortIsInput)  { return INPUT;  }
-      if (flags & JackPortIsOutput) { return OUTPUT; }
-      // TODO: It is a programmer error to reach this line
-    }
+      PortDirection direction() const
+      {
+        JackPortFlags flags = (JackPortFlags)jack_port_flags( m_port );
+        if (flags & JackPortIsInput)  { return INPUT;  }
+        if (flags & JackPortIsOutput) { return OUTPUT; }
+        // TODO: It is a programmer error to reach this line
+      }
 
-    PortType type () const
-    {
-      return AUDIO_PORT; // TODO!
-    }
+      PortType type () const
+      {
+        return AUDIO_PORT; // TODO!
+      }
 
-    float value () const
-    {
-      return 0.0f;
-    }
+      float value () const
+      {
+        return 0.0f;
+      }
 
-    void setValue (float value)
-    {
-    }
+      void setValue (float)
+      {
+      }
 
-    float defaultValue () const
-    {
-      return 0.0f;
-    }
+      float defaultValue () const
+      {
+        return 0.0f;
+      }
 
-    bool isBounded () const
-    {
-      return false;
-    }
+      bool isBounded () const
+      {
+        return false;
+      }
 
-    float minimum () const
-    {
-      return 0.0f;
-    }
+      float minimum () const
+      {
+        return 0.0f;
+      }
 
-    float maximum () const
-    {
-      return 0.0f;
-    }
+      float maximum () const
+      {
+        return 0.0f;
+      }
 
-    bool isToggled () const{
-      return false;
-    }
+      bool isToggled () const{
+        return false;
+      }
 
-    const QSet<Node* const> interfacedNodes () const;
+      const QSet<Node* const> interfacedNodes () const;
 
-    jack_port_t* jackPort () const {
-      return m_port;
-    }
+      jack_port_t* jackPort () const {
+        return m_port;
+      }
 
-    void acquireBuffer (BufferProvider & provider)
-    {
-      // TODO use a callback for buffer-size
-      nframes_t size = 1024; //jack_get_buffer_size(m_engine.jackClient());
-      m_buffer = m_jackBufferProvider->acquire(this, size);
-    }
+      void acquireBuffer (BufferProvider &)
+      {
+        // TODO use a callback for buffer-size
+        nframes_t size = 1024; //jack_get_buffer_size(m_engine.jackClient());
+        m_buffer = m_jackBufferProvider->acquire(this, size);
+      }
 
-    void connectToBuffer ()
-    {
+      void connectToBuffer ()
+      {
 
-    }
+      }
 
-  private:
-    JackEngine& m_engine;
-    jack_port_t* m_port;
+    private:
+      JackEngine& m_engine;
+      jack_port_t* m_port;
 
-    static JackBufferProvider * m_jackBufferProvider;
+      static JackBufferProvider * m_jackBufferProvider;
   };
 
-
 } // Unison
-
 
 #endif // JACK_PORT_H
 

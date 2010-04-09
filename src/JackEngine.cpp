@@ -26,43 +26,48 @@
 
 #include "unison/JackEngine.h"
 
-
 namespace Unison {
 
-	JackPort* JackEngine::registerPort (QString name,
-			PortDirection direction) {
-		JackPortFlags flag;
-		switch (direction) {
-			case INPUT:
-				flag = JackPortIsOutput;
-				break;
-			case OUTPUT:
-			default:
-				flag = JackPortIsInput;
-				break;
-		}
+JackPort* JackEngine::registerPort (QString name, PortDirection direction)
+{
+  JackPortFlags flag;
+  switch (direction) {
+    case INPUT:
+      flag = JackPortIsOutput;
+      break;
+    case OUTPUT:
+    default:
+      flag = JackPortIsInput;
+      break;
+  }
 
-		jack_port_t* port = jack_port_register(
-				client(), name.toLatin1(), JACK_DEFAULT_AUDIO_TYPE, flag, 0);
-		if (port) {
-			JackPort* myPort = new JackPort(*this, port);
-			m_myPorts.append( myPort );
-			return myPort;
-		}
-		return NULL;
-	}
+  jack_port_t* port = jack_port_register(
+      client(), name.toLatin1(), JACK_DEFAULT_AUDIO_TYPE, flag, 0 );
+  if (port) {
+    JackPort* myPort = new JackPort( *this, port );
+    m_myPorts.append( myPort );
+    return myPort;
+  }
+  return NULL;
+}
 
-	int JackEngine::myPortCount () const {
-		return m_myPorts.count();
-	}
 
-    JackPort* JackEngine::myPort (int index) const {
-		return m_myPorts[index];
-	}
+int JackEngine::myPortCount () const
+{
+  return m_myPorts.count();
+}
 
-    JackPort* JackEngine::myPort (QString name) const {
-		return NULL; // TODO: implement
-	}
+
+JackPort* JackEngine::myPort (int index) const
+{
+  return m_myPorts[index];
+}
+
+
+JackPort* JackEngine::myPort (QString name) const
+{
+  return NULL; // TODO: implement
+}
 
 } // Unison
 

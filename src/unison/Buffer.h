@@ -33,10 +33,19 @@ namespace Unison
 
 class BufferProvider;
 
-
+/** The buffer class represents a data buffer used to communicate between two
+ *  ports.  This could potentially be used within Processors, but right now
+ *  usage should be restricted to Ports.
+ *
+ *  Buffers cannot be copied.  Buffers are managed by a BufferProvider; this
+ *  allows buffers to be reused in a transparent fashion.  Clients should never
+ *  delete a buffer, they are automatically freed by the BufferProvider though
+ *  the SharedBufferPtr smart pointer. */
 class Buffer : PRG::Uncopyable
 {
   public:
+    /** Construct a buffer and pass ownership to the specified BufferProvider.
+     *  This constructor should generally only be called by BufferProvider */
     Buffer (BufferProvider& provider) :
       m_provider(provider)
     {}
@@ -44,14 +53,21 @@ class Buffer : PRG::Uncopyable
     virtual ~Buffer ()
     {};
 
-    virtual PortType type () = 0;
+    /** @returns the type of buffer.  Buffers are designed to only work with
+     *  a particular kind of port and the PortType must match. */
+    virtual PortType type () const = 0;
 
+    /** @returns raw data for this buffer.  Subclasses should provide more
+     *  useful accessors, but this can be used to access the data in a
+     *  generic way. */
     virtual void* data () = 0;
 
+    /** @returns constant raw data.  Like data() but does not require
+     *  non-const access to the buffer. */
     virtual const void* data () const = 0;
 
   protected:
-    BufferProvider& m_provider;
+    BufferProvider& m_provider;     ///< The owning BufferProvider
 
     friend class SharedBufferPtr;
 };
