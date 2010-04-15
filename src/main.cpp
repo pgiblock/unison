@@ -113,24 +113,24 @@ void referencePorts () {
   std::cout << "Referencing Ports" << std::endl;
   int f=0;
   foreach (Processor* n, processors) {
-          int inCnt=0, outCnt =0;
-          for (int i=0; i<n->portCount(); ++i) {
-                  Port* p = n->port(i);
-                  if (p->type() == AUDIO_PORT) {
-                    switch (p->direction()) {
-                      case INPUT:
-                        fxin[f][inCnt++] = p;
-                        break;
-                      case OUTPUT:
-                        fxout[f][outCnt++] = p;
-                        break;
-                      default:
-                        //TODO: Programming error!
-                        break;
-                    }
-                  }
-          }
-          f++;
+    int inCnt=0, outCnt =0;
+    for (int i=0; i<n->portCount(); ++i) {
+      Port* p = n->port(i);
+      if (p->type() == AUDIO_PORT) {
+        switch (p->direction()) {
+          case INPUT:
+            fxin[f][inCnt++] = p;
+            break;
+          case OUTPUT:
+            fxout[f][outCnt++] = p;
+            break;
+          default:
+            //TODO: Programming error!
+            break;
+        }
+      }
+    }
+    f++;
   }
 }
 
@@ -145,8 +145,7 @@ void bigCompile () {
     for (int i=0; i<cp.processor->portCount(); ++i) {
       Port *port = cp.processor->port(i);
       std::cout << "Next port: " << qPrintable(port->name()) << std::endl;
-      port->acquireBuffer(*pool);
-      port->connectToBuffer();
+      port->connectToBuffer(*pool);
     }
   }
 
@@ -157,157 +156,163 @@ void bigCompile () {
 
 
 int main (int argc, char ** argv) {
-    bool createGui = false;
+  bool createGui = false;
 
-    /* No need to create this yet
-    QCoreApplication * app = createGui ?
-        new QApplication( argc, argv ) :
-        new QCoreApplication( argc, argv );
+  /* No need to create this yet
+  QCoreApplication * app = createGui ?
+    new QApplication( argc, argv ) :
+    new QCoreApplication( argc, argv );
 
-    app->setApplicationName( "Unison" );
-    app->setOrganizationDomain( "unison.sourceforge.net" );
-	app->setOrganizationName( "Paul Giblock" );
-    */
+  app->setApplicationName( "Unison" );
+  app->setOrganizationDomain( "unison.sourceforge.net" );
+    app->setOrganizationName( "Paul Giblock" );
+  */
 
-    printLogo();
-	// If running in CLI mode, print a disclaimer
-	printDisclaimer();
+  printLogo();
+  // If running in CLI mode, print a disclaimer
+  printDisclaimer();
 
-	// JACK stuff
-	jackClient = jack_client_open("Unison Studio", JackNullOption, NULL);
-	if (!jackClient) { printf("Failed to connect to JACK."); }
-	else { printf("Connected to JACK.\n"); }
+  // JACK stuff
+  jackClient = jack_client_open("Unison Studio", JackNullOption, NULL);
+  if (!jackClient) { printf("Failed to connect to JACK."); }
+  else { printf("Connected to JACK.\n"); }
 
-        jackEngine = new JackEngine( jackClient );
-	jack_set_process_callback(jackClient, &processCb, NULL);
+  jackEngine = new JackEngine( jackClient );
+  jack_set_process_callback(jackClient, &processCb, NULL);
 
-        jackPorts[0] = jackEngine->registerPort("Master/out 1", INPUT);
-	jackPorts[1] = jackEngine->registerPort("Master/out 2", INPUT);
-	jackPorts[2] = jackEngine->registerPort("Master/in 1", OUTPUT);
-	jackPorts[3] = jackEngine->registerPort("Master/in 2", OUTPUT);
-	jackPorts[4] = jackEngine->registerPort("Channel/out 1", INPUT);
-	jackPorts[5] = jackEngine->registerPort("Channel/out 2", INPUT);
+  jackPorts[0] = jackEngine->registerPort("Master/out 1", INPUT);
+  jackPorts[1] = jackEngine->registerPort("Master/out 2", INPUT);
+  jackPorts[2] = jackEngine->registerPort("Master/in 1", OUTPUT);
+  jackPorts[3] = jackEngine->registerPort("Master/in 2", OUTPUT);
+  jackPorts[4] = jackEngine->registerPort("Channel/out 1", INPUT);
+  jackPorts[5] = jackEngine->registerPort("Channel/out 2", INPUT);
 
-	// Init
-	PluginManager::initializeInstance();
+  // Init
+  PluginManager::initializeInstance();
 
-        pool = new PooledBufferProvider();
-        pool->setBufferLength(jack_get_buffer_size(jackClient));
+  pool = new PooledBufferProvider();
+  pool->setBufferLength(jack_get_buffer_size(jackClient));
 
-        PluginManager * man = PluginManager::instance();
+  PluginManager * man = PluginManager::instance();
 
-	std::cout << "Creating Plugins" << std::endl;
-	processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/vynil")
-			->createPlugin(48000));
-        extraProcessor = man->descriptor(
-            //"http://calf.sourceforge.net/plugins/VintageDelay"
-            //"http://calf.sourceforge.net/plugins/Reverb"
-            //"http://calf.sourceforge.net/plugins/RotarySpeaker"
-            //"http://calf.sourceforge.net/plugins/MultiChorus"
-            "http://calf.sourceforge.net/plugins/Flanger"
-            )->createPlugin(48000);
+  std::cout << "Creating Plugins" << std::endl;
+  processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/vynil")
+                  ->createPlugin(48000));
+  extraProcessor = man->descriptor(
+      //"http://calf.sourceforge.net/plugins/VintageDelay"
+      //"http://calf.sourceforge.net/plugins/Reverb"
+      //"http://calf.sourceforge.net/plugins/RotarySpeaker"
+      //"http://calf.sourceforge.net/plugins/MultiChorus"
+      "http://calf.sourceforge.net/plugins/Flanger"
+      )->createPlugin(48000);
 
-	std::cout << "Activating Plugins" << std::endl;
-	foreach (Processor* n, processors) { n->activate(); }
+  std::cout << "Activating Plugins" << std::endl;
+  foreach (Processor* n, processors) { n->activate(); }
 
-        referencePorts();
+  referencePorts();
 
-	std::cout << "Connecting Ports" << std::endl;
-	fxout[0][0]->connect(jackPorts[4]); // Vinyl to Channel-L
-	jackPorts[5]->connect(fxout[0][1]); // Vinyl to Channel-R
+  /** TODO-NOW: Control Port stuff
+  if (type() == CONTROL_PORT) {
+    float * data = (float*)m_buffer->data();
+    data[0] = maximum();
+  }
+  */
 
-        bigCompile();
+  std::cout << "Connecting Ports" << std::endl;
+  fxout[0][0]->connect(jackPorts[4]); // Vinyl to Channel-L
+  jackPorts[5]->connect(fxout[0][1]); // Vinyl to Channel-R
 
-	std::cout << "Processing Nodes" << std::endl;
-	jack_activate(jackClient);
+  bigCompile();
 
-        //app->exec();
-        char c;
-	std::cin >> &c;
+  std::cout << "Processing Nodes" << std::endl;
+  jack_activate(jackClient);
 
-        // Add
-	processors.append(extraProcessor);
-        referencePorts();
+  //app->exec();
+  char c;
+  std::cin >> &c;
 
-        // Rewire
-	fxout[0][0]->disconnect(jackPorts[4]); // Vinyl from Channel-L
-	fxout[0][1]->disconnect(jackPorts[5]); // Vinyl from Channel-R
-        fxout[0][0]->connect(fxin[1][0]);  // Vinyl to Delay (L)
-	fxout[0][1]->connect(fxin[1][1]);  // Vinyl to Delay (R)
-	fxout[1][0]->connect(jackPorts[4]); // Delay to Channel-L
-	fxout[1][1]->connect(jackPorts[5]); // Delay to Channel-R
+  // Add
+  processors.append(extraProcessor);
+  referencePorts();
 
-        // Recompile
-        bigCompile();
+  // Rewire
+  fxout[0][0]->disconnect(jackPorts[4]); // Vinyl from Channel-L
+  fxout[0][1]->disconnect(jackPorts[5]); // Vinyl from Channel-R
+  fxout[0][0]->connect(fxin[1][0]);  // Vinyl to Delay (L)
+  fxout[0][1]->connect(fxin[1][1]);  // Vinyl to Delay (R)
+  fxout[1][0]->connect(jackPorts[4]); // Delay to Channel-L
+  fxout[1][1]->connect(jackPorts[5]); // Delay to Channel-R
 
-        //app->exec();
-	std::cin >> &c;
+  // Recompile
+  bigCompile();
 
-	std::cout << "Disconnecting JACK" << std::endl;
-	jack_deactivate(jackClient);
-	// TODO: Disconnect jack
-	jack_client_close(jackClient);
+  //app->exec();
+  std::cin >> &c;
 
-	std::cout << "Deactivating Plugins" << std::endl;
-	foreach (Processor * p, processors) { p->deactivate(); }
+  std::cout << "Disconnecting JACK" << std::endl;
+  jack_deactivate(jackClient);
+  // TODO: Disconnect jack
+  jack_client_close(jackClient);
 
-	std::cout << "Destroying Plugins" << std::endl;
-	foreach (Processor * p, processors) { delete p; }
-	delete compiled;
+  std::cout << "Deactivating Plugins" << std::endl;
+  foreach (Processor * p, processors) { p->deactivate(); }
 
-        std::cout << "Destorying PluginManager (Do more gracefully)" << std::endl;
-        PluginManager::cleanupHack();
+  std::cout << "Destroying Plugins" << std::endl;
+  foreach (Processor * p, processors) { delete p; }
+  delete compiled;
 
-	std::cout << "Bye!" << std::endl;
-	return 0;
+  std::cout << "Destorying PluginManager (Do more gracefully)" << std::endl;
+  PluginManager::cleanupHack();
+
+  std::cout << "Bye!" << std::endl;
+  return 0;
 }
-
 
 
 int processCb (jack_nframes_t nframes, void* data)
 {
-	ProcessingContext context( nframes );
+  ProcessingContext context( nframes );
 
-        // Aquire JACK buffers
-        for (int i=0; i<sizeof jackPorts / sizeof jackPorts[0]; ++i) {
-          Port *port = jackPorts[i];
-          port->acquireBuffer(*pool);
-          port->connectToBuffer();
+  // Aquire JACK buffers
+  for (int i=0; i<sizeof jackPorts / sizeof jackPorts[0]; ++i) {
+    Port *port = jackPorts[i];
+    port->connectToBuffer(*pool);
 
-          // Re-acquire buffers on ports connected to JACK
-	  foreach (Port *other, port->connectedPorts()) {
-            other->acquireBuffer(*pool);
-            other->connectToBuffer();
-          }
-        }
+    // Re-acquire buffers on ports connected to JACK
+    foreach (Port *other, port->connectedPorts()) {
+      other->connectToBuffer(*pool);
+    }
+  }
 
-	// Processing loop
-	foreach (CompiledProcessor cp, *compiled) {
-	  cp.processor->process(context);
-	}
+  // Processing loop
+  foreach (CompiledProcessor cp, *compiled) {
+    cp.processor->process(context);
+  }
 
-	return 0;
+  return 0;
 }
 
 
 
 /** Draws an ascii UNISON logo */
-void printLogo() {
-    std::cout <<
-        "   __  ___  ______________  _  __\n"
-        "  / / / / |/ /  _/ __/ __ \\/ |/ /\n"
-        " / /_/ /    // /_\\ \\/ /_/ /    / \n"
-        " \\____/_/|_/___/___/\\____/_/|_/  \n\n";
+void printLogo()
+{
+  std::cout <<
+      "   __  ___  ______________  _  __\n"
+      "  / / / / |/ /  _/ __/ __ \\/ |/ /\n"
+      " / /_/ /    // /_\\ \\/ /_/ /    / \n"
+      " \\____/_/|_/___/___/\\____/_/|_/  \n\n";
 }
 
 
 /** Draws the GPL mandated disclaimer */
-void printDisclaimer() {
-	std::cout <<
-		"Unison version 0, Copyright (C) 2010 Paul R Giblock\n"
-		"Unison comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\n"
-		"This is free software, and you are welcome to redistribute it\n"
-		"under certain conditions; type `show c' for details.\n\n";
+void printDisclaimer()
+{
+  std::cout <<
+      "Unison version 0, Copyright (C) 2010 Paul R Giblock\n"
+      "Unison comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\n"
+      "This is free software, and you are welcome to redistribute it\n"
+      "under certain conditions; type `show c' for details.\n\n";
 }
 
 // vim: et ts=8 sw=2 sts=2 noai

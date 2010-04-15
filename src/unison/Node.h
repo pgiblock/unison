@@ -33,14 +33,11 @@
 namespace Unison
 {
 
-/** Interface for all things that participate in the processing graph.
- *  TODO: We probably want to add a StandardNode abstract class that handles
- *  most features that don't vary across different Node classes. */
+/** Interface for all things that participate in the processing graph. */
 class Node {
   public:
     virtual ~Node () {};
 
-    /** Returns a set?? */
     virtual const QSet<Node* const> dependencies () const = 0;
     virtual const QSet<Node* const> dependents () const = 0;
 
@@ -52,6 +49,6 @@ typedef QSharedPointer<Node> NodePtr;
 
 } // Unison
 
-#endif // NODE_H
+#endif
 
 // vim: et ts=8 sw=2 sts=2 noai

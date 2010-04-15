@@ -22,14 +22,19 @@
  *
  */
 
+#include <QDebug>
 #include <jack/jack.h>
 
 #include "unison/JackEngine.h"
 
-namespace Unison {
+namespace Unison
+{
 
 JackPort* JackEngine::registerPort (QString name, PortDirection direction)
 {
+  // Build Jack flags, currently just direction. Which, is reversed since
+  // our Ports' directions are relative to Unison's connections but
+  // jack_port_t's direction is relative to Jack's graph.
   JackPortFlags flag;
   switch (direction) {
     case INPUT:
@@ -46,8 +51,10 @@ JackPort* JackEngine::registerPort (QString name, PortDirection direction)
   if (port) {
     JackPort* myPort = new JackPort( *this, port );
     m_myPorts.append( myPort );
+    qDebug() << "Jack port registered: " << myPort->name();
     return myPort;
   }
+  qWarning() << "Jack port registration failed for port: " << name;
   return NULL;
 }
 

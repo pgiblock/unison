@@ -22,6 +22,8 @@
  *
  */
 
+#include <QDebug>
+
 #include "unison/BufferProvider.h"
 #include "unison/AudioBuffer.h"
 #include "unison/ControlBuffer.h"
@@ -41,7 +43,7 @@ PooledBufferProvider::PooledBufferProvider () :
 SharedBufferPtr PooledBufferProvider::acquire (
     PortType type, nframes_t nframes)
 {
-  //TODO assert(nframes == m_periodLength); (or whatever)
+  Q_ASSERT(nframes == m_periodLength);
   QStack<Buffer*>* stack;
   switch (type) {
     case AUDIO_PORT:
@@ -51,7 +53,7 @@ SharedBufferPtr PooledBufferProvider::acquire (
       stack = &m_controlBuffers;
       break;
     default:
-      // TODO: assert(false);
+      Q_ASSERT_X(0, "acquire", "unknown port type");
       return NULL;
   }
 
@@ -60,18 +62,20 @@ SharedBufferPtr PooledBufferProvider::acquire (
   }
 
   //TODO ensure we are not in processing thread
+  Buffer* buf;
   switch (type) {
     case AUDIO_PORT:
-      std::cout << "New Audio Buffer " << nframes << " frames." << std::endl;
-      return new AudioBuffer( *this, nframes );
+      qDebug() << "New Audio Buffer " << nframes << " frames.";
+      buf = new AudioBuffer( *this, nframes );
+      break;
+
     case CONTROL_PORT:
-      std::cout << "New Control Buffer" << std::endl;
-      return new ControlBuffer( *this );
-    default:
-      std::cout << "Couldn't create unknown port" << std::endl;
-      // TODO: assert(false);
-      return NULL;
+      qDebug() << "New Control Buffer";
+      buf = new ControlBuffer( *this );
+      break;
   }
+  Q_CHECK_PTR(buf);
+  return buf;
 }
 
 
@@ -95,13 +99,12 @@ nframes_t PooledBufferProvider::bufferLength ()
 }
 
 
-void PooledBufferProvider::release (Buffer * buf)
+void PooledBufferProvider::release (Buffer* buf)
 {
   switch (buf->type()) {
     case AUDIO_PORT:
       if (((AudioBuffer*)buf)->length() != bufferLength()) {
-        // FIXME
-        std::cout << "Deleting buffer, wrong size!" << std::endl;
+        qWarning() << "Releasing buffer of wrong size.  Deleting buffer instead!";
         delete buf;
       }
       else {
@@ -114,8 +117,7 @@ void PooledBufferProvider::release (Buffer * buf)
       break;
 
     default:
-      // TODO: Unhandled port!!
-      break;
+      Q_ASSERT_X(0, "release", "unknown port type");
   }
 }
 

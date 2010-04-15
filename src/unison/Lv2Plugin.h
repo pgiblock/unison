@@ -83,7 +83,7 @@ class Lv2Plugin : public Plugin
           slv2_value_as_uri( slv2_plugin_get_uri( m_plugin ) ) );
     }
 
-    // TODO: PluginType type();
+    // TODO: PluginType type(); // VST, LADSPA, LV2, DSSI, etc..
 
     int audioInputCount () const;
     int audioOutputCount () const;
@@ -151,8 +151,6 @@ class Lv2PluginDescriptor : public PluginDescriptor
     Lv2PluginDescriptor (const Lv2PluginDescriptor& descriptor);
 
     PluginPtr createPlugin (nframes_t sampleRate) const;
-
-    // TODO: Lv2World and SLV2Plugin Ptr accessors?
 
   private:
     Lv2World& m_world;

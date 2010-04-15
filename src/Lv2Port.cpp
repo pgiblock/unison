@@ -26,9 +26,10 @@
 #include "unison/Lv2Port.h"
 #include "unison/BufferProvider.h"
 
-namespace Unison {
+namespace Unison
+{
 
-Lv2Port::Lv2Port (const Lv2World & world, Lv2Plugin * plugin, uint32_t index) :
+Lv2Port::Lv2Port (const Lv2World& world, Lv2Plugin* plugin, uint32_t index) :
   Port(),
   m_world(world),
   m_plugin(plugin),
@@ -61,7 +62,7 @@ Lv2Port::Lv2Port (const Lv2World & world, Lv2Plugin * plugin, uint32_t index) :
 
 Lv2Port::~Lv2Port ()
 {
-  // Is the LVPort just a handle to the Plugin?
+  // I don't believe SLV2 requires us to free the port.
 }
 
 
@@ -91,7 +92,7 @@ PortDirection Lv2Port::direction () const
   if (slv2_port_is_a( plugin, m_port, m_world.outputClass )) {
     return OUTPUT;
   }
-  // TODO: Fail.
+  Q_ASSERT(false);
 }
 
 
@@ -106,32 +107,27 @@ QString Lv2Port::name () const
 
 
 const QSet<Node* const> Lv2Port::interfacedNodes () const {
-	QSet<Node* const> p;
-	p.insert( m_plugin );
-	return p;
+  QSet<Node* const> p;
+  p.insert( m_plugin );
+  return p;
 }
 
 
-void Lv2Port::connectToBuffer() {
-	slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buffer()->data());
-}
-
-
-void Lv2Port::acquireBuffer (BufferProvider & provider)
+void Lv2Port::connectToBuffer(BufferProvider& provider)
 {
   int numConnections;
   switch (direction()) {
     case INPUT:
       numConnections = dependencies().count();
-      if (type() == AUDIO_PORT && numConnections == 0) {
-        // Use silence
-        m_buffer = provider.zeroAudioBuffer();
-      }
-      else if (numConnections == 1) {
+      if (numConnections == 1) {
         // Use the other port's buffer
-        // TODO: ensure type is the same? or at least make sure on connect
+        // type should match due to validation on connect
         Port* other = (Port*) *(dependencies().begin());
         m_buffer = other->buffer();
+      }
+      else if (type() == AUDIO_PORT && numConnections == 0) {
+        // Use silence
+        m_buffer = provider.zeroAudioBuffer();
       }
 
       if (!m_buffer) {
@@ -139,18 +135,12 @@ void Lv2Port::acquireBuffer (BufferProvider & provider)
         m_buffer = provider.acquire(type(), 1024);
       }
 
-      // TODO: Remove this hack
-      if (type() == CONTROL_PORT) {
-              float * data = (float*)m_buffer->data();
-              data[0] = maximum();
-      }
       break;
 
     case OUTPUT:
       numConnections = dependents().count();
       if (numConnections == 1) {
         // Use the other port's buffer
-        // TODO: ensure type is the same? or at least make sure on connect
         Port* other = (Port*) *(dependents().begin());
         m_buffer = other->buffer();
       }
@@ -160,6 +150,7 @@ void Lv2Port::acquireBuffer (BufferProvider & provider)
       }
       break;
   }
+  slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buffer()->data());
 }
 
 } // Unison

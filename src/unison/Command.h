@@ -23,8 +23,8 @@
  */
 
 
-#ifndef COMMAND_H
-#define COMMAND_H
+#ifndef UNISON_COMMAND_H
+#define UNISON_COMMAND_H
 
 #include <QUndoCommand>
 
@@ -40,3 +40,4 @@ typedef QUndoCommand Command;
 
 #endif
 
+// vim: et ts=8 sw=2 sts=2 noai

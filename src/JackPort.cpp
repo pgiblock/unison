@@ -23,11 +23,14 @@
  */
 
 #include <jack/jack.h>
+#include <QDebug>
+
 #include "unison/AudioBuffer.h"
 #include "unison/JackEngine.h"
 #include "unison/JackPort.h"
 
-namespace Unison {
+namespace Unison
+{
 
   JackBufferProvider* JackPort::m_jackBufferProvider =
       new JackBufferProvider();
@@ -36,10 +39,23 @@ namespace Unison {
   SharedBufferPtr JackBufferProvider::acquire (
       const JackPort* port, nframes_t nframes)
   {
+    // TODO: assert only called within process thread
     void* jackBuffer = jack_port_get_buffer(port->jackPort(), nframes);
     return new AudioBuffer( *this, nframes, jackBuffer );
   }
 
+
+  SharedBufferPtr JackBufferProvider::acquire (PortType, nframes_t)
+  {
+    qCritical() << "JackBufferProvider acquire called, programming error";
+    return NULL;
+  }
+
+  SharedBufferPtr JackBufferProvider::zeroAudioBuffer () const
+  {
+    qCritical() << "JackBufferProvider acquire called, programming error";
+    return NULL;
+  }
 
   const QSet<Node* const> JackPort::interfacedNodes () const
   {
@@ -48,7 +64,6 @@ namespace Unison {
 
     QSet<Node* const> dependencies;
     // Within all connected ports
-    // TODO: move this routine into JackEngine
     while (name != NULL) {
       // See if we own the port
       for (uint32_t i = 0; i < count; ++i) {

@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef JACK_ENGINE_H
-#define JACK_ENGINE_H
+#ifndef UNISON_JACK_ENGINE_H
+#define UNISON_JACK_ENGINE_H
 
 #include <QVarLengthArray>
 
@@ -32,35 +32,34 @@
 namespace Unison
 {
 
-  class JackEngine
-  {
-    public:
-      // TODO: This temporary constructor just makes JackEngine behave as a
-      // wrapper around an seperately manage jack_client. This is good for
-      // testing.
-      JackEngine (jack_client_t* client) :
-        m_client( client )
-      {
-      }
+class JackEngine
+{
+  public:
+    // TODO-NOW: This temporary constructor just makes JackEngine behave as a
+    // wrapper around an seperately manage jack_client. This is good for
+    // testing but sucks overall.
+    JackEngine (jack_client_t* client) :
+      m_client( client )
+    {}
 
-      jack_client_t* client () const {
-        return m_client;
-      }
+    jack_client_t* client () const
+    {
+      return m_client;
+    }
 
-      JackPort* registerPort (QString name, PortDirection direction);
+    JackPort* registerPort (QString name, PortDirection direction);
 
-      int myPortCount () const;
-      JackPort* myPort (int index) const;
-      JackPort* myPort (QString name) const;
+    int myPortCount () const;
+    JackPort* myPort (int index) const;
+    JackPort* myPort (QString name) const;
 
-    private:
-      jack_client_t* m_client;
-      QVarLengthArray<JackPort*> m_myPorts;
-  };
+  private:
+    jack_client_t* m_client;
+    QVarLengthArray<JackPort*> m_myPorts;
+};
 
 } // Unison
 
-
-#endif // JACK_ENGINE_H
+#endif
 
 // vim: et ts=8 sw=2 sts=2 noai

@@ -37,7 +37,9 @@ namespace Unison
 /** A Port on a plugin.  I wonder if we should be calling slv2 functions, or
  *  maybe we should just copy all the data into the class?  Another idea is a
  *  PluginPort that does index-based accesses on a Plugin.  No Port subclass
- *  is needed for Lv2, VST, DSSI, plugins.. */
+ *  is needed for Lv2, VST, DSSI, plugins..
+ *  Overall, Lv2Port does alot of stuff that should be reused when
+ *  implementing ports for other processor types (VST etc..) */
 class Lv2Port : public Port
 {
   public:
@@ -81,14 +83,13 @@ class Lv2Port : public Port
 
     bool isToggled () const
     {
-      return slv2_port_has_property( m_plugin->slv2Plugin(), m_port,
-                                                                       m_world.toggled );
+      return slv2_port_has_property( m_plugin->slv2Plugin(),
+                                     m_port, m_world.toggled );
     }
 
     const QSet<Node* const> interfacedNodes () const;
 
-    void acquireBuffer (BufferProvider & provider);
-    void connectToBuffer();
+    void connectToBuffer (BufferProvider & provider);
 
   private:
     const Lv2World & m_world;

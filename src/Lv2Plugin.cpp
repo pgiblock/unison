@@ -22,6 +22,7 @@
  *
  */
 
+#include <QDebug>
 #include <QSet>
 
 #include "unison/Lv2Plugin.h"
@@ -34,6 +35,7 @@ namespace Unison
 Lv2World::Lv2World ()
 {
   world=slv2_world_new();
+  Q_ASSERT(world);
   slv2_world_load_all( world );
 
   // Hold on to these classes for performance
@@ -50,6 +52,8 @@ Lv2World::Lv2World ()
       slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "inPlaceBroken" );
   gtkGui =
       slv2_value_new_uri( world, "http://lv2plug.in/ns/extensions/ui#GtkUI" );
+
+  qDebug() << "Created Lv2World.";
 }
 
 
@@ -94,11 +98,9 @@ Lv2Plugin::Lv2Plugin (const Lv2Plugin& other) :
 void Lv2Plugin::init ()
 {
   m_activated = false;
-  // TODO: Pass in features
   m_instance = slv2_plugin_instantiate( m_plugin, m_sampleRate, NULL );
-  assert(m_instance);
+  Q_ASSERT(m_instance);
 
-  // TODO: this is ugly. write copy ctors and assignment operators and cp by val.
   int count = portCount();
   m_ports.resize( count );
   for (int i = 0; i < count; ++i) {
@@ -111,6 +113,8 @@ void Lv2Plugin::init ()
   m_authorName     = slv2_plugin_get_author_name( m_plugin );
   m_authorEmail    = slv2_plugin_get_author_email( m_plugin );
   m_authorHomepage = slv2_plugin_get_author_homepage( m_plugin );
+
+  qDebug() << "Instantiated Lv2Plugin:" << m_name;
 }
 
 
@@ -121,7 +125,6 @@ Lv2Plugin::~Lv2Plugin () {
   slv2_value_free( m_authorName );
   slv2_value_free( m_authorEmail );
   slv2_value_free( m_authorHomepage );
-  //slv2_value_free( m_copyright );
   for (int i=0; i<m_ports.count(); ++i) {
     delete m_ports[i];
   }
@@ -170,33 +173,25 @@ int Lv2Plugin::audioOutputCount () const
 
 QString Lv2Plugin::authorName () const
 {
-  return QString::fromAscii( m_authorName ?
-      slv2_value_as_string( m_authorName ) :
-      "Unknown" );
+  return m_authorName ? slv2_value_as_string( m_authorName ) : "Unknown";
 }
 
 
 QString Lv2Plugin::authorEmail () const
 {
-  return QString::fromAscii( m_authorEmail ?
-      slv2_value_as_string( m_authorEmail ) :
-      NULL );
+  return m_authorEmail ? slv2_value_as_string( m_authorEmail ) : NULL;
 }
 
 
 QString Lv2Plugin::authorHomepage () const
 {
-  return QString::fromAscii( m_authorHomepage ?
-      slv2_value_as_string( m_authorHomepage ) :
-      NULL );
+  return m_authorHomepage ? slv2_value_as_string( m_authorHomepage ) : NULL;
 }
 
 
 QString Lv2Plugin::copyright () const
 {
-  return QString::fromAscii( m_copyright ?
-      slv2_value_as_string( m_copyright ) :
-      NULL );
+  return m_copyright ? slv2_value_as_string( m_copyright ) : NULL;
 }
 
 
@@ -211,7 +206,7 @@ const QSet<Node* const> Lv2Plugin::dependencies () const
   QSet<Node* const> n;
   int count = portCount();
   for (int i=0; i<count; ++i) {
-    Port * p  = port(i);
+    Port* p  = port(i);
     if (p->direction() == INPUT) {
       n += p;
     }
@@ -224,7 +219,7 @@ const QSet<Node* const> Lv2Plugin::dependents () const {
   QSet<Node* const> n;
   int count = portCount();
   for (int i=0; i<count; ++i) {
-    Port * p  = port(i);
+    Port* p  = port(i);
     if (p->direction() == OUTPUT) {
       n += p;
     }
@@ -257,7 +252,7 @@ Lv2PluginDescriptor::Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin) :
   m_audioOutputs = slv2_plugin_get_num_ports_of_class( plugin,
           world.outputClass, world.audioClass, NULL );
 
-  // TODO: break type-calculation into private Plugin helper fn
+  // TODO: Are 'types' needed? if so, move to non-virtual Plugin function
   if (m_audioInputs > 0) {
     if (m_audioOutputs > 0) {
       m_type = TRANSFER;

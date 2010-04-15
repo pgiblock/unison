@@ -35,7 +35,9 @@ namespace Unison
 class ProcessingContext;
 
 /** A Port interface on a plugin.  Encapsulates audio, control, midi, and
- *  possibly other port types we may eventually be interested in. */
+ *  possibly other port types we may eventually be interested in.
+ *  Lv2Port contains a full implementaion and should probably be split so that
+ *  new Ports like Vst, Ladspa, etc.. can reuse the impl. */
 class Port : public Node
 {
   public:
@@ -51,7 +53,6 @@ class Port : public Node
     /** @returns the type of port */
     virtual PortType type() const = 0;
 
-    /* TODO: Replace isInput/Output() with direction() ? */
     /** @returns true if this port is an input port */
     virtual PortDirection direction() const = 0;
 
@@ -81,19 +82,14 @@ class Port : public Node
 
     /** Called in Process thread to assign the buffer used by this port
      *  sub-classes may choose to assign a buffer from the BufferProvider
-     *  or from some other source.
-     *  TODO: What is the contract regarding InputPort who don't reuse
-     *  the connected Buffer? */
-    virtual void acquireBuffer (BufferProvider & provider) = 0;
+     *  or from some other source. */
+    virtual void connectToBuffer (BufferProvider & provider) = 0;
 
     /** Called in Process thread to retrieve the buffer for this Port */
     SharedBufferPtr buffer ()
     {
       return m_buffer;
     }
-
-    /** TODO: can possibly be merged with assignBuffer */
-    virtual void connectToBuffer () = 0;
 
     // Connection stuff
     void connect (Port* other);

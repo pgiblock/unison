@@ -22,15 +22,13 @@
  *
  */
 
-#ifndef BUFFER_PROVIDER_H
-#define BUFFER_PROVIDER_H
-
-#include <iostream>
-#include <malloc.h>
+#ifndef UNISON_BUFFER_PROVIDER_H
+#define UNISON_BUFFER_PROVIDER_H
 
 #include <QStack>
 #include <QSharedPointer>
 
+#include "prg/Uncopyable.h"
 #include "unison/Buffer.h"
 #include "unison/types.h"
 
@@ -46,7 +44,7 @@ class SharedBufferPtr;
  *  code.  The secondary goal is to decrease the number of heap allocations.
  *  Implementations are free to pre-allocate data, allocate on demand, defer
  *  freeing, just as long as everything is sane. */
-class BufferProvider
+class BufferProvider : PRG::Uncopyable
 {
   public:
     virtual ~BufferProvider ()
@@ -82,8 +80,7 @@ class BufferProvider
  *  Buffer.  This allows multiple Ports to refernce the same buffer without
  *  the complexity of ownership.  The Buffer is returned to the BufferProvider
  *  when no more references to this Buffer exist.
- *  @seealso BufferProvider::release()
- *  @TODO consider renaming */
+ *  @seealso BufferProvider::release() */
 class SharedBufferPtr : public QSharedPointer<Buffer>
 {
   public:
@@ -96,7 +93,7 @@ class SharedBufferPtr : public QSharedPointer<Buffer>
     {}
 
   protected:
-    static void deleter (Buffer * buf)
+    static void deleter (Buffer* buf)
     {
       buf->m_provider.release(buf);
     }
@@ -122,7 +119,7 @@ class PooledBufferProvider : public BufferProvider
     SharedBufferPtr acquire (PortType type, nframes_t nframes);
 
   protected:
-    void release (Buffer * buf);
+    void release (Buffer* buf);
 
     // TODO: Use something RT-safe, instead of QStack
     QStack<Buffer*> m_audioBuffers;

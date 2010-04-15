@@ -35,10 +35,7 @@ namespace Unison
 class ProcessingContext;
 
 /** Interface for all Nodes that need to have some degree of processing
- *  performed on them.
- *  TODO: We probably want to add a StandardProcessor abstract class that handles
- *  most features that don't vary across different Node classes. */
-
+ *  performed on them. */
 class Processor : public Node
 {
   public:
@@ -48,7 +45,6 @@ class Processor : public Node
     /** @return the total number of ports of all kinds */
     virtual int portCount () const = 0;
 
-    /* TODO: Return Port* or shared pointer? */
     virtual Port* port (int idx) const = 0;
 
     virtual void activate () = 0;

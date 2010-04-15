@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef CONTROL_BUFFER_H
-#define CONTROL_BUFFER_H
+#ifndef UNISON_CONTROL_BUFFER_H
+#define UNISON_CONTROL_BUFFER_H
 
 #include "unison/Buffer.h"
 

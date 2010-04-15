@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef BUFFER_H
-#define BUFFER_H
+#ifndef UNISON_BUFFER_H
+#define UNISON_BUFFER_H
 
 #include "prg/Uncopyable.h"
 #include "unison/types.h"
@@ -73,7 +73,6 @@ class Buffer : PRG::Uncopyable
 };
 
 } // Unison
-
 
 #endif
 

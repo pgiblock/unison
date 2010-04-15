@@ -22,10 +22,9 @@
  *
  */
 
-#ifndef AUDIO_BUFFER_H
-#define AUDIO_BUFFER_H
+#ifndef UNISON_AUDIO_BUFFER_H
+#define UNISON_AUDIO_BUFFER_H
 
-#include <iostream>
 #include <malloc.h>
 
 #include "unison/Buffer.h"

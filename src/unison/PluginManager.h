@@ -64,7 +64,7 @@ class PluginManager
     PluginDescriptorPtr descriptor (const QString plugin);
 
     /** Creates our singleton instance.  Must be called during application
-            boot. */
+     *  boot. */
     static void initializeInstance()
     {
       if (m_instance == NULL) {
@@ -78,11 +78,13 @@ class PluginManager
       return m_instance;
     }
 
-    /** TODO: Something better */
+    /** TODO-NOW: Something better */
     static void cleanupHack() {
       delete m_instance;
       m_instance = NULL;
     }
+
+    /* TODO: some means of caching plugin details to a datastore */
 
   protected:
     PluginManager ();
@@ -95,10 +97,6 @@ class PluginManager
 
     typedef QMap<QString, PluginDescriptorPtr> Lv2PluginDescriptorMap;
     Lv2PluginDescriptorMap m_lv2DescriptorMap;
-
-    // TODO: Bring back
-    // void ensureLV2DataExists (PluginDescriptor *desc);
-    // l_sortable_plugin_t m_sortedPlugins;
 
     static PluginManager * m_instance;
 };

@@ -37,17 +37,17 @@
 namespace Unison {
 
 // There is only one of these...
-PluginManager * PluginManager::m_instance = static_cast<PluginManager *>(NULL);
+PluginManager* PluginManager::m_instance = static_cast<PluginManager*>(NULL);
 
 PluginManager::PluginManager() :
   m_lv2World(),
   m_lv2DescriptorMap()
 {
+  qDebug( "Initializing Plugin Manager" );
   if (m_lv2World.world == NULL) {
-    printf( "Failed to Initialize slv2_world\n" );
+    qWarning(  "Failed to Initialize slv2_world" );
     return;
   }
-  printf( "Initialized slv2_world\n" );
 
   // Do Lv2-Plugin discovery
 
@@ -55,13 +55,14 @@ PluginManager::PluginManager() :
   SLV2Plugins lv2PluginList = slv2_world_get_all_plugins( m_lv2World.world );
   size_t lv2PluginListSize = slv2_plugins_size( lv2PluginList );
 
-  // TODO: Allow user to choose multiple paths
+  // TODO-NOW: Allow user to choose multiple paths
   for (unsigned i=0; i < lv2PluginListSize; ++i) {
     SLV2Plugin p = slv2_plugins_get_at( lv2PluginList, i );
     addLv2Plugin( p );
   }
 
   slv2_plugins_free( m_lv2World.world, lv2PluginList );
+  qDebug( "Done initializing Plugin Manager" );
 }
 
 

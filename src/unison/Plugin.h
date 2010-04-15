@@ -53,7 +53,8 @@ enum PluginType
  *  All accessors are virtual since some plugin types may be able to query the
  *  values directly from the underlying resource.
  *  TODO: Consider splitting Plugin from Processor. And allow for Plugin to
- *  create a processor "instance". */
+ *  create a processor "instance". Or better, Move most of the slv2_plugin
+ *  functions from Lv2Plugin to PluginDescriptor instead?*/
 class Plugin : public Processor
 {
   public:
