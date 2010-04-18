@@ -1,114 +1,48 @@
+/*
+ * main.cpp
+ *
+ * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
+ *
+ * This file is part of Unison - http://unison.sourceforge.net
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program (see COPYING); if not, write to the
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301 USA.
+ *
+ */
+
 #include <iostream>
 
 #include <QtGui/QApplication>
 #include <QSet>
-#include <jack/jack.h>
-#include "unison/BufferProvider.h"
+#include "unison/JackEngine.h"
 #include "unison/PluginManager.h"
 #include "unison/ProcessingContext.h"
-#include "unison/JackEngine.h"
+#include "unison/Session.h"
 
 using namespace Unison;
 
 void printLogo();
 void printDisclaimer();
-int processCb(jack_nframes_t nframes, void* data);
 
-// Engine stuff
-jack_client_t * jackClient;
-JackEngine * jackEngine;
-PooledBufferProvider * pool;
-
-// Node referencing
-Port* fxin[2][2];
-Port* fxout[2][2];
-JackPort* jackPorts[6];
-QList<Processor*> processors;
-Processor* extraProcessor;
-
-struct CompiledProcessor {
-  Processor * processor;
-};
-
-
-QAtomicPointer< QList<CompiledProcessor> > compiled;
-
-int numBuffers = 0;
-int numBuffersNeeded = 0;
-
-void compileRecursive (Node* n, QList<CompiledProcessor>& output)
-{
-  // TODO: Dynamic cast is bad. any better way to do this other
-  // than moving process(), visit(), isVisited() etc to Node?
-  Processor* p = dynamic_cast<Processor*>( n );
-  if (p == NULL || !p->isVisited()) {
-    std::cout << "  " << qPrintable(n->name()) << std::endl;
-    if (p) {
-      p->visit();
-    }
-    foreach (Node* dep, n->dependencies()) {
-      compileRecursive( dep, output );
-    }
-    if (p) {
-      CompiledProcessor cp;
-      cp.processor = p;
-      output.append(cp);
-    }
-  }
-}
-/*
-  Alternate compilation method:
-  create set of all nodes - these are "untraversed".
-  remove from traversed, recurse into dependents, add to compiled-list
-*/
-
-
-void compile (QList<Processor*> input, QList<CompiledProcessor>& output) {
-
-  // Mark everything as unvisited
-  QListIterator<Processor*> i( input );
-  while (i.hasNext()) {
-    i.next()->unvisit();
-  }
-
-  // Process nodes that are pure-sinks first
-  i.toFront();
-  while (i.hasNext()) {
-    Processor* proc = i.next();
-
-    bool isSink = true;
-
-    // For each output port
-    for (int j = 0; j < proc->portCount(); ++j) {
-      Port* port = proc->port(j);
-      if (port->direction() == OUTPUT) {
-        // For all connected Ports.
-        QSetIterator<Node* const> k( port->dependents() );
-        while (k.hasNext()) {
-          Port* otherPort = (Port*)k.next();
-          // Not a sink if a connected port has any dependents.
-          if (otherPort->dependents().count() != 0) {
-            isSink = false;
-            goto notSink;
-          }
-        }
-      }
-    }
-    notSink:
-    if (isSink) {
-      compileRecursive( proc, output );
-    }
-  }
-
-  // Then compile everything else
-  QListIterator<Processor*> p( input );
-  while (p.hasNext()) {
-    compileRecursive( p.next(), output );
-  }
-}
-
+Session * session;
 
 /** A stupid function to alias ports so we can connect to them */
+/*
+Port* fxin[2][2];
+Port* fxout[2][2];
+Processor* extraProcessor;
 void referencePorts () {
   std::cout << "Referencing Ports" << std::endl;
   int f=0;
@@ -132,10 +66,11 @@ void referencePorts () {
     }
     f++;
   }
-}
+}*/
 
 
 void bigCompile () {
+  /* TODO-NOW: refactor this to someplace else
   std::cout << "Compiling" << std::endl;
   QList<CompiledProcessor>* compiledSwap = new QList<CompiledProcessor>();
   compile( processors, *compiledSwap );
@@ -152,6 +87,7 @@ void bigCompile () {
   // FIXME: this is probably not sufficient.
   compiledSwap = compiled.fetchAndStoreRelaxed( compiledSwap );
   delete compiledSwap;
+  */
 }
 
 
@@ -172,26 +108,21 @@ int main (int argc, char ** argv) {
   // If running in CLI mode, print a disclaimer
   printDisclaimer();
 
-  // JACK stuff
-  jackClient = jack_client_open("Unison Studio", JackNullOption, NULL);
-  if (!jackClient) { printf("Failed to connect to JACK."); }
-  else { printf("Connected to JACK.\n"); }
+  // TODO: Obviously we wouldnt really (mis)manage these this way.
+  JackEngine* engine = new JackEngine();
+  session = new Session(*engine);
 
-  jackEngine = new JackEngine( jackClient );
-  jack_set_process_callback(jackClient, &processCb, NULL);
-
-  jackPorts[0] = jackEngine->registerPort("Master/out 1", INPUT);
-  jackPorts[1] = jackEngine->registerPort("Master/out 2", INPUT);
-  jackPorts[2] = jackEngine->registerPort("Master/in 1", OUTPUT);
-  jackPorts[3] = jackEngine->registerPort("Master/in 2", OUTPUT);
-  jackPorts[4] = jackEngine->registerPort("Channel/out 1", INPUT);
-  jackPorts[5] = jackEngine->registerPort("Channel/out 2", INPUT);
+  JackPort* jackPorts[6];
+  jackPorts[0] = engine->registerPort("Master/out 1",  INPUT);
+  jackPorts[1] = engine->registerPort("Master/out 2",  INPUT);
+  jackPorts[2] = engine->registerPort("Master/in 1",   OUTPUT);
+  jackPorts[3] = engine->registerPort("Master/in 2",   OUTPUT);
+  jackPorts[4] = engine->registerPort("Channel/out 1", INPUT);
+  jackPorts[5] = engine->registerPort("Channel/out 2", INPUT);
 
   // Init
+  /*
   PluginManager::initializeInstance();
-
-  pool = new PooledBufferProvider();
-  pool->setBufferLength(jack_get_buffer_size(jackClient));
 
   PluginManager * man = PluginManager::instance();
 
@@ -209,14 +140,13 @@ int main (int argc, char ** argv) {
   std::cout << "Activating Plugins" << std::endl;
   foreach (Processor* n, processors) { n->activate(); }
 
-  referencePorts();
+  //referencePorts();
 
-  /** TODO-NOW: Control Port stuff
+   TODO-NOW: Control Port stuff
   if (type() == CONTROL_PORT) {
     float * data = (float*)m_buffer->data();
     data[0] = maximum();
   }
-  */
 
   std::cout << "Connecting Ports" << std::endl;
   fxout[0][0]->connect(jackPorts[4]); // Vinyl to Channel-L
@@ -225,7 +155,7 @@ int main (int argc, char ** argv) {
   bigCompile();
 
   std::cout << "Processing Nodes" << std::endl;
-  jack_activate(jackClient);
+  jackEngine->activate();
 
   //app->exec();
   char c;
@@ -234,26 +164,29 @@ int main (int argc, char ** argv) {
   // Add
   processors.append(extraProcessor);
   referencePorts();
+  */
 
   // Rewire
+  /*
   fxout[0][0]->disconnect(jackPorts[4]); // Vinyl from Channel-L
   fxout[0][1]->disconnect(jackPorts[5]); // Vinyl from Channel-R
   fxout[0][0]->connect(fxin[1][0]);  // Vinyl to Delay (L)
   fxout[0][1]->connect(fxin[1][1]);  // Vinyl to Delay (R)
   fxout[1][0]->connect(jackPorts[4]); // Delay to Channel-L
   fxout[1][1]->connect(jackPorts[5]); // Delay to Channel-R
+  */
 
   // Recompile
   bigCompile();
 
   //app->exec();
+  char c;
   std::cin >> &c;
 
   std::cout << "Disconnecting JACK" << std::endl;
-  jack_deactivate(jackClient);
-  // TODO: Disconnect jack
-  jack_client_close(jackClient);
+  engine->deactivate();
 
+  /*
   std::cout << "Deactivating Plugins" << std::endl;
   foreach (Processor * p, processors) { p->deactivate(); }
 
@@ -263,35 +196,11 @@ int main (int argc, char ** argv) {
 
   std::cout << "Destorying PluginManager (Do more gracefully)" << std::endl;
   PluginManager::cleanupHack();
+  */
 
   std::cout << "Bye!" << std::endl;
   return 0;
 }
-
-
-int processCb (jack_nframes_t nframes, void* data)
-{
-  ProcessingContext context( nframes );
-
-  // Aquire JACK buffers
-  for (int i=0; i<sizeof jackPorts / sizeof jackPorts[0]; ++i) {
-    Port *port = jackPorts[i];
-    port->connectToBuffer(*pool);
-
-    // Re-acquire buffers on ports connected to JACK
-    foreach (Port *other, port->connectedPorts()) {
-      other->connectToBuffer(*pool);
-    }
-  }
-
-  // Processing loop
-  foreach (CompiledProcessor cp, *compiled) {
-    cp.processor->process(context);
-  }
-
-  return 0;
-}
-
 
 
 /** Draws an ascii UNISON logo */
@@ -315,4 +224,4 @@ void printDisclaimer()
       "under certain conditions; type `show c' for details.\n\n";
 }
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

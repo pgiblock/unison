@@ -22,99 +22,76 @@
 #
 
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+cmake_minimum_required(VERSION 2.6)
 
-PROJECT(unison)
+project(unison)
 
-INCLUDE(CheckIncludeFiles)
-INCLUDE(CheckLibraryExists)
-INCLUDE(FindPkgConfig)
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
-FILE(GLOB_RECURSE unison_includes ${CMAKE_SOURCE_DIR}/*.h)
-FILE(GLOB_RECURSE unison_srcs     ${CMAKE_SOURCE_DIR}/*.cpp)
+include(DefineCMakeDefaults)
+include(DefineCompilerFlags)
 
+#include(CheckIncludeFiles)
+#include(CheckLibraryExists)
+include(FindPkgConfig)
+include(FindJack)
+include(FindSlv2)
 
-# check for Qt4
-SET(QT_MIN_VERSION "4.5.0")
-FIND_PACKAGE(Qt4 REQUIRED)
-SET(QT_USE_QTNETWORK 1)
-SET(QT_USE_QTXML 1)
-EXEC_PROGRAM(${QT_QMAKE_EXECUTABLE} ARGS "-query QT_INSTALL_TRANSLATIONS" OUTPUT_VARIABLE QT_TRANSLATIONS_DIR)
-IF(EXISTS "${QT_TRANSLATIONS_DIR}")
-	MESSAGE("-- Found Qt translations in ${QT_TRANSLATIONS_DIR}")
-	ADD_DEFINITIONS(-D'QT_TRANSLATIONS_DIR="${QT_TRANSLATIONS_DIR}"')
-ENDIF(EXISTS "${QT_TRANSLATIONS_DIR}")
-IF(NOT WIN32)
-	STRING(REPLACE "-DQT_DLL" "" QT_DEFINITIONS "${QT_DEFINITIONS}")
-ENDIF(NOT WIN32)
-INCLUDE(${QT_USE_FILE})
+find_package(Qt4 4.5.0 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED )
+include(${QT_USE_FILE})
 
+# Qt translations feedback
+if(EXISTS "${QT_TRANSLATIONS_DIR}")
+  message("-- Found Qt translations in ${QT_TRANSLATIONS_DIR}")
+  add_definitions(-D'QT_TRANSLATIONS_DIR="${QT_TRANSLATIONS_DIR}"')
+endif(EXISTS "${QT_TRANSLATIONS_DIR}")
 
-# check for JACK (Relying on >=1.9.4 as I've only tested with JACK2)
-PKG_CHECK_MODULES(JACK jack>=1.9.4)
-IF(JACK_FOUND)
-	SET(STATUS_JACK "OK")
-ELSE(JACK_FOUND)
-	SET(STATUS_JACK "not found: please install libjack1.9.4-dev (or similiar)")
-ENDIF(JACK_FOUND)
+if(NOT WIN32)
+  string(REPLACE "-DQT_DLL" "" QT_DEFINITIONS "${QT_DEFINITIONS}")
+endif(NOT WIN32)
 
 
-# check for LV2 (and transitively, RDF too)
-CHECK_INCLUDE_FILES(lv2.h HAVE_LV2_H)
-# compatibility for slv2 <= 0.6.2
-CHECK_INCLUDE_FILES(slv2/scalepoints.h HAVE_SLV2_SCALEPOINTS_H)
-CHECK_LIBRARY_EXISTS(slv2 slv2_world_new "" HAVE_LIBSLV2)
-
-# MESSAGE("SLV2 Exists    : '${LMMS_HAVE_SLV2}'")
-# MESSAGE("SLV2 Library   : '${SLV2_LIBRARY}'")   #RIGHT
-# MESSAGE("SLV2 Libraries : '${SLV2_LIBRARIES}'") # WRONG
-
-CHECK_LIBRARY_EXISTS(rdf librdf_new_world "" HAVE_LIBRDF)
+if(JACK_FOUND)
+  set(STATUS_JACK "OK")
+else(JACK_FOUND)
+  set(STATUS_JACK "not found: please install libjack1.9.4-dev (or similiar)")
+endif(JACK_FOUND)
 
 
-IF(HAVE_LV2_H)
-    SET(STATUS_LV2 "OK")
-ELSE(HAVE_LV2_H)
-    # Maybe we should include a fallback copy of lv2 and slv2.
-    SET(STATUS_LV2 "LV2 devel packages not found: need lv2core-devel "
-        "(or similar)")
-ENDIF(HAVE_LV2_H)
-
-IF(HAVE_LIBSLV2)
-    SET(STATUS_SLV2 "SLV2 (Host) devel packages not found: need libslv2-dev, "
-        "slv2-devel (or similiar)")
-ELSE(HAVE_LIBSLV2)
-    SET(STATUS_SLV2 "OK")
-ENDIF(HAVE_LIBSLV2)
-
-IF(HAVE_LIBRDF)
-    SET(STATUS_RDF "LV2 (RDF) devel packages not found : need librdf0-dev, redland-devel or similiar")
-ELSE(HAVE_LIBRDF)
-    SET(STATUS_RDF "OK")
-ENDIF(HAVE_LIBRDF)
-
-IF("${STATUS_LV2}" STREQUAL "OK")
-    FIND_LIBRARY(SLV2_LIBRARY NAMES slv2 PATH /usr/lib /usr/local/lib)
-    FIND_LIBRARY(RDF_LIBRARY NAMES rdf PATH /usr/lib /usr/local/lib)
-ENDIF("${STATUS_LV2}" STREQUAL "OK")
+if(LV2_FOUND)
+  set(STATUS_LV2 "OK")
+else(LV2_FOUND)
+  # TODO: Fallback to a distributed copy
+  set(STATUS_LV2 "LV2 devel packages not found: need lv2core-devel "
+                 "(or similar)")
+endif(LV2_FOUND)
 
 
+if(SLV2_FOUND)
+  # TODO: Fallback to a distributed copy
+  set(STATUS_SLV2 "SLV2 (Host) devel packages not found: need libslv2-dev, "
+                  "slv2-devel (or similiar)")
+else(SLV2_FOUND)
+  set(STATUS_SLV2 "OK")
+endif(SLV2_FOUND)
 
-# Compiler flags
-SET(CMAKE_C_FLAGS "-g -ggdb -O0 -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_C_FLAGS}")
-SET(CMAKE_CXX_FLAGS "-g -ggdb -O0 -fno-exceptions -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_CXX_FLAGS}")
+
+if(RDF_FOUND)
+  # TODO: Fallback to a distributed copy
+  set(STATUS_RDF "LV2 (RDF) devel packages not found : need librdf0-dev, "
+                 "redland-devel or similiar")
+else(RDF_FOUND)
+  set(STATUS_RDF "OK")
+endif(RDF_FOUND)
+
 
 #Directories
-INCLUDE_DIRECTORIES(src libs)
-ADD_SUBDIRECTORY(src)
-
-#Pre-processing
-QT4_AUTOMOC(${unison_srcs})
+add_subdirectory(libs unisonstudio)
 
 #linking
-LINK_LIBRARIES(${JACK_LIBRARIES} ${QT_LIBRARIES} ${RDF_LIBRARY} ${SLV2_LIBRARY})
+#link_libraries(${JACK_LIBRARIES} ${QT_LIBRARIES} ${RDF_LIBRARY} ${SLV2_LIBRARY})
 
 #Output
-ADD_EXECUTABLE(unisonstudio ${unison_srcs} ${unison_includes})
+#add_executable(unisonstudio ${UNISON_SRCS})
 
 

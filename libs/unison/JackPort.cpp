@@ -60,14 +60,14 @@ namespace Unison
   const QSet<Node* const> JackPort::interfacedNodes () const
   {
     const char** name = jack_port_get_connections( m_port );
-    uint32_t count = m_engine.myPortCount();
+    uint32_t count = m_engine.portCount();
 
     QSet<Node* const> dependencies;
     // Within all connected ports
     while (name != NULL) {
       // See if we own the port
       for (uint32_t i = 0; i < count; ++i) {
-        JackPort* port = m_engine.myPort( i );
+        JackPort* port = m_engine.port( i );
         if (port->fullName() == *name) {
           dependencies += port;
         }

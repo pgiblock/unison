@@ -21,6 +21,12 @@
 # Boston, MA 02110-1301 USA.
 #
 
+include(Qt4Support) # For our moc hack
 
-include(${QT_USE_FILE})
+#qt4_automoc and qt4_wrap_cpp suck and don't do anything.
+#just handle moc manually!!
+message("-- Running moc")
+moc(JackEngine.h JackEngine.moc)
 
+#file(GLOB UNISON_MOC_INCLUDES *.h)
+#qt4_automoc(${UNISON_MOC_INCLUDES})
