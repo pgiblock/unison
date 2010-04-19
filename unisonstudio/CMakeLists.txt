@@ -21,17 +21,4 @@
 # Boston, MA 02110-1301 USA.
 #
 
-add_subdirectory(unison) # Nothing really in here
-
-include_directories(${PRG_INCLUDE_DIR})
-
-file(GLOB UNISON_SRCS *.cpp)
-
-add_library(unison SHARED ${UNISON_SRCS})
-
-target_link_libraries(unison
-    ${JACK_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${RDF_LIBRARY}
-    ${SLV2_LIBRARY}
-)
+add_subdirectory(src)

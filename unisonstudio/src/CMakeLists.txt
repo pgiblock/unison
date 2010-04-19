@@ -21,17 +21,22 @@
 # Boston, MA 02110-1301 USA.
 #
 
-add_subdirectory(unison) # Nothing really in here
+file(GLOB UNISONSTUDIO_SRCS *.cpp)
 
-include_directories(${PRG_INCLUDE_DIR})
-
-file(GLOB UNISON_SRCS *.cpp)
-
-add_library(unison SHARED ${UNISON_SRCS})
-
-target_link_libraries(unison
-    ${JACK_LIBRARIES}
-    ${QT_LIBRARIES}
-    ${RDF_LIBRARY}
-    ${SLV2_LIBRARY}
+#TODO: Auto detect location
+include_directories(
+    ${UNISON_INCLUDE_DIR}
+    ${PRG_INCLUDE_DIR}
 )
+
+add_executable(unisonstudio
+    ${UNISONSTUDIO_SRCS}
+)
+
+target_link_libraries(unisonstudio
+    ${UNISON_LIBRARY}
+)
+
+#linking
+
+#Output

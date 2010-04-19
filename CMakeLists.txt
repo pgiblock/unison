@@ -85,13 +85,12 @@ else(RDF_FOUND)
 endif(RDF_FOUND)
 
 
+#Internal location, TODO: Don't hardcode platform-specific paths!!
+set(PRG_INCLUDE_DIR    ${CMAKE_SOURCE_DIR}/libs/prg)
+set(UNISON_LIBRARY     ${CMAKE_BINARY_DIR}/libs/unison/libunison.so)
+set(UNISON_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/unison)
+
+
 #Directories
-add_subdirectory(libs unisonstudio)
-
-#linking
-#link_libraries(${JACK_LIBRARIES} ${QT_LIBRARIES} ${RDF_LIBRARY} ${SLV2_LIBRARY})
-
-#Output
-#add_executable(unisonstudio ${UNISON_SRCS})
-
-
+add_subdirectory(libs)
+add_subdirectory(unisonstudio)

@@ -13,14 +13,15 @@
 #  For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 #
 
-if (SLV2_LIBRARIES AND SLV2_INCLUDE_DIRS)
-  # in cache already
-  set(SLV2_FOUND TRUE)
-else (SLV2_LIBRARIES AND SLV2_INCLUDE_DIRS)
+if (NOT SLV2_LIBRARIES OR NOT SLV2_INCLUDE_DIRS)
   include(FindLv2)
   include(FindRedlandRdf)
 
+    message("Time for check")
+    message("RDF: " ${RDF_FOUND})
+    message("LV2: " ${LV2_FOUND})
   if (RDF_FOUND AND LV2_FOUND)
+  message("BOOYA!!")
     find_package(PkgConfig)
     if (PKG_CONFIG_FOUND)
       pkg_check_modules(_SLV2 slv2)
@@ -67,6 +68,11 @@ else (SLV2_LIBRARIES AND SLV2_INCLUDE_DIRS)
     # show the SLV2_INCLUDE_DIRS and SLV2_LIBRARIES variables only in the advanced view
     mark_as_advanced(SLV2_INCLUDE_DIRS SLV2_LIBRARIES)
   endif (RDF_FOUND AND LV2_FOUND)
+endif (NOT SLV2_LIBRARIES OR NOT SLV2_INCLUDE_DIRS)
 
+if (SLV2_LIBRARIES AND SLV2_INCLUDE_DIRS)
+  # in cache already
+  set(SLV2_FOUND TRUE)
 endif (SLV2_LIBRARIES AND SLV2_INCLUDE_DIRS)
+
 

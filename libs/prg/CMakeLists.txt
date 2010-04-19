@@ -20,6 +20,5 @@
 #
 
 file(GLOB PRG_SRCS *.cpp)
-file(GLOB PRG_INCLUDES prg/*.h)
 
 add_library(prg STATIC ${PRG_SRCS})
