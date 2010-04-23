@@ -138,6 +138,12 @@ JackPort* JackEngine::registerPort (QString name, PortDirection direction)
   return NULL;
 }
 
+void JackEngine::unregisterPort (JackPort * port)
+{
+  jack_port_unregister(client(), port->jackPort());
+  delete port;
+}
+
 
 nframes_t JackEngine::bufferLength () const
 {
@@ -247,7 +253,7 @@ int JackEngine::sampleRateCb (nframes_t nframes, void* a) {
 
 
 int JackEngine::syncCb (jack_transport_state_t, jack_position_t*, void* eng) {
-  qDebug() << "JACK sync";
+  //qDebug() << "JACK sync";
   return 0;
 }
 
@@ -258,12 +264,12 @@ void JackEngine::threadInitCb (void* engine) {
 
 
 void JackEngine::timebaseCb (jack_transport_state_t, nframes_t, jack_position_t*, int, void*) {
-  qCritical() << "Timebase master currently not supported";
+  //qCritical() << "Timebase master currently not supported";
 }
 
 
 int JackEngine::xrunCb (void* engine) {
-  qWarning() << "XRun occured";
+  //qWarning() << "XRun occured";
   return 0;
 }
 

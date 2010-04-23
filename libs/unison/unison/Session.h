@@ -33,10 +33,9 @@
 namespace Unison
 {
 
-class BufferProvider;
+class PooledBufferProvider;
 class JackEngine;
 class Node;
-class PooledBufferProvider;
 class Processor;
 
 
@@ -51,32 +50,26 @@ class Session : PRG::Uncopyable
 {
   public:
     Session(JackEngine& engine);
+    ~Session ();
 
     // TODO: expose a generic Engine instead of JackEngine
     JackEngine& engine() const {
-      return m_engine;
+      return *m_engine;
     }
 
     BufferProvider& bufferProvider() const;
 
     void process(const ProcessingContext& context);
 
-    // TODO-NOW: Compiler? Song, Sequencer, whatever..
+    // TODO-NOW: Compiler? Song, Sequencer, Redo/Undo, whatever..
+
+    // FIXME: HACK
+    void setRootNodeHack(Processor * p) { m_rootNode = p; };
 
   private:
-    // Node management:  TODO-NOW: Move into a Project or Patch class?
-    struct CompiledProcessor {
-      Processor* processor;
-    };
-
-    static void compile (QList<Processor*> input,
-                         QList<CompiledProcessor>& output);
-    static void compileRecursive (Node* n, QList<CompiledProcessor>& output);
-
-    PooledBufferProvider& m_bufferProvider;
-    JackEngine& m_engine;
-    QAtomicPointer< QList<CompiledProcessor> > compiled;
-    QList<Processor*> processors;
+    PooledBufferProvider* m_bufferProvider;
+    JackEngine* m_engine;
+    Processor* m_rootNode;
 };
 
 } // Unison
