@@ -24,6 +24,7 @@
 
 #include <iostream>
 
+#include <QDebug>
 #include <QtGui/QApplication>
 #include <QSet>
 #include "unison/JackEngine.h"
@@ -31,12 +32,85 @@
 #include "unison/ProcessingContext.h"
 #include "unison/Session.h"
 
+#include "unison/CompositeProcessor.h"
+
 using namespace Unison;
 
 void printLogo();
 void printDisclaimer();
 
 Session * session;
+
+
+class FxLine : public CompositeProcessor {
+  public:
+    FxLine (Session& session, QString name) :
+      CompositeProcessor(),
+      m_name(name),
+      m_session(session)
+    {
+      m_inPorts[0] = session.engine().registerPort(name + "/in 1", OUTPUT);
+      m_inPorts[1] = session.engine().registerPort(name + "/in 2", OUTPUT);
+      m_outPorts[0] = session.engine().registerPort(name + "/out 1", INPUT);
+      m_outPorts[1] = session.engine().registerPort(name + "/out 2", INPUT);
+    }
+
+    ~FxLine ()
+    {
+      m_session.engine().unregisterPort(m_inPorts[0]);
+      m_session.engine().unregisterPort(m_inPorts[1]);
+      m_session.engine().unregisterPort(m_outPorts[0]);
+      m_session.engine().unregisterPort(m_outPorts[1]);
+    }
+
+    QString name() const
+    {
+      return m_name;
+    }
+
+    void addEffect()
+    {
+      const char * uri = "http://plugin.org.uk/swh-plugins/vynil";
+      PluginManager * man = PluginManager::instance();
+      Processor * proc = man->descriptor(uri)->createPlugin(48000);
+      add(proc);
+
+      // TODO: Some fashion to connect the ports easily
+      // Should consider groups and stuff:
+      // processor.portGroup(AUDIO, INPUT)
+      // PortGroup { enum Type {STEREO, QUAD, FIVEPOINTONE}
+      // or maybe a processor.portGroups() ?
+
+      int inCnt=0, outCnt =0;
+      for (int i=0; i<proc->portCount(); ++i) {
+        Port* p = proc->port(i);
+        if (p->type() == AUDIO_PORT) {
+          switch (p->direction()) {
+            case INPUT:
+              qDebug() << "Connecting " << m_inPorts[inCnt]->name() << " to " << p->name();
+              m_inPorts[inCnt++]->connect(p);
+              break;
+            case OUTPUT:
+              qDebug() << "Connecting " << m_outPorts[outCnt]->name() << " to " << p->name();
+              m_outPorts[outCnt++]->connect(p);
+              break;
+            default:
+              //TODO: Programming error!
+              break;
+          }
+        }
+      }
+      hackCompile(m_session.bufferProvider());
+    }
+
+
+  private:
+    QString m_name;
+    Session& m_session;
+    JackPort* m_inPorts[2];
+    JackPort* m_outPorts[2];
+};
+
 
 /** A stupid function to alias ports so we can connect to them */
 /*
@@ -69,28 +143,6 @@ void referencePorts () {
 }*/
 
 
-void bigCompile () {
-  /* TODO-NOW: refactor this to someplace else
-  std::cout << "Compiling" << std::endl;
-  QList<CompiledProcessor>* compiledSwap = new QList<CompiledProcessor>();
-  compile( processors, *compiledSwap );
-
-  std::cout << "Aquiring 'fixed' buffers" << std::endl;
-  foreach (CompiledProcessor cp, *compiledSwap) {
-    for (int i=0; i<cp.processor->portCount(); ++i) {
-      Port *port = cp.processor->port(i);
-      std::cout << "Next port: " << qPrintable(port->name()) << std::endl;
-      port->connectToBuffer(*pool);
-    }
-  }
-
-  // FIXME: this is probably not sufficient.
-  compiledSwap = compiled.fetchAndStoreRelaxed( compiledSwap );
-  delete compiledSwap;
-  */
-}
-
-
 int main (int argc, char ** argv) {
   bool createGui = false;
 
@@ -108,87 +160,35 @@ int main (int argc, char ** argv) {
   // If running in CLI mode, print a disclaimer
   printDisclaimer();
 
+  // Init
+  PluginManager::initializeInstance();
+
   // TODO: Obviously we wouldnt really (mis)manage these this way.
   JackEngine* engine = new JackEngine();
   session = new Session(*engine);
 
-  JackPort* jackPorts[6];
-  jackPorts[0] = engine->registerPort("Master/out 1",  INPUT);
-  jackPorts[1] = engine->registerPort("Master/out 2",  INPUT);
-  jackPorts[2] = engine->registerPort("Master/in 1",   OUTPUT);
-  jackPorts[3] = engine->registerPort("Master/in 2",   OUTPUT);
-  jackPorts[4] = engine->registerPort("Channel/out 1", INPUT);
-  jackPorts[5] = engine->registerPort("Channel/out 2", INPUT);
+  engine->activate();
 
-  // Init
-  /*
-  PluginManager::initializeInstance();
+  // Client stuff
+  FxLine* fxLine = new FxLine(*session, "Master");
+  fxLine->addEffect();
 
-  PluginManager * man = PluginManager::instance();
+  fxLine->activate();
 
-  std::cout << "Creating Plugins" << std::endl;
-  processors.append(man->descriptor("http://plugin.org.uk/swh-plugins/vynil")
-                  ->createPlugin(48000));
-  extraProcessor = man->descriptor(
-      //"http://calf.sourceforge.net/plugins/VintageDelay"
-      //"http://calf.sourceforge.net/plugins/Reverb"
-      //"http://calf.sourceforge.net/plugins/RotarySpeaker"
-      //"http://calf.sourceforge.net/plugins/MultiChorus"
-      "http://calf.sourceforge.net/plugins/Flanger"
-      )->createPlugin(48000);
+  session->setRootNodeHack(fxLine);
 
-  std::cout << "Activating Plugins" << std::endl;
-  foreach (Processor* n, processors) { n->activate(); }
-
-  //referencePorts();
-
-   TODO-NOW: Control Port stuff
-  if (type() == CONTROL_PORT) {
-    float * data = (float*)m_buffer->data();
-    data[0] = maximum();
-  }
-
-  std::cout << "Connecting Ports" << std::endl;
-  fxout[0][0]->connect(jackPorts[4]); // Vinyl to Channel-L
-  jackPorts[5]->connect(fxout[0][1]); // Vinyl to Channel-R
-
-  bigCompile();
-
-  std::cout << "Processing Nodes" << std::endl;
-  jackEngine->activate();
-
-  //app->exec();
   char c;
   std::cin >> &c;
 
-  // Add
-  processors.append(extraProcessor);
-  referencePorts();
-  */
-
-  // Rewire
-  /*
-  fxout[0][0]->disconnect(jackPorts[4]); // Vinyl from Channel-L
-  fxout[0][1]->disconnect(jackPorts[5]); // Vinyl from Channel-R
-  fxout[0][0]->connect(fxin[1][0]);  // Vinyl to Delay (L)
-  fxout[0][1]->connect(fxin[1][1]);  // Vinyl to Delay (R)
-  fxout[1][0]->connect(jackPorts[4]); // Delay to Channel-L
-  fxout[1][1]->connect(jackPorts[5]); // Delay to Channel-R
-  */
-
-  // Recompile
-  bigCompile();
-
-  //app->exec();
-  char c;
-  std::cin >> &c;
+  fxLine->deactivate();
 
   std::cout << "Disconnecting JACK" << std::endl;
   engine->deactivate();
 
   /*
-  std::cout << "Deactivating Plugins" << std::endl;
-  foreach (Processor * p, processors) { p->deactivate(); }
+   TODO-NOW: Control Port stuff
+
+  //app->exec();
 
   std::cout << "Destroying Plugins" << std::endl;
   foreach (Processor * p, processors) { delete p; }
