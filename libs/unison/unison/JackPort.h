@@ -83,8 +83,8 @@ class JackPort : public Port
     PortDirection direction() const
     {
       JackPortFlags flags = (JackPortFlags)jack_port_flags( m_port );
-      if (flags & JackPortIsInput)  { return INPUT;  }
-      if (flags & JackPortIsOutput) { return OUTPUT; }
+      if (flags & JackPortIsInput)  { return OUTPUT;  }
+      if (flags & JackPortIsOutput) { return INPUT; }
       Q_ASSERT_X(0, "JackPort", "direction is neither Input or Output.");
       return (PortDirection)0;
     }
