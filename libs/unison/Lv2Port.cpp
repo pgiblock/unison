@@ -22,6 +22,7 @@
  *
  */
 
+#include <QDebug>
 #include <QSet>
 #include "unison/Lv2Port.h"
 #include "unison/BufferProvider.h"
@@ -47,6 +48,7 @@ Lv2Port::Lv2Port (const Lv2World& world, Lv2Plugin* plugin, uint32_t index) :
   slv2_port_get_range( plugin->slv2Plugin(), m_port, &def , &min, &max );
   if (def) {
     m_defaultValue = slv2_value_as_float( def );
+    m_value = m_defaultValue;
     slv2_value_free( def );
   }
   if (min) {
@@ -55,6 +57,7 @@ Lv2Port::Lv2Port (const Lv2World& world, Lv2Plugin* plugin, uint32_t index) :
   }
   if (max) {
     m_max   = slv2_value_as_float( max );
+    m_value = m_max;
     slv2_value_free( max );
   }
 }
@@ -105,8 +108,31 @@ QString Lv2Port::name () const
 }
 
 
+float Lv2Port::value () const
+{
+  return m_value;
+}
 
-const QSet<Node* const> Lv2Port::interfacedNodes () const {
+
+void Lv2Port::setValue (float value)
+{
+  m_value = value;
+  updateBufferValue();
+}
+
+
+void Lv2Port::updateBufferValue ()
+{
+  qDebug() << "Updating value of private buffer for port" << name();
+  if (buffer() && type() == CONTROL_PORT) {
+    float * data = (float*) buffer()->data();
+    data[0] = value();
+  }
+}
+
+
+const QSet<Node* const> Lv2Port::interfacedNodes () const
+{
   QSet<Node* const> p;
   p.insert( m_plugin );
   return p;
@@ -118,23 +144,7 @@ void Lv2Port::connectToBuffer(BufferProvider& provider)
   int numConnections;
   switch (direction()) {
     case INPUT:
-      numConnections = dependencies().count();
-      if (numConnections == 1) {
-        // Use the other port's buffer
-        // type should match due to validation on connect
-        Port* other = (Port*) *(dependencies().begin());
-        m_buffer = other->buffer();
-      }
-      else if (type() == AUDIO_PORT && numConnections == 0) {
-        // Use silence
-        m_buffer = provider.zeroAudioBuffer();
-      }
-
-      if (!m_buffer) {
-        // Return internal port
-        m_buffer = provider.acquire(type(), 1024);
-      }
-
+      acquireInputBuffer(provider);
       break;
 
     case OUTPUT:
@@ -152,6 +162,44 @@ void Lv2Port::connectToBuffer(BufferProvider& provider)
   }
   slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buffer()->data());
 }
+
+
+void Lv2Port::acquireInputBuffer (BufferProvider& provider)
+{
+  int numConnections = dependencies().count();
+  switch (numConnections) {
+    case 0:
+      if (type() == AUDIO_PORT) {
+        // Use silence
+        m_buffer = provider.zeroAudioBuffer();
+        return;
+      }
+      break;
+    case 1:
+    {
+      // Use the other port's buffer
+      // type should match due to validation on connect
+      Port* other = (Port*) *(dependencies().begin());
+      m_buffer = other->buffer();
+      break;
+    }
+    default:
+      qFatal("Internal mixing is not yet supported");
+      return;
+  }
+
+  if (!m_buffer) {
+    // Return internal port
+    m_buffer = provider.acquire(type(), 1024);
+    updateBufferValue();
+  }
+}
+
+void Lv2Port::acquireOutputBuffer (BufferProvider& provider)
+{
+}
+
+
 
 } // Unison
 

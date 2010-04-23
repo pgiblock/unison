@@ -77,7 +77,7 @@ class BufferProvider : PRG::Uncopyable
 
 
 /** A Smart-pointer to a Buffer.  Provides a reference-counted pointer to a
- *  Buffer.  This allows multiple Ports to refernce the same buffer without
+ *  Buffer.  This allows multiple Ports to reference the same buffer without
  *  the complexity of ownership.  The Buffer is returned to the BufferProvider
  *  when no more references to this Buffer exist.
  *  @seealso BufferProvider::release() */
@@ -95,7 +95,9 @@ class SharedBufferPtr : public QSharedPointer<Buffer>
   protected:
     static void deleter (Buffer* buf)
     {
-      buf->m_provider.release(buf);
+      if (buf) {
+        buf->m_provider.release(buf);
+      }
     }
 };
 

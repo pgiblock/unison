@@ -37,12 +37,15 @@ PooledBufferProvider::PooledBufferProvider () :
   m_zeroBuffer( NULL ),
   m_periodLength(),
   m_next( 0 )
-{}
+{
+  qDebug() << "Constructing Pooled BufferProvider";
+}
 
 
 SharedBufferPtr PooledBufferProvider::acquire (
     PortType type, nframes_t nframes)
 {
+  qDebug("Acquiring buffer!!!!!!");
   Q_ASSERT(nframes == m_periodLength);
   QStack<Buffer*>* stack;
   switch (type) {
@@ -89,7 +92,22 @@ void PooledBufferProvider::setBufferLength (nframes_t nframes)
 {
   m_periodLength = nframes;
 
-  m_zeroBuffer = acquire( AUDIO_PORT, nframes );
+  qDebug() << "Buffersize changed to" << nframes << "stacksize" << m_audioBuffers.count();
+  //m_zeroBuffer = acquire( AUDIO_PORT, nframes );
+  //Q_ASSERT(nframes == m_periodLength);
+  QStack<Buffer*>* stack;
+  stack = &m_audioBuffers;
+
+  if (!stack->isEmpty()) {
+    m_zeroBuffer = stack->pop();
+  }
+
+  Buffer* buf;
+  qDebug() << "New Audio Buffer " << nframes << " frames.";
+  buf = new AudioBuffer( *this, nframes );
+
+  Q_CHECK_PTR(buf);
+  m_zeroBuffer = buf;
 }
 
 

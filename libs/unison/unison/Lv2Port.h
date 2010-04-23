@@ -51,15 +51,8 @@ class Lv2Port : public Port
     PortType type () const;
     PortDirection direction () const;
 
-    float value () const
-    {
-      return m_value;
-    }
-
-    void setValue (float value)
-    {
-      m_value = value;
-    }
+    float value () const;
+    void setValue (float value);
 
     float defaultValue () const
     {
@@ -91,7 +84,12 @@ class Lv2Port : public Port
 
     void connectToBuffer (BufferProvider & provider);
 
+
   private:
+    void acquireInputBuffer (BufferProvider& provider);
+    void acquireOutputBuffer (BufferProvider& provider);
+    void updateBufferValue ();
+
     const Lv2World & m_world;
     Lv2Plugin * m_plugin;
     SLV2Port m_port;
