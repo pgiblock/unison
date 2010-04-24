@@ -28,5 +28,4 @@ include(Qt4Support) # For our moc hack
 message("-- Running moc")
 moc(JackEngine.h JackEngine.moc)
 
-#file(GLOB UNISON_MOC_INCLUDES *.h)
 #qt4_automoc(${UNISON_MOC_INCLUDES})

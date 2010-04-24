@@ -25,7 +25,18 @@ add_subdirectory(unison) # Nothing really in here
 
 include_directories(${PRG_INCLUDE_DIR})
 
-file(GLOB UNISON_SRCS *.cpp)
+#file(GLOB UNISON_SRCS *.cpp)
+set(UNISON_SRCS
+    BufferProvider.cpp
+    CompositeProcessor.cpp
+    JackEngine.cpp
+    JackPort.cpp
+    Lv2Plugin.cpp
+    Lv2Port.cpp
+    PluginManager.cpp
+    Port.cpp
+    Session.cpp
+)
 
 add_library(unison SHARED ${UNISON_SRCS})
 

@@ -21,9 +21,11 @@
 # Boston, MA 02110-1301 USA.
 #
 
-file(GLOB UNISONSTUDIO_SRCS *.cpp)
+#file(GLOB UNISONSTUDIO_SRCS *.cpp)
+set(UNISONSTUDIO_SRCS
+    main.cpp
+)
 
-#TODO: Auto detect location
 include_directories(
     ${UNISON_INCLUDE_DIR}
     ${PRG_INCLUDE_DIR}

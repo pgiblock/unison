@@ -19,6 +19,9 @@
 # Boston, MA 02110-1301 USA.
 #
 
-file(GLOB PRG_SRCS *.cpp)
+#file(GLOB PRG_SRCS *.cpp)
+set(PRG_SRCS
+    prg.cpp
+)
 
 add_library(prg STATIC ${PRG_SRCS})
