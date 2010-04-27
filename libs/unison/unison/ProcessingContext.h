@@ -23,17 +23,18 @@
  */
 
 
-#ifndef PROCESSING_CONTEXT_H
-#define PROCESSING_CONTEXT_H
+#ifndef UNISON_PROCESSING_CONTEXT_H
+#define UNISON_PROCESSING_CONTEXT_H
 
 #include "unison/types.h"
 
 namespace Unison
 {
 
-/** Abstracts parameters needed while rendering nodes.
- *  Instead of relying on plugins to call out to various modules of unison, we
- *  just pass all the needed information along in this handy context. */
+/**
+ * Abstracts parameters needed while rendering nodes.  Instead of relying on
+ * plugins to call out to various modules of Unison, we just pass all the
+ * needed information along in this handy context. */
 class ProcessingContext
 {
   public:
@@ -53,6 +54,6 @@ class ProcessingContext
 
 } // Unison
 
-#endif // PROCESSING_CONTEXT_H
+#endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

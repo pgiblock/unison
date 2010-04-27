@@ -1,5 +1,5 @@
 /*
- * CompiledProcessor.cpp
+ * CompositeProcessor.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -46,7 +46,7 @@ Port* CompositeProcessor::port (int idx) const
 
 void CompositeProcessor::activate ()
 {
-  foreach (Processor* p, processors) {
+  foreach (Processor* p, m_processors) {
     p->activate();
   }
 }
@@ -54,7 +54,7 @@ void CompositeProcessor::activate ()
 
 void CompositeProcessor::deactivate ()
 {
-  foreach (Processor* p, processors) {
+  foreach (Processor* p, m_processors) {
     p->deactivate();
   }
 }
@@ -62,7 +62,7 @@ void CompositeProcessor::deactivate ()
 
 void CompositeProcessor::process (const ProcessingContext & context)
 {
-  foreach (CompiledProcessor cp, *compiled) {
+  foreach (CompiledProcessor cp, *m_compiled) {
     cp.processor->process(context);
   }
 }
@@ -99,7 +99,7 @@ const QSet<Node* const> CompositeProcessor::dependents () const
 void CompositeProcessor::add (Processor * processor)
 {
   // TODO: ensure processor isn't already added
-  processors.append(processor);
+  m_processors.append(processor);
 }
 
 void CompositeProcessor::compileWalk (Node* n,
@@ -189,7 +189,7 @@ void CompositeProcessor::compile (QList<Processor*> input,
 
 void CompositeProcessor::compile (BufferProvider & bufferProvider) {
   QList<CompiledProcessor>* compiledSwap = new QList<CompiledProcessor>();
-  compile( processors, *compiledSwap );
+  compile( m_processors, *compiledSwap );
 
   qDebug() << "Aquiring 'fixed' buffers";
   foreach (CompiledProcessor cp, *compiledSwap) {
@@ -201,10 +201,10 @@ void CompositeProcessor::compile (BufferProvider & bufferProvider) {
   }
 
   // FIXME: this is probably not sufficient.
-  compiledSwap = compiled.fetchAndStoreRelaxed( compiledSwap );
+  compiledSwap = m_compiled.fetchAndStoreRelaxed( compiledSwap );
   delete compiledSwap;
 }
 
 } // Unison
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

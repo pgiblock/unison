@@ -1,5 +1,5 @@
 /*
- * Session.cpp
+ * PooledBufferProvider.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,47 +22,47 @@
  *
  */
 
-#include <QDebug>
+#ifndef UNISON_POOLED_BUFFER_PROVIDER_H
+#define UNISON_POOLED_BUFFER_PROVIDER_H
 
-#include "unison/Node.h"
-#include "unison/Processor.h"
-#include "unison/Session.h"
-#include "unison/PooledBufferProvider.h"
-#include "unison/JackEngine.h"
+#include <QStack>
+
+#include "unison/BufferProvider.h"
 
 namespace Unison
 {
 
-Session::Session (JackEngine& engine) :
-  m_bufferProvider(),
-  m_engine(&engine),
-  m_rootNode(NULL)
+
+/** PooledBufferProvider is the 'default' implementation for BufferProviders.
+ *  It isn't as smart as it could be, but it at least provides reuse of
+ *  released buffers. */
+class PooledBufferProvider : public BufferProvider
 {
-  // FIXME: Remove hardcoded bufferlength1
-  m_bufferProvider = new PooledBufferProvider();
-  m_bufferProvider->setBufferLength(1024);
-  engine.setSession(this);
-}
+  public:
+    PooledBufferProvider ();
 
+    ~PooledBufferProvider()
+    {}
 
-Session::~Session ()
-{
-  delete m_bufferProvider;
-}
+    SharedBufferPtr zeroAudioBuffer () const;
+    void setBufferLength (nframes_t nframes);
+    nframes_t bufferLength ();
 
+    SharedBufferPtr acquire (PortType type, nframes_t nframes);
 
-BufferProvider& Session::bufferProvider() const
-{
-  return *m_bufferProvider;
-}
+  protected:
+    void release (Buffer* buf);
 
-void Session::process(const ProcessingContext& context)
-{
-  if (m_rootNode) {
-    m_rootNode->process(context);
-  }
-}
+    // TODO: Use something RT-safe, instead of QStack
+    QStack<Buffer*> m_audioBuffers;
+    QStack<Buffer*> m_controlBuffers;
+    SharedBufferPtr m_zeroBuffer;
+    nframes_t m_periodLength;
+    int m_next;
+};
 
 } // Unison
+
+#endif
 
 // vim: ts=8 sw=2 sts=2 et sta noai

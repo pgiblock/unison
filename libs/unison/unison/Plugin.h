@@ -23,8 +23,8 @@
  */
 
 
-#ifndef PLUGIN_H
-#define PLUGIN_H
+#ifndef UNISON_PLUGIN_H
+#define UNISON_PLUGIN_H
 
 #include <QtCore/QSharedPointer>
 #include <QtXml/QDomNode>
@@ -35,8 +35,10 @@
 namespace Unison
 {
 
-/** The type of plugin, regarding I/O.
- *  TODO: Define this better or remove it (artifact from LMMS) */
+/**
+ * The type of plugin, regarding I/O.
+ * This is a relic from LMMS and doesn't serve us much purpose.
+ * TODO: Pending removal or clarity */
 enum PluginType
 {
   SOURCE,         ///< Plugin's audio ports are only for output
@@ -49,12 +51,13 @@ enum PluginType
 
 
 
-/** Interface for audio, control, and maybe other "graphed" plugins for Unison.
- *  All accessors are virtual since some plugin types may be able to query the
- *  values directly from the underlying resource.
- *  TODO: Consider splitting Plugin from Processor. And allow for Plugin to
- *  create a processor "instance". Or better, Move most of the slv2_plugin
- *  functions from Lv2Plugin to PluginDescriptor instead?*/
+/**
+ * Interface for audio, control, and maybe other "graphed" plugins for Unison.
+ * All accessors are virtual since some plugin types may be able to query the
+ * values directly from the underlying resource.  TODO: Consider splitting
+ * Plugin from Processor. And allow for Plugin to create a processor
+ * "instance". Or better, Move most of the slv2_plugin functions from Lv2Plugin
+ * to PluginDescriptor instead?*/
 class Plugin : public Processor
 {
   public:
@@ -93,6 +96,9 @@ typedef Plugin* PluginPtr;
 
 
 
+/**
+ * PluginDescriptor represents the meta-data of a plugin and provides an
+ * interface for instantiating Plugins. */
 class PluginDescriptor
 {
   public:
@@ -155,11 +161,11 @@ class PluginDescriptor
     int m_audioOutputs;
 };
 
-/** A Safe pointer to a plugin descriptor. */
+/** A Safe pointer to a plugin descriptor. FIXME */
 typedef QSharedPointer<PluginDescriptor> PluginDescriptorPtr;
 
 } // Unison
 
-#endif // PLUGIN_H
+#endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

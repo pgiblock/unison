@@ -23,8 +23,8 @@
  */
 
 
-#ifndef PROCESSOR_H
-#define PROCESSOR_H
+#ifndef UNISON_PROCESSOR_H
+#define UNISON_PROCESSOR_H
 
 #include "unison/Node.h"
 #include "unison/Port.h"
@@ -34,8 +34,9 @@ namespace Unison
 
 class ProcessingContext;
 
-/** Interface for all Nodes that need to have some degree of processing
- *  performed on them. */
+/**
+ * Interface for all Nodes that need to have some degree of processing
+ * performed on them. */
 class Processor : public Node
 {
   public:
@@ -52,11 +53,12 @@ class Processor : public Node
 
     virtual void process (const ProcessingContext & context) = 0;
 
-    /** Has this node been visited (traversed)?  While compiling and perhaps
-     *  in other cases, it is useful to know if a processor has been visited
-     *  yet.  This is a leak of concerns, but much faster than most
-     *  alternatives.
-     *  @returns true if this node has been visited since the last unvisit */
+    /**
+     * Has this node been visited (traversed)?  While compiling and perhaps
+     * in other cases, it is useful to know if a processor has been visited
+     * yet.  This is a leak of concerns, but much faster than most
+     * alternatives.
+     * @returns true if this node has been visited since the last unvisit */
     bool isVisited()
     {
       return m_visited;
@@ -81,6 +83,6 @@ class Processor : public Node
 
 } // Unison
 
-#endif // PROCESSOR_H
+#endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

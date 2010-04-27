@@ -35,6 +35,14 @@ namespace Unison
 
 class Session;
 
+/**
+ * JackEngine encapsulates JACK compatibility.  There could theoretically be
+ * multiple Engine classes (AsioEngine, for example), but this requires us to
+ * implement missing features like connecting ports.  Therefore, right now we
+ * are only targeting Jack, with the knowledge that this class may be
+ * generalized.  The primary functionality included is the processing
+ * entry-point and the ability to register ports, query system ports, and
+ * make (external) connections. */
 class JackEngine : public QObject, PRG::Uncopyable
 {
   Q_OBJECT
@@ -43,19 +51,37 @@ class JackEngine : public QObject, PRG::Uncopyable
     JackEngine ();
     virtual ~JackEngine ();
 
+    /**
+     * Set the session of this engine,  generally called by Session's ctor.
+     * JackEngine's behavior is undefined if a Session is not assigned. */
     void setSession (Session * session);
+
+    /**
+     * Remove the session of this engine.  JackEngine is in an undefined state
+     * until a Session is added. */
     void removeSession ();
 
+    /**
+     * @returns the underlying Jack client. */
     jack_client_t* client () const
     {
       return m_client;
     }
 
+    /**
+     * FIXME: BufferLength change support is currently lacking. */
     nframes_t bufferLength () const;
     nframes_t sampleRate () const;
     bool isFreewheeling () const;
 
+    /**
+     * Register a port with Jack.
+     * @returns the newly registered port */
     JackPort* registerPort (QString name, PortDirection direction);
+
+    /**
+     * Unregister a port with Jack.
+     * FIXME: Consider disconnecting ports when unregistering */
     void unregisterPort (JackPort *);
 
     void activate ();
@@ -96,4 +122,4 @@ class JackEngine : public QObject, PRG::Uncopyable
 
 #endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

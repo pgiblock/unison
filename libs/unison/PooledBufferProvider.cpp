@@ -1,5 +1,5 @@
 /*
- * BufferProvider.cpp
+ * PooledBufferProvider.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -24,7 +24,7 @@
 
 #include <QDebug>
 
-#include "unison/BufferProvider.h"
+#include "unison/PooledBufferProvider.h"
 #include "unison/AudioBuffer.h"
 #include "unison/ControlBuffer.h"
 
@@ -76,6 +76,8 @@ SharedBufferPtr PooledBufferProvider::acquire (
       qDebug() << "New Control Buffer";
       buf = new ControlBuffer( *this );
       break;
+    default:
+     qFatal("Could not aquire non-audio or control buffer");
   }
   Q_CHECK_PTR(buf);
   return buf;
@@ -141,4 +143,4 @@ void PooledBufferProvider::release (Buffer* buf)
 
 } // Unison
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

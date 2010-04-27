@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef LV2_PORT_H
-#define LV2_PORT_H
+#ifndef UNISON_LV2_PORT_H
+#define UNISON_LV2_PORT_H
 
 #include <slv2/slv2.h>
 
@@ -103,6 +103,6 @@ class Lv2Port : public Port
 
 } // Unison
 
-#endif // LV2_PLUGIN_H
+#endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

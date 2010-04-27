@@ -27,18 +27,27 @@ include_directories(${PRG_INCLUDE_DIR})
 
 #file(GLOB UNISON_SRCS *.cpp)
 set(UNISON_SRCS
-    BufferProvider.cpp
     CompositeProcessor.cpp
+    JackBufferProvider.cpp
     JackEngine.cpp
     JackPort.cpp
     Lv2Plugin.cpp
     Lv2Port.cpp
     PluginManager.cpp
+    PooledBufferProvider.cpp
     Port.cpp
     Session.cpp
 )
 
-add_library(unison SHARED ${UNISON_SRCS})
+#TODO: Move this back into the unison/CMakeLists if there is a good way to
+#      propagate a variable to the parent.
+set(UNISON_MOC_HEADERS
+    unison/JackEngine.h
+)
+
+QT4_WRAP_CPP(UNISON_MOC_SRCS ${UNISON_MOC_HEADERS})
+
+add_library(unison SHARED ${UNISON_SRCS} ${UNISON_MOC_SRCS})
 
 target_link_libraries(unison
     ${JACK_LIBRARIES}

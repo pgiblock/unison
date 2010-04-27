@@ -23,8 +23,8 @@
  *
  */
 
-#ifndef PLUGIN_MANAGER_H
-#define PLUGIN_MANAGER_H
+#ifndef UNISON_PLUGIN_MANAGER_H
+#define UNISON_PLUGIN_MANAGER_H
 
 #include <assert.h>
 #include <stdint.h>
@@ -84,7 +84,7 @@ class PluginManager
       m_instance = NULL;
     }
 
-    /* TODO: some means of caching plugin details to a datastore */
+    /* TODO: some means of caching plugin details to a datastore QtSQL */
 
   protected:
     PluginManager ();
@@ -103,6 +103,6 @@ class PluginManager
 
 } // Unison
 
-#endif // PLUGIN_MANAGER_H
+#endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

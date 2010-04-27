@@ -23,8 +23,8 @@
  */
 
 
-#ifndef NODE_H
-#define NODE_H
+#ifndef UNISON_NODE_H
+#define UNISON_NODE_H
 
 #include <QSet>
 #include <QSharedPointer>
@@ -33,14 +33,33 @@
 namespace Unison
 {
 
-/** Interface for all things that participate in the processing graph. */
+/**
+ * Interface for all things that participate in the processing graph. */
 class Node {
   public:
     virtual ~Node () {};
 
+    /**
+     * Dependencies are nodes that are directly "connected", that must
+     * be processed before this node.  This typically means things that are
+     * attached to this node's "input".  There is no requirement that the
+     * connection is between ports, or that there is a connection at all.
+     * For example, a Processor's dependencies are that Processor's "input"
+     * ports, but the dependencies of an input port is the set of connected
+     * output ports. */
     virtual const QSet<Node* const> dependencies () const = 0;
+
+
+    /**
+     * Dependents are nodes that directly "connected", that require this
+     * node to be processed before themselves.  This typically means things
+     * that are attached to this node's "output".  For example, the output
+     * Ports of a Processor, or the input Ports connected to an output
+     * Port. */
     virtual const QSet<Node* const> dependents () const = 0;
 
+    /**
+     * @returns a name for this node, suitable for storing in projects. */
     virtual QString name() const = 0;
 };
 
@@ -51,4 +70,4 @@ typedef QSharedPointer<Node> NodePtr;
 
 #endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

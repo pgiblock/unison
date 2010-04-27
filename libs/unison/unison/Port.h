@@ -23,8 +23,8 @@
  */
 
 
-#ifndef PORT_H
-#define PORT_H
+#ifndef UNISON_PORT_H
+#define UNISON_PORT_H
 
 #include "unison/Node.h"
 #include "unison/BufferProvider.h"
@@ -34,10 +34,11 @@ namespace Unison
 
 class ProcessingContext;
 
-/** A Port interface on a plugin.  Encapsulates audio, control, midi, and
- *  possibly other port types we may eventually be interested in.
- *  Lv2Port contains a full implementaion and should probably be split so that
- *  new Ports like Vst, Ladspa, etc.. can reuse the impl. */
+/**
+ * A Port interface on a plugin.  Encapsulates audio, control, midi, and
+ * possibly other port types we may eventually be interested in.  Lv2Port
+ * contains a full implementaion and should probably be split so that new Ports
+ * like Vst, Ladspa, etc.. can reuse the impl. */
 class Port : public Node
 {
   public:
@@ -49,7 +50,7 @@ class Port : public Node
     /** @returns the name of port, for example "OSC1 Attack". */
     virtual QString name () const = 0;
 
-    /* TODO: Return an std::set of types instead??? */
+    /* TODO: Return an set of types instead??? */
     /** @returns the type of port */
     virtual PortType type() const = 0;
 
@@ -59,16 +60,18 @@ class Port : public Node
     /** @returns the current value of a port. */
     virtual float value () const = 0;
 
-    /** Instantly set the value of this port, but will only be read by the
-     *  processing stages once-per-period
-     *  @param the value, bounded by minimum() and maximum() */
+    /**
+     * Instantly set the value of this port, but will only be read by the
+     * processing stages once-per-period @param the value, bounded by minimum()
+     * and maximum() */
     virtual void setValue (float value) = 0;
 
     /** @returns The default value as requested by the plugin */
     virtual float defaultValue () const = 0;
 
-    /** @returns true if minimum() and maximum() should be considered by
-     *  the host. */
+    /**
+     * @returns true if minimum() and maximum() should be considered by
+     * the host. */
     virtual bool isBounded () const = 0;
 
     /** @returns the minimum value this port should be set to */
@@ -80,9 +83,10 @@ class Port : public Node
     /** @returns true if this port is toggled between on and off */
     virtual bool isToggled () const = 0;
 
-    /** Called in Process thread to assign the buffer used by this port
-     *  sub-classes may choose to assign a buffer from the BufferProvider
-     *  or from some other source. */
+    /**
+     * Called in Process thread to assign the buffer used by this port
+     * sub-classes may choose to assign a buffer from the BufferProvider or
+     * from some other source. */
     virtual void connectToBuffer (BufferProvider & provider) = 0;
 
     /** Called in Process thread to retrieve the buffer for this Port */
@@ -107,12 +111,11 @@ class Port : public Node
     const QSet<Node* const> dependents () const;
 
   protected:
-    /** Used by subclasses to list the nodes directly "behind"
-     *  this port.  For the most part this means either a single
-     *  Processor, or some other ports (like in the case of JACK
-     *  connections).
-     *  @returns the set of nodes interfaced by this Port.
-     */
+    /**
+     * Used by subclasses to list the nodes directly "behind" this port.  For
+     * the most part this means either a single Processor, or some other ports
+     * (like in the case of JACK connections).  @returns the set of nodes
+     * interfaced by this Port. */
     virtual const QSet<Node* const> interfacedNodes () const = 0;
 
   protected:
@@ -123,6 +126,6 @@ class Port : public Node
 
 } // Unison
 
-#endif // PORT_H
+#endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

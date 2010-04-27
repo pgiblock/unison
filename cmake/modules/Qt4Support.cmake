@@ -1,6 +1,0 @@
-macro(moc HEADER_FILE MOC_FILE)
-  execute_process(COMMAND ${QT_MOC_EXECUTABLE}
-      -o${CMAKE_CURRENT_BINARY_DIR}/${MOC_FILE}
-      ${CMAKE_CURRENT_SOURCE_DIR}/${HEADER_FILE}
-  )
-endmacro(moc)

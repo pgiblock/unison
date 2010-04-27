@@ -25,7 +25,6 @@
 #ifndef UNISON_BUFFER_PROVIDER_H
 #define UNISON_BUFFER_PROVIDER_H
 
-#include <QStack>
 #include <QSharedPointer>
 
 #include "prg/Uncopyable.h"
@@ -50,7 +49,7 @@ class BufferProvider : PRG::Uncopyable
     virtual ~BufferProvider ()
     {};
 
-    /** Aquire a buffer of request type and size.  This function is expected
+    /** Aquire a buffer of requested type and size.  This function is expected
      *  to succeed.  Calling this function may cause a heap allocation.  More
      *  thought needs to go into calling acquire() from RT code.
      *  @param type The type of buffer to acquire
@@ -101,38 +100,8 @@ class SharedBufferPtr : public QSharedPointer<Buffer>
     }
 };
 
-
-
-/** PooledBufferProvider is the 'default' implementation for BufferProviders.
- *  It isn't as smart as it could be, but it at least provides reuse of
- *  released buffers. */
-class PooledBufferProvider : public BufferProvider
-{
-  public:
-    PooledBufferProvider ();
-
-    ~PooledBufferProvider()
-    {}
-
-    SharedBufferPtr zeroAudioBuffer () const;
-    void setBufferLength (nframes_t nframes);
-    nframes_t bufferLength ();
-
-    SharedBufferPtr acquire (PortType type, nframes_t nframes);
-
-  protected:
-    void release (Buffer* buf);
-
-    // TODO: Use something RT-safe, instead of QStack
-    QStack<Buffer*> m_audioBuffers;
-    QStack<Buffer*> m_controlBuffers;
-    SharedBufferPtr m_zeroBuffer;
-    nframes_t m_periodLength;
-    int m_next;
-};
-
 } // Unison
 
 #endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

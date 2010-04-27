@@ -57,7 +57,6 @@ Lv2Port::Lv2Port (const Lv2World& world, Lv2Plugin* plugin, uint32_t index) :
   }
   if (max) {
     m_max   = slv2_value_as_float( max );
-    m_value = m_max;
     slv2_value_free( max );
   }
 }
@@ -141,23 +140,13 @@ const QSet<Node* const> Lv2Port::interfacedNodes () const
 
 void Lv2Port::connectToBuffer(BufferProvider& provider)
 {
-  int numConnections;
   switch (direction()) {
     case INPUT:
       acquireInputBuffer(provider);
       break;
 
     case OUTPUT:
-      numConnections = dependents().count();
-      if (numConnections == 1) {
-        // Use the other port's buffer
-        Port* other = (Port*) *(dependents().begin());
-        m_buffer = other->buffer();
-      }
-
-      if (!m_buffer) {
-        m_buffer = provider.acquire(type(), 1024);
-      }
+      acquireOutputBuffer(provider);
       break;
   }
   slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buffer()->data());
@@ -197,10 +186,23 @@ void Lv2Port::acquireInputBuffer (BufferProvider& provider)
 
 void Lv2Port::acquireOutputBuffer (BufferProvider& provider)
 {
+  int numConnections = dependents().count();
+  if (numConnections == 1) {
+    // Use the other port's buffer
+    Port* other = (Port*) *(dependents().begin());
+    m_buffer = other->buffer();
+  }
+  else if (numConnections == 2) {
+    qFatal("Internal mixing is not yet supported");
+  }
+
+  if (!m_buffer) {
+    m_buffer = provider.acquire(type(), 1024);
+  }
 }
 
 
 
 } // Unison
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

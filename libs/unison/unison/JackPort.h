@@ -22,44 +22,23 @@
  *
  */
 
-#ifndef JACK_PORT_H
-#define JACK_PORT_H
+#ifndef UNISON_JACK_PORT_H
+#define UNISON_JACK_PORT_H
 
 #include <jack/jack.h>
 
-#include "unison/BufferProvider.h" // for JBP
 #include "unison/Port.h"
 #include "unison/ProcessingContext.h"
 
 namespace Unison
 {
 
-class JackPort;
+class JackBufferProvider;
 class JackEngine;
 
-class JackBufferProvider : public BufferProvider
-{
-  public:
-    JackBufferProvider ()
-    {}
 
-    ~JackBufferProvider()
-    {}
-
-    SharedBufferPtr acquire (const JackPort * port, nframes_t nframes);
-
-    SharedBufferPtr acquire (PortType, nframes_t);
-    SharedBufferPtr zeroAudioBuffer () const;
-
-  protected:
-    void release (Buffer * buf)
-    {
-      delete buf;
-    }
-};
-
-
-
+/**
+ * Encapsulates a registered port of the jack-client. */
 class JackPort : public Port
 {
   public:
@@ -135,12 +114,7 @@ class JackPort : public Port
       return m_port;
     }
 
-    void connectToBuffer (BufferProvider &)
-    {
-      // TODO use a callback for buffer-size (more JACK CBs in general.)
-      nframes_t size = 1024; //jack_get_buffer_size(m_engine.jackClient());
-      m_buffer = m_jackBufferProvider->acquire(this, size);
-    }
+    void connectToBuffer (BufferProvider &);
 
   private:
     JackEngine& m_engine;
@@ -151,6 +125,6 @@ class JackPort : public Port
 
 } // Unison
 
-#endif // JACK_PORT_H
+#endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

@@ -276,6 +276,4 @@ int JackEngine::xrunCb (void* engine) {
 
 } // Unison
 
-#include "unison/JackEngine.moc"
-
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

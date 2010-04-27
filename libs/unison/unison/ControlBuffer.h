@@ -30,16 +30,20 @@
 namespace Unison
 {
 
-/** ControlBuffer represents a buffer used by Ports with type = CONTROL_PORT.
- *  ControlBuffers have a fixed size of 1 value.  They can be used to
- *  communicate control-port values across connections, but a Port should
- *  still maintain a shadow of the current-value should the buffer ever be
- *  reassigned.  Additionally, a currentValue is important for saving
- *  non-controlled values to a project file. */
+/**
+ * ControlBuffer represents a buffer used by Ports with type = CONTROL_PORT.
+ * ControlBuffers have a fixed size of 1 value.  They can be used to
+ * communicate control-port values across connections, but a Port must
+ * still maintain a shadow of the current-value should the buffer ever be
+ * reassigned.  Additionally, a currentValue is important for saving
+ * non-controlled values to a project file. */
 class ControlBuffer : public Buffer
 {
   public:
-    ControlBuffer (BufferProvider &provider) :
+    /**
+     * Construct a buffer under the specified provider.  This must be called
+     * by a BufferProvider to ensure proper memory management. */
+    ControlBuffer (BufferProvider& provider) :
       Buffer(provider),
       m_data(0.0f)
     {}
@@ -63,6 +67,12 @@ class ControlBuffer : public Buffer
       return &m_data;
     }
 
+    /** @returns The data as a float value for convenience */
+    float value() const
+    {
+      return m_data;
+    }
+
   protected:
     float m_data;
 };
@@ -71,4 +81,4 @@ class ControlBuffer : public Buffer
 
 #endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

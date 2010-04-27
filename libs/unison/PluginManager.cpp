@@ -126,4 +126,4 @@ void PluginManager::addLv2Plugin (SLV2Plugin plugin)
 
 } // Unison
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

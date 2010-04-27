@@ -1,5 +1,5 @@
 /*
- * JackPort.cpp
+ * JackBufferProvider.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -27,41 +27,31 @@
 
 #include "unison/AudioBuffer.h"
 #include "unison/JackBufferProvider.h"
-#include "unison/JackEngine.h"
 #include "unison/JackPort.h"
 
 namespace Unison
 {
 
-  JackBufferProvider* JackPort::m_jackBufferProvider =
-      new JackBufferProvider();
-
-  const QSet<Node* const> JackPort::interfacedNodes () const
-  {
-    const char** name = jack_port_get_connections( m_port );
-    uint32_t count = m_engine.portCount();
-
-    QSet<Node* const> dependencies;
-    // Within all connected ports
-    while (name != NULL) {
-      // See if we own the port
-      for (uint32_t i = 0; i < count; ++i) {
-        JackPort* port = m_engine.port( i );
-        if (port->fullName() == *name) {
-          dependencies += port;
-        }
-      }
-    }
-    return dependencies;
-  }
+SharedBufferPtr JackBufferProvider::acquire (
+    const JackPort* port, nframes_t nframes)
+{
+  // TODO: assert only called within process thread
+  void* jackBuffer = jack_port_get_buffer(port->jackPort(), nframes);
+  return new AudioBuffer( *this, nframes, jackBuffer );
+}
 
 
-  void JackPort::connectToBuffer (BufferProvider &)
-  {
-    // TODO use a callback for buffer-size (more JACK CBs in general.)
-    nframes_t size = 1024; //jack_get_buffer_size(m_engine.jackClient());
-    m_buffer = m_jackBufferProvider->acquire(this, size);
-  }
+SharedBufferPtr JackBufferProvider::acquire (PortType, nframes_t)
+{
+  qCritical() << "JackBufferProvider acquire called, programming error";
+  return NULL;
+}
+
+SharedBufferPtr JackBufferProvider::zeroAudioBuffer () const
+{
+  qCritical() << "JackBufferProvider acquire called, programming error";
+  return NULL;
+}
 
 } // Unison
 

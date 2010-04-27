@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef LV2_PLUGIN_H
-#define LV2_PLUGIN_H
+#ifndef UNISON_LV2_PLUGIN_H
+#define UNISON_LV2_PLUGIN_H
 
 #include <QVarLengthArray>
 #include <slv2/slv2.h>
@@ -159,6 +159,6 @@ class Lv2PluginDescriptor : public PluginDescriptor
 
 } // Unison
 
-#endif // LV2_PLUGIN_H
+#endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

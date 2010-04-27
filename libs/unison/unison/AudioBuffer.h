@@ -32,16 +32,18 @@
 namespace Unison
 {
 
-/** AudioBuffer is a Buffer designed specifically for Audio.  Can be used to
- *  connect two Ports with type=AUDIO_PORT.  AudioBuffer can be constructed two
- *  ways, details are available in the constructor documentation. */
+/**
+ * AudioBuffer is a Buffer designed specifically for Audio.  Can be used to
+ * connect two Ports with type=AUDIO_PORT.  AudioBuffer can be constructed two
+ * ways, details are available in the constructor documentation. */
 class AudioBuffer : public Buffer
 {
   public:
-    /** Construct a new AudioBuffer and pass ownership to the specified
-     *  BufferProvider.  This constructor should only be called by the
-     *  BufferProvider when the pool underruns.  This function itself is not
-     *  RT-safe since malloc is called immediately. */
+    /**
+     * Construct a new AudioBuffer and pass ownership to the specified
+     * BufferProvider.  This constructor should only be called by the
+     * BufferProvider when the pool underruns.  This function itself is not
+     * RT-safe since malloc is called immediately. */
     AudioBuffer (BufferProvider& provider, nframes_t length) :
       Buffer(provider),
       m_length(length),
@@ -54,13 +56,14 @@ class AudioBuffer : public Buffer
     }
 
 
-    /** Constructs an AudioBuffer from existing data.  The data itself is not
-     *  managed by AudioBuffer, that is, the client is still responsible for
-     *  cleaning up the data.  AudioBuffer itself, on the otherhand, will be
-     *  deleted by the Provider when no more references exist.  This is used
-     *  to provide an AudioBuffer over data which Unison does not manage, for
-     *  example, memory returned by jack_port_get_buffer(). */
-    AudioBuffer (BufferProvider& provider, nframes_t length, void * data) :
+    /**
+     * Constructs an AudioBuffer from existing data.  The data itself is not
+     * managed by AudioBuffer, that is, the client is still responsible for
+     * cleaning up the data.  AudioBuffer itself, on the otherhand, will be
+     * deleted by the Provider when no more references exist.  This is used to
+     * provide an AudioBuffer over data which Unison does not manage, for
+     * example, memory returned by jack_port_get_buffer(). */
+    AudioBuffer (BufferProvider& provider, nframes_t length, void* data) :
       Buffer(provider),
       m_length(length),
       m_ownsData(false)
@@ -75,22 +78,25 @@ class AudioBuffer : public Buffer
     }
 
 
-    /** @returns the type of buffer.  Always AUDIO_PORT. */
+    /**
+     * @returns the type of buffer.  Always AUDIO_PORT. */
     PortType type () const
     {
       return AUDIO_PORT;
     }
 
 
-    /** @returns the length of the buffer in frames */
+    /**
+     * @returns the length of the buffer in frames */
     nframes_t length () const
     {
       return m_length;
     }
 
 
-    /** Set the length of the buffer - currently unsupported.
-     *  @param len The new length, in samples */
+    /**
+     * Set the length of the buffer - currently unsupported.
+     *@param len The new length, in samples */
     void setLength (nframes_t len)
     {
       if (m_ownsData) {
@@ -101,13 +107,13 @@ class AudioBuffer : public Buffer
     }
 
 
-    void* data()
+    void* data ()
     {
       return m_data;
     }
 
 
-    const void* data() const
+    const void* data () const
     {
       return m_data;
     }
@@ -123,4 +129,4 @@ class AudioBuffer : public Buffer
 
 #endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai

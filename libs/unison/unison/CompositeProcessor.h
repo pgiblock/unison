@@ -23,8 +23,8 @@
  */
 
 
-#ifndef COMPOSITE_PROCESSOR_H
-#define COMPOSITE_PROCESSOR_H
+#ifndef UNISON_COMPOSITE_PROCESSOR_H
+#define UNISON_COMPOSITE_PROCESSOR_H
 
 #include "unison/Processor.h"
 
@@ -56,21 +56,20 @@ class CompositeProcessor : public Processor
     virtual void activate ();
     virtual void deactivate ();
 
-    virtual void process (const ProcessingContext & context);
+    virtual void process (const ProcessingContext& context);
 
     const QSet<Node* const> dependencies () const;
     const QSet<Node* const> dependents () const;
 
   protected:
-    void add (Processor * processor);
+    void add (Processor* processor);
     virtual void registerPort()
     {};
 
     /**
      * A hack to let subs force-compile for now.  Should be removed once
-     * CompiledProcessor actually manages connect()ing
-     */
-    void hackCompile (BufferProvider & pool)
+     * CompiledProcessor actually manages connect()ing */
+    void hackCompile (BufferProvider& pool)
     {
       compile(pool);
     }
@@ -96,19 +95,28 @@ class CompositeProcessor : public Processor
      * Processor, therefore this function is not reentrant. */
     static void compileWalk (Node* n, QList<CompiledProcessor>& output);
 
-    QAtomicPointer< QList<CompiledProcessor> > compiled;
-    QList<Processor*> processors;
+    QAtomicPointer< QList<CompiledProcessor> > m_compiled;
+    QList<Processor*> m_processors;
 };
 
 
 
+/**
+ * Provides a proxy to a port internal to a CompositeProcessor. The
+ * CompositeProcessor allows for implementations to registerPorts.  This
+ * exposes an internal port as if it is a port of the CompositeProcessor. */
 class CompositeProcessorProxyPort : public Port
 {
-  public:
-    CompositeProcessorProxyPort (CompositeProcessor * processor,
-                                 Port * port) :
-      m_processor(processor),
-      m_port(port)
+  protected:
+    /**
+     * Constructs a Port for a CompositeProcessor.  Called by
+     * CompositeProcessor itself.
+     * @param processor The parent processor
+     * @param port      The port to proxy */
+    CompositeProcessorProxyPort (CompositeProcessor* processor,
+                                 Port* port) :
+      m_port(port),
+      m_processor(processor)
     {}
 
     ~CompositeProcessorProxyPort ()
@@ -171,19 +179,21 @@ class CompositeProcessorProxyPort : public Port
       return p;
     }
 
-    void connectToBuffer (BufferProvider & provider)
+    void connectToBuffer (BufferProvider& provider)
     {
       // TODO: Might need more logic here
       m_port->connectToBuffer(provider);
     }
 
   private:
-    Port * m_port;
-    CompositeProcessor * m_processor;
+    Port* m_port;                    ///< The proxied port
+    CompositeProcessor* m_processor; ///< The processor owning this port
+
+    friend class CompositeProcessor;
 };
 
 } // Unison
 
 #endif
 
-// vim: et ts=8 sw=2 sts=2 noai
+// vim: ts=8 sw=2 sts=2 et sta noai
