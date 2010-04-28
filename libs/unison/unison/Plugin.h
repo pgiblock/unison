@@ -35,6 +35,8 @@
 namespace Unison
 {
 
+class CompositeProcessor;
+
 /**
  * The type of plugin, regarding I/O.
  * This is a relic from LMMS and doesn't serve us much purpose.
@@ -61,7 +63,11 @@ enum PluginType
 class Plugin : public Processor
 {
   public:
-    virtual ~Plugin () {};
+    Plugin () : Processor()
+    {}
+
+    virtual ~Plugin ()
+    {};
 
     /** @returns the name of the plugin. Such as, "Triple Oscillator" */
     virtual QString name () const = 0;

@@ -130,6 +130,12 @@ void Lv2Port::updateBufferValue ()
 }
 
 
+Node* Lv2Port::parent () const
+{
+  return m_plugin;
+}
+
+
 const QSet<Node* const> Lv2Port::interfacedNodes () const
 {
   QSet<Node* const> p;

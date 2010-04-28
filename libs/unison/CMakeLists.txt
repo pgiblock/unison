@@ -36,6 +36,7 @@ set(UNISON_SRCS
     PluginManager.cpp
     PooledBufferProvider.cpp
     Port.cpp
+    Processor.cpp
     Session.cpp
 )
 

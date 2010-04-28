@@ -63,6 +63,7 @@ void CompositeProcessor::deactivate ()
 void CompositeProcessor::process (const ProcessingContext & context)
 {
   foreach (CompiledProcessor cp, *m_compiled) {
+    //qDebug() << "CompositeProcessor" << name() << " processing " << cp.processor->name();
     cp.processor->process(context);
   }
 }
@@ -96,11 +97,36 @@ const QSet<Node* const> CompositeProcessor::dependents () const
 }
 
 
+QString CompositeProcessor::name () const
+{
+  return "CompositeProcessor";
+}
+
+
 void CompositeProcessor::add (Processor * processor)
 {
-  // TODO: ensure processor isn't already added
-  m_processors.append(processor);
+  Q_ASSERT(processor != NULL);
+  if (processor->parent() == this ) {
+    return;
+  }
+  if (processor->parent()) {
+    qFatal("Reparenting processors is not yet supported");
+  }
+  if (!m_processors.contains(processor)) {
+    m_processors.append(processor);
+    processor->setParent(this);
+  }
 }
+
+
+void CompositeProcessor::remove (Processor * processor)
+{
+  Q_ASSERT(processor != NULL);
+  Q_ASSERT(processor->parent() == this);
+  m_processors.removeOne(processor);
+  processor->setParent(NULL);
+}
+
 
 void CompositeProcessor::compileWalk (Node* n,
     QList<CompiledProcessor>& output)
@@ -189,6 +215,7 @@ void CompositeProcessor::compile (QList<Processor*> input,
 
 void CompositeProcessor::compile (BufferProvider & bufferProvider) {
   QList<CompiledProcessor>* compiledSwap = new QList<CompiledProcessor>();
+  qDebug() << name() << "compiling.";
   compile( m_processors, *compiledSwap );
 
   qDebug() << "Aquiring 'fixed' buffers";

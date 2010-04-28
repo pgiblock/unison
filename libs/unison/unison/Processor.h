@@ -32,6 +32,7 @@
 namespace Unison
 {
 
+class CompositeProcessor;
 class ProcessingContext;
 
 /**
@@ -40,8 +41,8 @@ class ProcessingContext;
 class Processor : public Node
 {
   public:
-    virtual ~Processor ()
-    {}
+    Processor ();
+    virtual ~Processor ();
 
     /** @return the total number of ports of all kinds */
     virtual int portCount () const = 0;
@@ -53,6 +54,11 @@ class Processor : public Node
 
     virtual void process (const ProcessingContext & context) = 0;
 
+    //// Connection oriented Stuff ////
+
+    Node* parent () const;
+    void setParent(CompositeProcessor* parent);
+
     /**
      * Has this node been visited (traversed)?  While compiling and perhaps
      * in other cases, it is useful to know if a processor has been visited
@@ -62,7 +68,6 @@ class Processor : public Node
     bool isVisited()
     {
       return m_visited;
-
     }
 
     /** Mark this node as visited */
@@ -78,6 +83,7 @@ class Processor : public Node
     };
 
   private:
+    CompositeProcessor* m_parent;
     bool m_visited;
 };
 

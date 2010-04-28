@@ -80,6 +80,7 @@ class Lv2Port : public Port
                                      m_port, m_world.toggled );
     }
 
+    Node* parent () const;
     const QSet<Node* const> interfacedNodes () const;
 
     void connectToBuffer (BufferProvider & provider);

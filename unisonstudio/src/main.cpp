@@ -166,16 +166,17 @@ int main (int argc, char ** argv) {
   // TODO: Obviously we wouldnt really (mis)manage these this way.
   JackEngine* engine = new JackEngine();
   session = new Session(*engine);
+  session->hackCompile();
 
   engine->activate();
 
   // Client stuff
   FxLine* fxLine = new FxLine(*session, "Master");
   fxLine->addEffect();
+  session->add(fxLine);
+  session->hackCompile();
 
   fxLine->activate();
-
-  session->setRootNodeHack(fxLine);
 
   char c;
   std::cin >> &c;
@@ -186,8 +187,6 @@ int main (int argc, char ** argv) {
   engine->deactivate();
 
   /*
-   TODO-NOW: Control Port stuff
-
   //app->exec();
 
   std::cout << "Destroying Plugins" << std::endl;

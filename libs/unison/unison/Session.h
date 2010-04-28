@@ -33,6 +33,7 @@
 namespace Unison
 {
 
+class CompositeProcessor;
 class PooledBufferProvider;
 class JackEngine;
 class Node;
@@ -49,27 +50,27 @@ class Processor;
 class Session : PRG::Uncopyable
 {
   public:
-    Session(JackEngine& engine);
+    Session (JackEngine& engine);
     ~Session ();
 
     // TODO: expose a generic Engine instead of JackEngine
-    JackEngine& engine() const {
+    JackEngine& engine () const {
       return *m_engine;
     }
 
-    BufferProvider& bufferProvider() const;
+    BufferProvider& bufferProvider () const;
 
-    void process(const ProcessingContext& context);
+    void process (const ProcessingContext& context);
 
-    // TODO-NOW: Compiler? Song, Sequencer, Redo/Undo, whatever..
-
-    // FIXME: HACK
-    void setRootNodeHack(Processor * p) { m_rootNode = p; };
+    // TODO: Compiler? Song, Sequencer, Redo/Undo, whatever..
+    void hackCompile ();
+    void add (Processor* processor);
+    void remove (Processor* processor);
 
   private:
+    CompositeProcessor* m_rootProcessor;
     PooledBufferProvider* m_bufferProvider;
     JackEngine* m_engine;
-    Processor* m_rootNode;
 };
 
 } // Unison

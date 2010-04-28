@@ -4,12 +4,18 @@ Immediate TODO:
 x TODOs
 - Movement of code from main.cpp:
 x   JackEngine and Callbacks
-!   Connections and Compiling									<< We are here
+x   Connections and Compiling									<< We are here
+x     add node.parent()
+      Connections across Containers
       Ability to find Ports by name for connecting purposes
-  Release To SF.net ??
+  COMPILE ON INTERNAL GRAPH CHANGES!!!!!!! (and find bufferProvider)
   ControlPorts
+  Release To SF.net ??
+  Split stuff out of Plugin and Port and create general purpose
+    PluginProcessor and PortNode classes for managing the graph.
+    (Less logic in each Lv2/VSt/etc Port and Plugin implementation.
   TODO-NOWs
-  Documentation and add UNISON_ to #ifndefs
+x Documentation and add UNISON_ to #ifndefs
   Release To SF.net ??
   Jack - proper tie-in with session - allowing jack to disconnect etc..
   Mixing (multi-connect)
@@ -32,12 +38,6 @@ Port.isInput(),isOutput(),direction()  Most underlying ports have native
 isInput or isOutput functions.  Using direction() forces us to if-else on the
 native function then requires the consumer to switch() on the Direction. Is
 this really what we want??
-
-JackPort:
-
-  A port backed by jack.  MANY more features than a standard port, and used
-  explicitly by some parts of the program
-
 
 Graph (PortGraph?):
 

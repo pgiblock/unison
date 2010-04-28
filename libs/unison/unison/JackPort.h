@@ -49,6 +49,12 @@ class JackPort : public Port
     {
     }
 
+    Node* parent () const
+    {
+      return NULL;
+    }
+
+
     QString name () const
     {
       return jack_port_short_name( m_port );

@@ -75,7 +75,8 @@ Lv2World::~Lv2World ()
 }
 
 
-Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframes_t sampleRate) :
+Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin,
+                      nframes_t sampleRate) :
   Plugin(),
   m_world(world),
   m_plugin(plugin),

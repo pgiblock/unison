@@ -43,10 +43,16 @@ class ProcessingContext;
 class CompositeProcessor : public Processor
 {
   public:
-    CompositeProcessor (/*CompositeProcessor* parent*/)
-    {};
+    CompositeProcessor () : Processor()
+    {}
+
     virtual ~CompositeProcessor ()
     {};
+
+    virtual QString name () const;
+
+    void add (Processor* processor);
+    void remove (Processor* processor);
 
     /** @return the total number of ports of all kinds */
     virtual int portCount () const;
@@ -61,11 +67,6 @@ class CompositeProcessor : public Processor
     const QSet<Node* const> dependencies () const;
     const QSet<Node* const> dependents () const;
 
-  protected:
-    void add (Processor* processor);
-    virtual void registerPort()
-    {};
-
     /**
      * A hack to let subs force-compile for now.  Should be removed once
      * CompiledProcessor actually manages connect()ing */
@@ -73,6 +74,10 @@ class CompositeProcessor : public Processor
     {
       compile(pool);
     }
+
+  protected:
+    virtual void registerPort()
+    {};
 
   private:
     struct CompiledProcessor {

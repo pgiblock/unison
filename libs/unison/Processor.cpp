@@ -1,5 +1,5 @@
 /*
- * Session.cpp
+ * Processor.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -24,63 +24,34 @@
 
 #include <QDebug>
 
-#include "unison/Node.h"
 #include "unison/CompositeProcessor.h"
-#include "unison/Session.h"
-#include "unison/PooledBufferProvider.h"
-#include "unison/JackEngine.h"
 
 namespace Unison
 {
-
-Session::Session (JackEngine& engine) :
-  m_rootProcessor(NULL),
-  m_bufferProvider(),
-  m_engine(&engine)
-{
-  // FIXME: Remove hardcoded bufferlength1
-  m_bufferProvider = new PooledBufferProvider();
-  m_bufferProvider->setBufferLength(1024);
-
-  m_rootProcessor = new CompositeProcessor();
-
-  engine.setSession(this);
-}
+  Processor::Processor () :
+    m_parent(NULL)
+  {}
 
 
-Session::~Session ()
-{
-  delete m_bufferProvider;
-}
+  Processor::~Processor ()
+  {
+    if (m_parent) {
+      m_parent->remove(this);
+    }
+  }
 
 
-BufferProvider& Session::bufferProvider () const
-{
-  return *m_bufferProvider;
-}
+  Node* Processor::parent () const
+  {
+    return m_parent;
+  }
 
-
-void Session::process (const ProcessingContext& context)
-{
-  m_rootProcessor->process(context);
-}
-
-
-void Session::hackCompile ()
-{
-  m_rootProcessor->hackCompile(bufferProvider());
-}
-
-void Session::add (Processor* processor)
-{
-  m_rootProcessor->add(processor);
-}
-
-
-void Session::remove (Processor* processor)
-{
-  m_rootProcessor->remove(processor);
-}
+  void Processor::setParent (CompositeProcessor* parent)
+  {
+    Q_ASSERT(parent != NULL);
+    // TODO-NOW: A bunch of assertions
+    m_parent = parent;
+  }
 
 } // Unison
 

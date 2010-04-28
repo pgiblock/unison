@@ -39,6 +39,8 @@ class Node {
   public:
     virtual ~Node () {};
 
+    virtual Node* parent () const = 0;
+
     /**
      * Dependencies are nodes that are directly "connected", that must
      * be processed before this node.  This typically means things that are

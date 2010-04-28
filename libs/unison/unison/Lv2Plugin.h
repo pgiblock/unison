@@ -67,7 +67,7 @@ struct Lv2World
 class Lv2Plugin : public Plugin
 {
   public:
-    Lv2Plugin (Lv2World&, SLV2Plugin plugin, nframes_t sampleRate);
+    Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframes_t sampleRate);
     Lv2Plugin (const Lv2Plugin &);
 
     ~Lv2Plugin ();
