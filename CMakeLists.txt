@@ -94,3 +94,4 @@ set(UNISON_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/unison)
 #Directories
 add_subdirectory(libs)
 add_subdirectory(unisonstudio)
+add_subdirectory(plugins)
