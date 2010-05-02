@@ -41,6 +41,8 @@ void printDisclaimer();
 
 Session * session;
 
+Port * inputL;
+Port * inputR;
 
 class FxLine : public CompositeProcessor {
   public:
@@ -72,6 +74,8 @@ class FxLine : public CompositeProcessor {
     {
       const char * uri = "http://plugin.org.uk/swh-plugins/vynil";
       PluginManager * man = PluginManager::instance();
+
+      /*
       Processor * proc = man->descriptor(uri)->createPlugin(48000);
       add(proc);
 
@@ -86,10 +90,10 @@ class FxLine : public CompositeProcessor {
         Port* p = proc->port(i);
         if (p->type() == AUDIO_PORT) {
           switch (p->direction()) {
-            case INPUT:
-              qDebug() << "Connecting " << m_inPorts[inCnt]->name() << " to " << p->name();
-              m_inPorts[inCnt++]->connect(p);
-              break;
+            //case INPUT:
+            //  qDebug() << "Connecting " << m_inPorts[inCnt]->name() << " to " << p->name();
+            //  m_inPorts[inCnt++]->connect(p);
+            //  break;
             case OUTPUT:
               qDebug() << "Connecting " << m_outPorts[outCnt]->name() << " to " << p->name();
               m_outPorts[outCnt++]->connect(p);
@@ -98,8 +102,53 @@ class FxLine : public CompositeProcessor {
               //TODO: Programming error!
               break;
           }
+
+          if (p->name() == "Input L") {
+            inputL = p;
+          }
+          else if (p->name() == "Input R") {
+            inputR = p;
+          }
         }
-      }
+      }*/
+
+      /*
+      Processor * osc1  = man->descriptor("http://plugin.org.uk/swh-plugins/fmOsc")->createPlugin(48000);
+      Port * osc1wave = osc1->port(0); // Waveform (1=sin, 2=tri, 3=squ, 4=saw)"
+      Port * osc1freq = osc1->port(1); // Frequency (Hz)
+      Port * osc1out  = osc1->port(2); // Output
+      add(osc1);
+      */
+
+      Processor * osc1  = man->descriptor("http://plugin.org.uk/swh-plugins/sinCos")->createPlugin(48000);
+      Port * osc1freq   = osc1->port(0);      // Base frequency (Hz)"
+      Port * osc1pitch  = osc1->port(1);      // Pitch offset"
+      Port * osc1outSin = osc1->port(2);      // Sine output"
+      Port * osc1outCos = osc1->port(3);      // Cosine output"
+      add(osc1);
+
+      Processor * amp1  = man->descriptor("http://plugin.org.uk/swh-plugins/amp")->createPlugin(48000);
+      //Processor *amp1   = man->descriptor("http://unisonstudio.org/plugins/Amp")->createPlugin(48000);
+      Port * amp1gain   = amp1->port(0);
+      Port * amp1in     = amp1->port(1);
+      Port * amp1out    = amp1->port(2);
+      add(amp1);
+
+      Processor * lfo1 = man->descriptor("http://unisonstudio.org/plugins/LfoController")->createPlugin(48000);
+      Port * lfo1out   = lfo1->port(0);
+      add(lfo1);
+
+      //amp1gain->setValue(-50.0f);
+      lfo1out->connect(amp1gain);
+      osc1outCos->connect(amp1in);
+
+      m_outPorts[0]->connect(osc1outSin);
+      m_outPorts[1]->connect(amp1out);
+
+
+ //     amp1out->connect(inputR);
+
+
       hackCompile(m_session.bufferProvider());
     }
 
@@ -112,35 +161,17 @@ class FxLine : public CompositeProcessor {
 };
 
 
-/** A stupid function to alias ports so we can connect to them */
-/*
-Port* fxin[2][2];
-Port* fxout[2][2];
-Processor* extraProcessor;
-void referencePorts () {
-  std::cout << "Referencing Ports" << std::endl;
-  int f=0;
-  foreach (Processor* n, processors) {
-    int inCnt=0, outCnt =0;
-    for (int i=0; i<n->portCount(); ++i) {
-      Port* p = n->port(i);
-      if (p->type() == AUDIO_PORT) {
-        switch (p->direction()) {
-          case INPUT:
-            fxin[f][inCnt++] = p;
-            break;
-          case OUTPUT:
-            fxout[f][outCnt++] = p;
-            break;
-          default:
-            //TODO: Programming error!
-            break;
-        }
-      }
+class TestProcessor : public CompositeProcessor {
+
+  public:
+    void add (Processor * processor) {
+      CompositeProcessor::add(processor);
     }
-    f++;
-  }
-}*/
+
+    void remove (Processor * processor) {
+      CompositeProcessor::remove(processor);
+    }
+};
 
 
 int main (int argc, char ** argv) {
@@ -166,22 +197,31 @@ int main (int argc, char ** argv) {
   // TODO: Obviously we wouldnt really (mis)manage these this way.
   JackEngine* engine = new JackEngine();
   session = new Session(*engine);
+  engine->activate();
+
   session->hackCompile();
 
-  engine->activate();
+//  session->hackCompile();
+//  engine->activate();
 
   // Client stuff
   FxLine* fxLine = new FxLine(*session, "Master");
   fxLine->addEffect();
+  fxLine->activate();
+
   session->add(fxLine);
   session->hackCompile();
 
-  fxLine->activate();
+  /*
+*/
+
+
 
   char c;
   std::cin >> &c;
 
   fxLine->deactivate();
+  //osc1->deactivate();
 
   std::cout << "Disconnecting JACK" << std::endl;
   engine->deactivate();

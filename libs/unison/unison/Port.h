@@ -50,6 +50,9 @@ class Port : public Node
     /** @returns the name of port, for example "OSC1 Attack". */
     virtual QString name () const = 0;
 
+    /** @returns an id that can be used for serialization */
+    virtual QString id () const = 0;
+
     /* TODO: Return an set of types instead??? */
     /** @returns the type of port */
     virtual PortType type() const = 0;

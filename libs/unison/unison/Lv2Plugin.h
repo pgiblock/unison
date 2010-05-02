@@ -98,6 +98,7 @@ class Lv2Plugin : public Plugin
     }
 
     Port* port (int idx) const;
+    Port* port (QString name) const;
 
     /** @returns The underlying SLV2Plugin */
     SLV2Plugin slv2Plugin() const

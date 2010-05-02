@@ -40,6 +40,14 @@ int CompositeProcessor::portCount () const
 
 Port* CompositeProcessor::port (int idx) const
 {
+  // TODO: Implement registered-ports
+  return NULL;
+}
+
+
+Port* CompositeProcessor::port (QString id) const
+{
+  // TODO: Implement registered-ports
   return NULL;
 }
 
@@ -71,7 +79,7 @@ void CompositeProcessor::process (const ProcessingContext & context)
 
 const QSet<Node* const> CompositeProcessor::dependencies () const
 {
-  QSet<Node* const> n;
+  QSet<Node* const> n(m_derivedDependencies);
   int count = portCount();
   for (int i=0; i<count; ++i) {
     Port* p  = port(i);
@@ -128,33 +136,62 @@ void CompositeProcessor::remove (Processor * processor)
 }
 
 
+/**
+ * Walks @n's parents and returns the parent closest to @_this.  If node @n
+ * is not contained in @_this, then NULL is returned.  */
+Processor* findOutermostProcessor (CompositeProcessor * _this, Node * n)
+{
+  Processor* outer = NULL;
+  while (n) {
+    if (n == _this) {
+      return outer;
+    }
+
+    if (Processor* p = dynamic_cast<Processor*>( n )) {
+      outer = p;
+    }
+
+    n = n->parent();
+  }
+  return NULL;
+}
+
+// 2 if child's dependency is sibling, nothing special - walk and visit
+// 3 if child's dependency is nested, then walk into the "nesting" sibling instead
 void CompositeProcessor::compileWalk (Node* n,
     QList<CompiledProcessor>& output)
 {
-  // TODO: Dynamic cast is bad. any better way to do this other than moving
-  // process(), visit(), isVisited() etc to Node?
-  Processor* p = dynamic_cast<Processor*>( n );
+  // Find the processor directly contained in this composite, if any.
+  Processor* outer = findOutermostProcessor(this, n);
+  bool pendingAddition = false;
+
+  // n is outside - case1
+  if (outer == NULL) {
+    m_derivedDependencies.insert(n);
+    return;
+  }
 
   qDebug() << "Walking node: " << n->name();
 
-  if (p == NULL || !p->isVisited()) {
-    if (p) {
-      p->visit();
-    }
-    foreach (Node* dep, n->dependencies()) {
-      compileWalk( dep, output );
-    }
-    if (p) {
-      CompiledProcessor cp;
-      cp.processor = p;
-      output.append(cp);
-    }
+  if (!outer->isVisited()) {
+    outer->visit();
+    pendingAddition = true;
+  }
+
+  foreach (Node* dep, n->dependencies()) {
+    compileWalk( dep, output );
+  }
+
+  if (pendingAddition) {
+    CompiledProcessor cp;
+    cp.processor = outer;
+    output.append(cp);
   }
 }
 
 /*
   Alternate compilation method:
-  create set of all nodes - these are "untraversed".
+  create set of all nodes - these are "un-traversed".
   remove from traversed, recurse into dependents, add to compiled-list
 */
 
@@ -162,6 +199,8 @@ void CompositeProcessor::compileWalk (Node* n,
 void CompositeProcessor::compile (QList<Processor*> input,
     QList<CompiledProcessor>& output)
 {
+  m_derivedDependencies.clear();
+
   // Mark everything as unvisited
   QListIterator<Processor*> i( input );
   while (i.hasNext()) {
@@ -214,18 +253,24 @@ void CompositeProcessor::compile (QList<Processor*> input,
 
 
 void CompositeProcessor::compile (BufferProvider & bufferProvider) {
+  Q_ASSERT(QAtomicPointer< QList<CompiledProcessor> >
+               ::isFetchAndStoreNative());
+
   QList<CompiledProcessor>* compiledSwap = new QList<CompiledProcessor>();
   qDebug() << name() << "compiling.";
   compile( m_processors, *compiledSwap );
 
-  qDebug() << "Aquiring 'fixed' buffers";
+  //qDebug() << "Aquiring 'fixed' buffers";
+  qDebug() << name() << "Compiled, sequence is:";
   foreach (CompiledProcessor cp, *compiledSwap) {
+    qDebug() << "  " << cp.processor->name();
     for (int i=0; i<cp.processor->portCount(); ++i) {
       Port *port = cp.processor->port(i);
-      qDebug() << "Next port: " << qPrintable(port->name());
+      //qDebug() << "Next port: " << qPrintable(port->name());
       port->connectToBuffer(bufferProvider);
     }
   }
+
 
   // FIXME: this is probably not sufficient.
   compiledSwap = m_compiled.fetchAndStoreRelaxed( compiledSwap );

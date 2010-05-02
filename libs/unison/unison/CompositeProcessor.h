@@ -58,6 +58,7 @@ class CompositeProcessor : public Processor
     virtual int portCount () const;
 
     virtual Port* port (int idx) const;
+    virtual Port* port (QString id) const;
 
     virtual void activate ();
     virtual void deactivate ();
@@ -91,16 +92,17 @@ class CompositeProcessor : public Processor
     /**
      * Compiles the given list of processors into a proper traversal for
      * rendering.  Not reentrant. */
-    static void compile (QList<Processor*> input,
+    void compile (QList<Processor*> input,
                          QList<CompiledProcessor>& output);
 
     /**
      * A recursive walk into the dependencies of the node.  Processors
      * are appended to the output.  This uses the visited flag of
      * Processor, therefore this function is not reentrant. */
-    static void compileWalk (Node* n, QList<CompiledProcessor>& output);
+    void compileWalk (Node* n, QList<CompiledProcessor>& output);
 
     QAtomicPointer< QList<CompiledProcessor> > m_compiled;
+    QSet<Node* const> m_derivedDependencies;
     QList<Processor*> m_processors;
 };
 

@@ -47,7 +47,7 @@ namespace Unison
       // See if we own the port
       for (uint32_t i = 0; i < count; ++i) {
         JackPort* port = m_engine.port( i );
-        if (port->fullName() == *name) {
+        if (port->name() == *name) {
           dependencies += port;
         }
       }

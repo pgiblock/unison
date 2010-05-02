@@ -107,6 +107,15 @@ QString Lv2Port::name () const
 }
 
 
+QString Lv2Port::id () const
+{
+  SLV2Value val = slv2_port_get_symbol( m_plugin->slv2Plugin(), m_port );
+  QString ret = QString::fromAscii( slv2_value_as_string(val) );
+  slv2_value_free( val );
+  return ret;
+}
+
+
 float Lv2Port::value () const
 {
   return m_value;

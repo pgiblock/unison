@@ -48,7 +48,7 @@ set(UNISON_MOC_HEADERS
 
 QT4_WRAP_CPP(UNISON_MOC_SRCS ${UNISON_MOC_HEADERS})
 
-add_library(unison SHARED ${UNISON_SRCS} ${UNISON_MOC_SRCS})
+add_library(unison SHARED ${UNISON_MOC_SRCS} ${UNISON_SRCS})
 
 target_link_libraries(unison
     ${JACK_LIBRARIES}

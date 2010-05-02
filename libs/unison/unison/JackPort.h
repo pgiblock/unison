@@ -55,12 +55,12 @@ class JackPort : public Port
     }
 
 
-    QString name () const
+    QString id () const
     {
       return jack_port_short_name( m_port );
     }
 
-    QString fullName () const
+    QString name () const
     {
       return jack_port_name( m_port );
     }

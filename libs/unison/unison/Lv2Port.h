@@ -47,6 +47,7 @@ class Lv2Port : public Port
 
     ~Lv2Port ();
 
+    QString id () const;
     QString name () const;
     PortType type () const;
     PortDirection direction () const;

@@ -102,14 +102,18 @@ void Lv2Plugin::init ()
   m_instance = slv2_plugin_instantiate( m_plugin, m_sampleRate, NULL );
   Q_ASSERT(m_instance);
 
+  m_name = slv2_plugin_get_name( m_plugin );
+  Q_ASSERT(m_name);
+
+  qDebug() << "Initializing Lv2Plugin" << m_name << "with ports:";
+
   int count = portCount();
   m_ports.resize( count );
   for (int i = 0; i < count; ++i) {
     m_ports[i] = new Lv2Port( m_world, this, i );
+    qDebug() << i << m_ports[i]->name();
   }
 
-  m_name = slv2_plugin_get_name( m_plugin );
-  assert(m_name);
 
   m_authorName     = slv2_plugin_get_author_name( m_plugin );
   m_authorEmail    = slv2_plugin_get_author_email( m_plugin );
@@ -140,9 +144,22 @@ Port* Lv2Plugin::port (int idx) const
 }
 
 
+Port* Lv2Plugin::port (QString id) const
+{
+  for (int i=0; i<m_ports.count(); ++i) {
+    if (m_ports[i]->id() == id) {
+      return m_ports[i];
+    }
+  }
+
+  return NULL;
+}
+
+
 void Lv2Plugin::activate ()
 {
   if (!m_activated) {
+    qDebug() << "Activating plugin" << name();
     slv2_instance_activate( m_instance );
     m_activated = true;
   }
@@ -198,6 +215,13 @@ QString Lv2Plugin::copyright () const
 
 void Lv2Plugin::process (const ProcessingContext & context)
 {
+  int count = portCount();
+  for (int i=0; i<count; ++i) {
+    Port* p  = port(i);
+    if (p->direction() == INPUT && p->type() == CONTROL_PORT) {
+//      qDebug() << "Control Port" << p->name() << "has value" << ((float*)(p->buffer()->data()))[0] ;
+    }
+  }
   slv2_instance_run(m_instance, context.bufferSize());
 }
 
@@ -238,6 +262,7 @@ Lv2PluginDescriptor::Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin) :
   SLV2Value data;
 
   m_uniqueId = QString( slv2_value_as_uri( slv2_plugin_get_uri( plugin ) ) );
+  qDebug() << "Holy shit!" << m_uniqueId;
 
   data = slv2_plugin_get_name( plugin );
   m_name = QString( slv2_value_as_string( data ) );
