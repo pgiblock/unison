@@ -59,7 +59,7 @@ namespace Unison
   void JackPort::connectToBuffer (BufferProvider &)
   {
     // TODO use a callback for buffer-size (more JACK CBs in general.)
-    nframes_t size = 1024; //jack_get_buffer_size(m_engine.jackClient());
+    nframes_t size = UNISON_BUFFER_LENGTH; //jack_get_buffer_size(m_engine.jackClient());
     m_buffer = m_jackBufferProvider->acquire(this, size);
   }
 

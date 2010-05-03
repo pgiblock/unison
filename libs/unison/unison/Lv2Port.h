@@ -101,6 +101,7 @@ class Lv2Port : public Port
     float m_defaultValue;
     float m_min;
     float m_max;
+    bool  m_isSampleRate;
 };
 
 } // Unison

@@ -262,7 +262,6 @@ Lv2PluginDescriptor::Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin) :
   SLV2Value data;
 
   m_uniqueId = QString( slv2_value_as_uri( slv2_plugin_get_uri( plugin ) ) );
-  qDebug() << "Holy shit!" << m_uniqueId;
 
   data = slv2_plugin_get_name( plugin );
   m_name = QString( slv2_value_as_string( data ) );

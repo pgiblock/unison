@@ -40,7 +40,7 @@ Session::Session (JackEngine& engine) :
 {
   // FIXME: Remove hardcoded bufferlength1
   m_bufferProvider = new PooledBufferProvider();
-  m_bufferProvider->setBufferLength(1024);
+  m_bufferProvider->setBufferLength(UNISON_BUFFER_LENGTH);
 
   m_rootProcessor = new CompositeProcessor();
 

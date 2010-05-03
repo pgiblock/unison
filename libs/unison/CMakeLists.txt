@@ -23,7 +23,8 @@
 
 add_subdirectory(unison) # Nothing really in here
 
-include_directories(${PRG_INCLUDE_DIR})
+SET(UNISON_BUFFER_LENGTH "1024" CACHE STRING
+    "Audio buffer length. A work-around until runtime change is supported.")
 
 #file(GLOB UNISON_SRCS *.cpp)
 set(UNISON_SRCS
@@ -46,8 +47,11 @@ set(UNISON_MOC_HEADERS
     unison/JackEngine.h
 )
 
-QT4_WRAP_CPP(UNISON_MOC_SRCS ${UNISON_MOC_HEADERS})
+qt4_wrap_cpp(UNISON_MOC_SRCS ${UNISON_MOC_HEADERS})
 
+include_directories(${PRG_INCLUDE_DIR})
+
+add_definitions(-D'UNISON_BUFFER_LENGTH=${UNISON_BUFFER_LENGTH}')
 add_library(unison SHARED ${UNISON_MOC_SRCS} ${UNISON_SRCS})
 
 target_link_libraries(unison

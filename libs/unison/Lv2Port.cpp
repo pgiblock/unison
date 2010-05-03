@@ -38,7 +38,8 @@ Lv2Port::Lv2Port (const Lv2World& world, Lv2Plugin* plugin, uint32_t index) :
   m_value(0),
   m_defaultValue(0),
   m_min(0),
-  m_max(0)
+  m_max(0),
+  m_isSampleRate(false)
 {
   // TODO: Error handling
   m_port = slv2_plugin_get_port_by_index( plugin->slv2Plugin(), index );
@@ -59,6 +60,7 @@ Lv2Port::Lv2Port (const Lv2World& world, Lv2Plugin* plugin, uint32_t index) :
     m_max   = slv2_value_as_float( max );
     slv2_value_free( max );
   }
+  m_isSampleRate = slv2_port_has_property( plugin->slv2Plugin(), m_port, m_world.sampleRate );
 }
 
 
@@ -194,7 +196,7 @@ void Lv2Port::acquireInputBuffer (BufferProvider& provider)
 
   if (!m_buffer) {
     // Return internal port
-    m_buffer = provider.acquire(type(), 1024);
+    m_buffer = provider.acquire(type(), UNISON_BUFFER_LENGTH);
     updateBufferValue();
   }
 }
@@ -212,7 +214,7 @@ void Lv2Port::acquireOutputBuffer (BufferProvider& provider)
   }
 
   if (!m_buffer) {
-    m_buffer = provider.acquire(type(), 1024);
+    m_buffer = provider.acquire(type(), UNISON_BUFFER_LENGTH);
   }
 }
 
