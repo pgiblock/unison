@@ -23,7 +23,13 @@
 
 add_subdirectory(unison) # Nothing really in here
 
-SET(UNISON_BUFFER_LENGTH "1024" CACHE STRING
+include(UseDoxygen)
+#set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
+               ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+
+set(UNISON_BUFFER_LENGTH "1024" CACHE STRING
     "Audio buffer length. A work-around until runtime change is supported.")
 
 #file(GLOB UNISON_SRCS *.cpp)
