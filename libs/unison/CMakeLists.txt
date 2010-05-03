@@ -66,3 +66,6 @@ target_link_libraries(unison
     ${RDF_LIBRARY}
     ${SLV2_LIBRARY}
 )
+
+install(TARGETS unison LIBRARY
+        DESTINATION lib/)

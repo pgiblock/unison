@@ -87,9 +87,7 @@ endif(RDF_FOUND)
 
 #Internal location, TODO: Don't hardcode platform-specific paths!!
 set(PRG_INCLUDE_DIR    ${CMAKE_SOURCE_DIR}/libs/prg)
-set(UNISON_LIBRARY     ${CMAKE_BINARY_DIR}/libs/unison/libunison.so)
 set(UNISON_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/unison)
-
 
 #Directories
 add_subdirectory(libs)

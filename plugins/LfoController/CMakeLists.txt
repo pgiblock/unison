@@ -25,7 +25,11 @@ set(LFO_CONTROLLER_SRCS
     LfoController.c
 )
 
+configure_file(LfoController.ttl ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+configure_file(manifest.ttl      ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 add_library(LfoController SHARED ${LFO_CONTROLLER_SRCS})
 
-#target_link_libraries(lfo_controller
-#)
+set(INSTALL_DIR lib/lv2/unison-LfoController.lv2)
+
+install(TARGETS LfoController LIBRARY DESTINATION ${INSTALL_DIR})
+install(FILES   LfoController.ttl manifest.ttl DESTINATION ${INSTALL_DIR})

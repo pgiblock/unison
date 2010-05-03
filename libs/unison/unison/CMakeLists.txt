@@ -21,3 +21,7 @@
 # Boston, MA 02110-1301 USA.
 #
 
+file(GLOB_RECURSE UNISON_INCLUDES *.h)
+install(FILES ${UNISON_INCLUDES}
+        DESTINATION include/unison/)
+

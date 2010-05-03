@@ -36,9 +36,8 @@ add_executable(unisonstudio
 )
 
 target_link_libraries(unisonstudio
-    ${UNISON_LIBRARY}
+    unison
 )
 
-#linking
-
-#Output
+install(TARGETS unisonstudio RUNTIME
+        DESTINATION bin/)
