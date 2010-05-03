@@ -23,6 +23,7 @@
  */
 
 #include <iostream>
+#include <math.h>
 
 #include <QDebug>
 #include <QtGui/QApplication>
@@ -72,16 +73,13 @@ class FxLine : public CompositeProcessor {
 
     void addEffect()
     {
-      const char * uri = "http://plugin.org.uk/swh-plugins/vynil";
+      const char * uri = "http://calf.sourceforge.net/plugins/Phaser";
       PluginManager * man = PluginManager::instance();
 
-      /*
       Processor * proc = man->descriptor(uri)->createPlugin(48000);
       add(proc);
 
-      // TODO: Some fashion to connect the ports easily
-      // Should consider groups and stuff:
-      // processor.portGroup(AUDIO, INPUT)
+      // TODO: support for port-groups
       // PortGroup { enum Type {STEREO, QUAD, FIVEPOINTONE}
       // or maybe a processor.portGroups() ?
 
@@ -90,10 +88,10 @@ class FxLine : public CompositeProcessor {
         Port* p = proc->port(i);
         if (p->type() == AUDIO_PORT) {
           switch (p->direction()) {
-            //case INPUT:
-            //  qDebug() << "Connecting " << m_inPorts[inCnt]->name() << " to " << p->name();
-            //  m_inPorts[inCnt++]->connect(p);
-            //  break;
+            case INPUT:
+              qDebug() << "Connecting " << m_inPorts[inCnt]->name() << " to " << p->name();
+              m_inPorts[inCnt++]->connect(p);
+              break;
             case OUTPUT:
               qDebug() << "Connecting " << m_outPorts[outCnt]->name() << " to " << p->name();
               m_outPorts[outCnt++]->connect(p);
@@ -102,33 +100,21 @@ class FxLine : public CompositeProcessor {
               //TODO: Programming error!
               break;
           }
-
-          if (p->name() == "Input L") {
-            inputL = p;
-          }
-          else if (p->name() == "Input R") {
-            inputR = p;
-          }
         }
-      }*/
+      }
 
+      // Now, we are just going to add stuff for testing compiling.
       /*
-      Processor * osc1  = man->descriptor("http://plugin.org.uk/swh-plugins/fmOsc")->createPlugin(48000);
-      Port * osc1wave = osc1->port(0); // Waveform (1=sin, 2=tri, 3=squ, 4=saw)"
-      Port * osc1freq = osc1->port(1); // Frequency (Hz)
-      Port * osc1out  = osc1->port(2); // Output
-      add(osc1);
-      */
-
       Processor * osc1  = man->descriptor("http://plugin.org.uk/swh-plugins/sinCos")->createPlugin(48000);
       Port * osc1freq   = osc1->port(0);      // Base frequency (Hz)"
       Port * osc1pitch  = osc1->port(1);      // Pitch offset"
       Port * osc1outSin = osc1->port(2);      // Sine output"
       Port * osc1outCos = osc1->port(3);      // Cosine output"
+      osc1pitch->setValue(16.0f);
+      osc1freq->setValue(440.0f / pow(2.0, 16.0) );
       add(osc1);
 
       Processor * amp1  = man->descriptor("http://plugin.org.uk/swh-plugins/amp")->createPlugin(48000);
-      //Processor *amp1   = man->descriptor("http://unisonstudio.org/plugins/Amp")->createPlugin(48000);
       Port * amp1gain   = amp1->port(0);
       Port * amp1in     = amp1->port(1);
       Port * amp1out    = amp1->port(2);
@@ -138,16 +124,17 @@ class FxLine : public CompositeProcessor {
       Port * lfo1out   = lfo1->port(0);
       add(lfo1);
 
+      //osc1pitch->setValue(8.0f);
       //amp1gain->setValue(-50.0f);
-      lfo1out->connect(amp1gain);
-      osc1outCos->connect(amp1in);
+      //lfo1out->connect(amp1gain);
+      //osc1out->connect(amp1in);
 
+      //inputL->connect(osc1outSin);
+      //inputR->connect(amp1out);
       m_outPorts[0]->connect(osc1outSin);
-      m_outPorts[1]->connect(amp1out);
-
-
- //     amp1out->connect(inputR);
-
+      m_outPorts[1]->connect(osc1outCos);
+      //amp1out->connect(inputR);
+    */
 
       hackCompile(m_session.bufferProvider());
     }
@@ -197,12 +184,9 @@ int main (int argc, char ** argv) {
   // TODO: Obviously we wouldnt really (mis)manage these this way.
   JackEngine* engine = new JackEngine();
   session = new Session(*engine);
+  session->hackCompile();
   engine->activate();
 
-  session->hackCompile();
-
-//  session->hackCompile();
-//  engine->activate();
 
   // Client stuff
   FxLine* fxLine = new FxLine(*session, "Master");
@@ -212,16 +196,10 @@ int main (int argc, char ** argv) {
   session->add(fxLine);
   session->hackCompile();
 
-  /*
-*/
-
-
-
   char c;
   std::cin >> &c;
 
   fxLine->deactivate();
-  //osc1->deactivate();
 
   std::cout << "Disconnecting JACK" << std::endl;
   engine->deactivate();
