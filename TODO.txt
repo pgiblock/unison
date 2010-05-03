@@ -7,12 +7,12 @@ x   JackEngine and Callbacks
 x   Connections and Compiling
 x     Connections across Containers
 x       add node.parent()
-x       enhancements to compiler                                    << HERE
-      Ability to find Ports by name for connecting purposes
-      COMPILE ON INTERNAL GRAPH CHANGES! (and find bufferProvider)
+x       enhancements to compiler
+x     Ability to find Ports by name for connecting purposes
+      COMPILE ON INTERNAL GRAPH CHANGES! (and find bufferProvider)   << HERE
 x Documentation and add UNISON_ to #ifndefs
 x ControlPorts
-  Release To SF.net ??
+x Release To SF.net
 
   Add whatever we need to get compilations to happen automatically,
   Properly defer installing new graph until pre-process
