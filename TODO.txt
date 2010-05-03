@@ -4,18 +4,31 @@ Immediate TODO:
 x TODOs
 - Movement of code from main.cpp:
 x   JackEngine and Callbacks
-x   Connections and Compiling									<< We are here
-x     add node.parent()
-      Connections across Containers
+x   Connections and Compiling
+x     Connections across Containers
+x       add node.parent()
+x       enhancements to compiler                                    << HERE
       Ability to find Ports by name for connecting purposes
-  COMPILE ON INTERNAL GRAPH CHANGES!!!!!!! (and find bufferProvider)
-  ControlPorts
+      COMPILE ON INTERNAL GRAPH CHANGES! (and find bufferProvider)
+x Documentation and add UNISON_ to #ifndefs
+x ControlPorts
   Release To SF.net ??
+
+  Add whatever we need to get compilations to happen automatically,
+  Properly defer installing new graph until pre-process
+
+  MidiPorts
+
   Split stuff out of Plugin and Port and create general purpose
     PluginProcessor and PortNode classes for managing the graph.
     (Less logic in each Lv2/VSt/etc Port and Plugin implementation.
+
+  Ability to remove stuff, with an eye toward resource-cleanup.
+    Smart-pointers are fine for Plugin-refs and stuff!
+
+  BufferSize Changes, and probably enhacements to PooledBufferProvider
+
   TODO-NOWs
-x Documentation and add UNISON_ to #ifndefs
   Release To SF.net ??
   Jack - proper tie-in with session - allowing jack to disconnect etc..
   Mixing (multi-connect)

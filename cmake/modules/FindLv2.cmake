@@ -26,8 +26,6 @@ if (NOT LV2_INCLUDE_DIRS)
       /sw/include
   )
 
-  message("DID we find LV2???  " ${LV2_INCLUDE_DIR})
-
   set(LV2_INCLUDE_DIRS
     ${LV2_INCLUDE_DIR}
   )

@@ -21,5 +21,4 @@
 # Boston, MA 02110-1301 USA.
 #
 
-add_subdirectory(amp)
 add_subdirectory(lfo_controller)

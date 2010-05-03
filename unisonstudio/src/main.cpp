@@ -103,8 +103,35 @@ class FxLine : public CompositeProcessor {
         }
       }
 
-      // Now, we are just going to add stuff for testing compiling.
+      hackCompile(m_session.bufferProvider());
+    }
+
+
+  private:
+    QString m_name;
+    Session& m_session;
+    JackPort* m_inPorts[2];
+    JackPort* m_outPorts[2];
+};
+
+
+
+class TestProcessor : public CompositeProcessor
+{
+
+  public:
+    void add (Processor * processor) {
+      CompositeProcessor::add(processor);
+    }
+
+    void remove (Processor * processor) {
+      CompositeProcessor::remove(processor);
+    }
+
+    void crazyInit () {
       /*
+      PluginManager * man = PluginManager::instance();
+
       Processor * osc1  = man->descriptor("http://plugin.org.uk/swh-plugins/sinCos")->createPlugin(48000);
       Port * osc1freq   = osc1->port(0);      // Base frequency (Hz)"
       Port * osc1pitch  = osc1->port(1);      // Pitch offset"
@@ -125,46 +152,22 @@ class FxLine : public CompositeProcessor {
       add(lfo1);
 
       //osc1pitch->setValue(8.0f);
-      //amp1gain->setValue(-50.0f);
       //lfo1out->connect(amp1gain);
       //osc1out->connect(amp1in);
 
-      //inputL->connect(osc1outSin);
-      //inputR->connect(amp1out);
-      m_outPorts[0]->connect(osc1outSin);
-      m_outPorts[1]->connect(osc1outCos);
+      //m_outPorts[0]->connect(osc1outSin);
+      //m_outPorts[1]->connect(osc1outCos);
       //amp1out->connect(inputR);
-    */
-
-      hackCompile(m_session.bufferProvider());
-    }
-
-
-  private:
-    QString m_name;
-    Session& m_session;
-    JackPort* m_inPorts[2];
-    JackPort* m_outPorts[2];
-};
-
-
-class TestProcessor : public CompositeProcessor {
-
-  public:
-    void add (Processor * processor) {
-      CompositeProcessor::add(processor);
-    }
-
-    void remove (Processor * processor) {
-      CompositeProcessor::remove(processor);
+      */
     }
 };
 
 
-int main (int argc, char ** argv) {
-  bool createGui = false;
 
+int main (int, char **)
+{
   /* No need to create this yet
+  bool createGui = false;
   QCoreApplication * app = createGui ?
     new QApplication( argc, argv ) :
     new QCoreApplication( argc, argv );

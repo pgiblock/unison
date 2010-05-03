@@ -30,17 +30,25 @@
 
 #define CONTROL_OUTPUT_PORT_INDEX  0
 
+#define UNUSED(expr) { (void)(expr); }
+
 struct LfoController
 {
   uint64_t cnt;
   double sampleRate;
   float* outData;
 };
+
 static LV2_Handle instantiate (const LV2_Descriptor* descriptor,
     double sampleRate, const char* bundlePath,
-    const LV2_Feature* const* hostFeatures)
+    const LV2_Feature* const* features)
 {
   struct LfoController* lfo;
+
+  UNUSED(descriptor);
+  UNUSED(bundlePath);
+  UNUSED(features);
+
   lfo = malloc(sizeof(struct LfoController));
 
   lfo->cnt = 0;
@@ -76,16 +84,19 @@ static void run (LV2_Handle lv2instance, uint32_t sampleCount)
     LFO_PTR->cnt -= periodFrames;
   }
 
-  LFO_PTR->outData[0] = -69.0 * ((double)LFO_PTR->cnt) / ((double)periodFrames);
+  LFO_PTR->outData[0] = -67.0f * ( ((double)LFO_PTR->cnt) / ((double)periodFrames));
 }
 
 static LV2_Descriptor g_lv2descriptor =
 {
-  .URI = "http://unisonstudio.org/plugins/LfoController",
-  .instantiate = instantiate,
-  .connect_port = connectPort,
-  .run = run,
-  .cleanup = cleanup,
+  "http://unisonstudio.org/plugins/LfoController",  /* URI */
+  instantiate,                                      /* Instantiate */
+  connectPort,                                      /* ConnectPort */
+  NULL,                                             /* Activate */
+  run,                                              /* Run */
+  NULL,                                             /* Deactivate */
+  cleanup,                                          /* Cleanup */
+  NULL                                              /* ExtensionData */
 };
 
 const LV2_Descriptor* lv2_descriptor (uint32_t index)

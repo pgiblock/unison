@@ -171,8 +171,6 @@ void CompositeProcessor::compileWalk (Node* n,
     return;
   }
 
-  qDebug() << "Walking node: " << n->name();
-
   if (!outer->isVisited()) {
     outer->visit();
     pendingAddition = true;
@@ -246,7 +244,6 @@ void CompositeProcessor::compile (QList<Processor*> input,
   // Then compile everything else
   QListIterator<Processor*> p( input );
   while (p.hasNext()) {
-    qDebug() << "Compiling next remaining node";
     compileWalk( p.next(), output );
   }
 }

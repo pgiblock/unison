@@ -45,7 +45,6 @@ PooledBufferProvider::PooledBufferProvider () :
 SharedBufferPtr PooledBufferProvider::acquire (
     PortType type, nframes_t nframes)
 {
-  qDebug("Acquiring buffer!!!!!!");
   Q_ASSERT(nframes == m_periodLength);
   QStack<Buffer*>* stack;
   switch (type) {
