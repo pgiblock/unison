@@ -27,8 +27,9 @@ set(UNISONSTUDIO_SRCS
 )
 
 include_directories(
-    ${UNISON_INCLUDE_DIR}
-    ${PRG_INCLUDE_DIR}
+    ${COMMON_LIBS_INCLUDE_DIR}
+    #${UNISON_INCLUDE_DIR}
+    #${PRG_INCLUDE_DIR}
 )
 
 add_executable(unisonstudio
@@ -36,7 +37,7 @@ add_executable(unisonstudio
 )
 
 target_link_libraries(unisonstudio
-    unison
+    extensionsystem
 )
 
 install(TARGETS unisonstudio RUNTIME

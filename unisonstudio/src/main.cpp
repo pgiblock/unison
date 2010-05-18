@@ -22,211 +22,29 @@
  *
  */
 
-#include <iostream>
-#include <math.h>
+#include <QtCore/QDir>
+#include <QtCore/QDebug>
+#include <QtCore/QSettings>
 
-#include <QDebug>
+#include <QtNetwork/QNetworkProxyFactory>
+
 #include <QtGui/QApplication>
-#include <QSet>
-#include "unison/JackEngine.h"
-#include "unison/PluginManager.h"
-#include "unison/ProcessingContext.h"
-#include "unison/Session.h"
 
-#include "unison/CompositeProcessor.h"
+#include "extensionsystem/PluginManager.h"
+#include "extensionsystem/PluginInfo.h"
+#include "extensionsystem/IPlugin.h"
 
-using namespace Unison;
+//using namespace Unison;
 
-void printLogo();
-void printDisclaimer();
+enum { OptionIndent = 4, DescriptionIndent = 24 };
 
-Session * session;
-
-Port * inputL;
-Port * inputR;
-
-class FxLine : public CompositeProcessor {
-  public:
-    FxLine (Session& session, QString name) :
-      CompositeProcessor(),
-      m_name(name),
-      m_session(session)
-    {
-      m_inPorts[0] = session.engine().registerPort(name + "/in 1", OUTPUT);
-      m_inPorts[1] = session.engine().registerPort(name + "/in 2", OUTPUT);
-      m_outPorts[0] = session.engine().registerPort(name + "/out 1", INPUT);
-      m_outPorts[1] = session.engine().registerPort(name + "/out 2", INPUT);
-    }
-
-    ~FxLine ()
-    {
-      m_session.engine().unregisterPort(m_inPorts[0]);
-      m_session.engine().unregisterPort(m_inPorts[1]);
-      m_session.engine().unregisterPort(m_outPorts[0]);
-      m_session.engine().unregisterPort(m_outPorts[1]);
-    }
-
-    QString name() const
-    {
-      return m_name;
-    }
-
-    void addEffect()
-    {
-      const char * uri = "http://calf.sourceforge.net/plugins/Phaser";
-      PluginManager * man = PluginManager::instance();
-
-      Processor * proc = man->descriptor(uri)->createPlugin(48000);
-      add(proc);
-
-      // TODO: support for port-groups
-      // PortGroup { enum Type {STEREO, QUAD, FIVEPOINTONE}
-      // or maybe a processor.portGroups() ?
-
-      int inCnt=0, outCnt =0;
-      for (int i=0; i<proc->portCount(); ++i) {
-        Port* p = proc->port(i);
-        if (p->type() == AUDIO_PORT) {
-          switch (p->direction()) {
-            case INPUT:
-              qDebug() << "Connecting " << m_inPorts[inCnt]->name() << " to " << p->name();
-              m_inPorts[inCnt++]->connect(p);
-              break;
-            case OUTPUT:
-              qDebug() << "Connecting " << m_outPorts[outCnt]->name() << " to " << p->name();
-              m_outPorts[outCnt++]->connect(p);
-              break;
-            default:
-              //TODO: Programming error!
-              break;
-          }
-        }
-      }
-
-      hackCompile(m_session.bufferProvider());
-    }
-
-
-  private:
-    QString m_name;
-    Session& m_session;
-    JackPort* m_inPorts[2];
-    JackPort* m_outPorts[2];
-};
-
-
-
-class TestProcessor : public CompositeProcessor
-{
-
-  public:
-    void add (Processor * processor) {
-      CompositeProcessor::add(processor);
-    }
-
-    void remove (Processor * processor) {
-      CompositeProcessor::remove(processor);
-    }
-
-    void crazyInit () {
-      /*
-      PluginManager * man = PluginManager::instance();
-
-      Processor * osc1  = man->descriptor("http://plugin.org.uk/swh-plugins/sinCos")->createPlugin(48000);
-      Port * osc1freq   = osc1->port(0);      // Base frequency (Hz)"
-      Port * osc1pitch  = osc1->port(1);      // Pitch offset"
-      Port * osc1outSin = osc1->port(2);      // Sine output"
-      Port * osc1outCos = osc1->port(3);      // Cosine output"
-      osc1pitch->setValue(16.0f);
-      osc1freq->setValue(440.0f / pow(2.0, 16.0) );
-      add(osc1);
-
-      Processor * amp1  = man->descriptor("http://plugin.org.uk/swh-plugins/amp")->createPlugin(48000);
-      Port * amp1gain   = amp1->port(0);
-      Port * amp1in     = amp1->port(1);
-      Port * amp1out    = amp1->port(2);
-      add(amp1);
-
-      Processor * lfo1 = man->descriptor("http://unisonstudio.org/plugins/LfoController")->createPlugin(48000);
-      Port * lfo1out   = lfo1->port(0);
-      add(lfo1);
-
-      //osc1pitch->setValue(8.0f);
-      //lfo1out->connect(amp1gain);
-      //osc1out->connect(amp1in);
-
-      //m_outPorts[0]->connect(osc1outSin);
-      //m_outPorts[1]->connect(osc1outCos);
-      //amp1out->connect(inputR);
-      */
-    }
-};
-
-
-
-int main (int, char **)
-{
-  /* No need to create this yet
-  bool createGui = false;
-  QCoreApplication * app = createGui ?
-    new QApplication( argc, argv ) :
-    new QCoreApplication( argc, argv );
-
-  app->setApplicationName( "Unison" );
-  app->setOrganizationDomain( "unison.sourceforge.net" );
-    app->setOrganizationName( "Paul Giblock" );
-  */
-
-  printLogo();
-  // If running in CLI mode, print a disclaimer
-  printDisclaimer();
-
-  // Init
-  PluginManager::initializeInstance();
-
-  // TODO: Obviously we wouldnt really (mis)manage these this way.
-  JackEngine* engine = new JackEngine();
-  session = new Session(*engine);
-  session->hackCompile();
-  engine->activate();
-
-
-  // Client stuff
-  FxLine* fxLine = new FxLine(*session, "Master");
-  fxLine->addEffect();
-  fxLine->activate();
-
-  session->add(fxLine);
-  session->hackCompile();
-
-  char c;
-  std::cin >> &c;
-
-  fxLine->deactivate();
-
-  std::cout << "Disconnecting JACK" << std::endl;
-  engine->deactivate();
-
-  /*
-  //app->exec();
-
-  std::cout << "Destroying Plugins" << std::endl;
-  foreach (Processor * p, processors) { delete p; }
-  delete compiled;
-
-  std::cout << "Destorying PluginManager (Do more gracefully)" << std::endl;
-  PluginManager::cleanupHack();
-  */
-
-  std::cout << "Bye!" << std::endl;
-  return 0;
-}
+static const char *CORE_PLUGIN_NAME = "Core";
 
 
 /** Draws an ascii UNISON logo */
 void printLogo()
 {
-  std::cout <<
+  QTextStream str(stdout);  str <<
       "   __  ___  ______________  _  __\n"
       "  / / / / |/ /  _/ __/ __ \\/ |/ /\n"
       " / /_/ /    // /_\\ \\/ /_/ /    / \n"
@@ -237,11 +55,200 @@ void printLogo()
 /** Draws the GPL mandated disclaimer */
 void printDisclaimer()
 {
-  std::cout <<
+  QTextStream str(stdout);  str <<
       "Unison version 0, Copyright (C) 2010 Paul R Giblock\n"
       "Unison comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\n"
       "This is free software, and you are welcome to redistribute it\n"
       "under certain conditions; type `show c' for details.\n\n";
+}
+
+
+static void printHelp(const QString &a0, const ExtensionSystem::PluginManager &pm)
+{
+  QTextStream str(stdout);
+  str << "Usage: " << a0  << "Some standard options";
+  ExtensionSystem::PluginManager::formatOptions(str, OptionIndent, DescriptionIndent);
+  pm.formatPluginOptions(str,  OptionIndent, DescriptionIndent);
+}
+
+
+static inline QString msgCoreLoadFailure(const QString &why)
+{
+  return QCoreApplication::translate("Application", "Failed to load core: %1").arg(why);
+}
+
+
+static inline QStringList getPluginPaths()
+{
+  // TODO: This needs to be improved to work with other Operating systems
+  QStringList rc;
+  // Figure out root:  Up one from 'bin'
+  QDir rootDir = QApplication::applicationDirPath();
+  rootDir.cdUp();
+  const QString rootDirPath = rootDir.canonicalPath();
+  // 1) system plugins
+  QString pluginPath = rootDirPath;
+  pluginPath += QLatin1Char('/');
+  pluginPath += QLatin1String("lib");
+  pluginPath += QLatin1Char('/');
+  pluginPath += QLatin1String("unison");
+  pluginPath += QLatin1Char('/');
+  pluginPath += QLatin1String("plugins");
+  rc.push_back(pluginPath);
+  // 2) additional search paths??
+  // ...
+  return rc;
+}
+
+
+int main (int argc, char **argv)
+{
+  bool createGui = false;
+  printLogo();
+
+  QCoreApplication * app = NULL;
+  if (createGui) {
+    app = new QApplication( argc, argv );
+  }
+  else {
+    printDisclaimer();
+    app = new QCoreApplication( argc, argv );
+  }
+
+  app->setApplicationName( "Unison" );
+  app->setOrganizationDomain( "unison.sourceforge.net" );
+  app->setOrganizationName( "Paul Giblock" );
+
+  //QTranslator translator;
+  //QTranslator qtTranslator;
+  QString locale = QLocale::system().name();
+
+  // Must be done before any QSettings class is created
+  QSettings::setPath(QSettings::IniFormat, QSettings::SystemScope,
+      QCoreApplication::applicationDirPath()+QLatin1String("/../share/unison"));
+
+  // Work around bug in QSettings which gets triggered on Windows & Mac only
+#ifdef Q_OS_MAC
+  QSettings::setPath(QSettings::IniFormat, QSettings::UserScope,
+      QDir::homePath()+"/.config");
+#endif
+#ifdef Q_OS_WIN
+  QSettings::setPath(QSettings::IniFormat, QSettings::UserScope,
+      qgetenv("appdata"));
+#endif
+
+
+  // keep this in sync with the MainWindow ctor in coreplugin/mainwindow.cpp
+  const QSettings settings(QSettings::IniFormat, QSettings::UserScope,
+                               QLatin1String("Unison"), QLatin1String("UnisonStudio"));
+  locale = settings.value("General/OverrideLanguage", locale).toString();
+
+  // TODO: Translations!
+
+  // Make sure we honor the system's proxy settings
+  QNetworkProxyFactory::setUseSystemConfiguration(true);
+
+  // Load
+  ExtensionSystem::PluginManager pluginManager;
+  pluginManager.setFileExtension(QLatin1String("pluginspec"));
+
+  const QStringList pluginPaths = getPluginPaths();
+  pluginManager.setPluginPaths(pluginPaths);
+
+  const QStringList arguments = QCoreApplication::arguments();
+  QMap<QString, QString> foundAppOptions;
+  if (arguments.size() > 1) {
+    QMap<QString, bool> appOptions;
+    //appOptions.insert(QLatin1String(HELP_OPTION1), false);
+    //appOptions.insert(QLatin1String(HELP_OPTION2), false);
+    //appOptions.insert(QLatin1String(HELP_OPTION3), false);
+    //appOptions.insert(QLatin1String(HELP_OPTION4), false);
+    //appOptions.insert(QLatin1String(VERSION_OPTION), false);
+    //appOptions.insert(QLatin1String(CLIENT_OPTION), false);
+    QString errorMessage;
+    bool parseOk = pluginManager.parseOptions(arguments, appOptions,
+                                              &foundAppOptions, &errorMessage);
+    if (!parseOk) {
+      qWarning() <<errorMessage;
+      printHelp(QFileInfo(QApplication::applicationFilePath()).baseName(),
+                pluginManager);
+      return -1;
+    }
+  }
+
+  const QList<ExtensionSystem::PluginInfo *> plugins = pluginManager.plugins();
+  ExtensionSystem::PluginInfo *coreplugin = 0;
+  foreach (ExtensionSystem::PluginInfo *info, plugins) {
+    if (info->name() == QLatin1String(CORE_PLUGIN_NAME)) {
+      coreplugin = info;
+      break;
+    }
+  }
+  if (!coreplugin) {
+      QString nativePaths = QDir::toNativeSeparators(pluginPaths.join(QLatin1String(",")));
+      const QString reason = QCoreApplication::translate("Application",
+          "Could not find 'Core.pluginspec' in %1").arg(nativePaths);
+      qWarning() << msgCoreLoadFailure(reason);
+      return 1;
+  }
+  if (coreplugin->hasError()) {
+      qWarning() << msgCoreLoadFailure(coreplugin->errorString());
+      return 1;
+  }
+  //if (foundAppOptions.contains(QLatin1String(VERSION_OPTION))) {
+  //    printVersion(coreplugin, pluginManager);
+  //    return 0;
+  //}
+  //if (foundAppOptions.contains(QLatin1String(HELP_OPTION1))
+  //        || foundAppOptions.contains(QLatin1String(HELP_OPTION2))
+  //        || foundAppOptions.contains(QLatin1String(HELP_OPTION3))
+  //        || foundAppOptions.contains(QLatin1String(HELP_OPTION4))) {
+  //    printHelp(QFileInfo(app.applicationFilePath()).baseName(), pluginManager);
+  //    return 0;
+  //}
+
+  // Single instance stuff
+  //const bool isFirstInstance = !app.isRunning();
+  //if (!isFirstInstance && foundAppOptions.contains(QLatin1String(CLIENT_OPTION))) {
+  //    if (!app.sendMessage(pluginManager.serializedArguments())) {
+  //        displayError(msgSendArgumentFailed());
+  //        return -1;
+  //    }
+  //    return 0;
+  //}
+
+  pluginManager.loadPlugins();
+  if (coreplugin->hasError()) {
+    qWarning() << msgCoreLoadFailure(coreplugin->errorString());
+    return 1;
+  }
+  {
+    QStringList errors;
+    foreach (ExtensionSystem::PluginInfo *p, pluginManager.plugins()) {
+      if (p->hasError()) {
+          errors.append(p->errorString());
+      }
+    }
+    if (!errors.isEmpty()) {
+      qWarning() << QCoreApplication::translate("Application",
+                      "Unison Studio - Plugin loader messages");
+      qWarning() << errors.join(QString::fromLatin1("\n\n"));
+    }
+  }
+
+  //if (isFirstInstance) {
+      // Set up lock and remote arguments for the first instance only.
+      // Silently fallback to unconnected instances for any subsequent
+      // instances.
+  //    app.initialize();
+  //    QObject::connect(&app, SIGNAL(messageReceived(QString)),
+  //                     &pluginManager, SLOT(remoteArguments(QString)));
+  //}
+  //QObject::connect(&app, SIGNAL(fileOpenRequest(QString)), coreplugin->plugin(), SLOT(fileOpenRequest(QString)));
+
+  // Do this after the event loop has started
+  //QTimer::singleShot(100, &pluginManager, SLOT(startTests()));
+  return app->exec();
 }
 
 // vim: ts=8 sw=2 sts=2 et sta noai

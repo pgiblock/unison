@@ -21,4 +21,6 @@
 # Boston, MA 02110-1301 USA.
 #
 
+add_subdirectory(core)
+add_subdirectory(guicore)
 add_subdirectory(processors)

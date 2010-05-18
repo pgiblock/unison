@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt - Extension System CMake file
+# CMakeLists.txt - Aggregation CMake file
 #
 # Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
 #
@@ -21,49 +21,30 @@
 # Boston, MA 02110-1301 USA.
 #
 
-include(FindQt4)
-include(FindSoprano)
-
-set(EXTENSIONSYSTEM_SRCS
-    IPlugin.cpp
-    OptionsParser.cpp
-    PluginCollection.cpp
-    PluginInfo.cpp
-    PluginManager.cpp
+set(AGGREGATION_SRCS
+    aggregate.cpp
 )
 
-set(EXTENSIONSYSTEM_HEADERS
-    IPlugin.h
-    OptionsParser.h
-    PluginCollection.h
-    PluginInfo.h
-    PluginManager.h
-    extensionsystem_global.h
+set(AGGREGATION_HEADERS
+    Aggregate.h
+    aggregate.h
+    aggregation_global.h
 )
 
-set(EXTENSIONSYSTEM_MOC_HEADERS
-    IPlugin.h
-    PluginInfo_p.h
-    PluginManager.h
+set(AGGREGATION_MOC_HEADERS
+    aggregate.h
 )
 
-qt4_wrap_cpp(EXTENSIONSYSTEM_MOC_SRCS ${EXTENSIONSYSTEM_MOC_HEADERS})
+qt4_wrap_cpp(AGGREGATION_MOC_SRCS ${AGGREGATION_MOC_HEADERS})
 
-include_directories(
-    ${SOPRANO_INCLUDE_DIRS}
-    ..
-)
+add_library(aggregation SHARED ${AGGREGATION_MOC_SRCS} ${AGGREGATION_SRCS})
 
-add_library(extensionsystem SHARED ${EXTENSIONSYSTEM_MOC_SRCS} ${EXTENSIONSYSTEM_SRCS})
-    
-target_link_libraries(extensionsystem
+target_link_libraries(aggregation
     ${QT_LIBRARIES}
-    ${SOPRANO_LIBRARIES}
-    aggregation
 )
 
-install(TARGETS extensionsystem LIBRARY
+install(TARGETS aggregation LIBRARY
         DESTINATION lib/unison)
 
-install(FILES ${EXTENSIONSYSTEM_HEADERS}
-        DESTINATION include/unison/extensionsystem)
+install(FILES ${AGGREGATION_HEADERS}
+        DESTINATION include/unison/aggregation)
