@@ -29,13 +29,13 @@
 
 #include "pluginerrorview.h"
 #include "ui_pluginerrorview.h"
-#include "pluginspec.h"
+#include "plugininfo.h"
 
 #include <QtCore/QString>
 
 /*!
     \class ExtensionSystem::PluginErrorView
-    \brief Widget that displays the state and error message of a PluginSpec.
+    \brief Widget that displays the state and error message of a PluginInfo.
 
     Can be used for integration in the application that
     uses the plugin manager.
@@ -66,47 +66,47 @@ PluginErrorView::~PluginErrorView()
 }
 
 /*!
-    \fn void PluginErrorView::update(PluginSpec *spec)
-    Reads the given \a spec and displays its state and
+    \fn void PluginErrorView::update(PluginInfo *info)
+    Reads the given \a info and displays its state and
     error information in this PluginErrorView.
 */
-void PluginErrorView::update(PluginSpec *spec)
+void PluginErrorView::update(PluginInfo *info)
 {
     QString text;
     QString tooltip;
-    switch (spec->state()) {
-    case PluginSpec::Invalid:
+    switch (info->state()) {
+    case PluginInfo::Invalid:
         text = tr("Invalid");
         tooltip = tr("Description file found, but error on read");
         break;
-    case PluginSpec::Read:
+    case PluginInfo::Read:
         text = tr("Read");
         tooltip = tr("Description successfully read");
         break;
-    case PluginSpec::Resolved:
+    case PluginInfo::Resolved:
         text = tr("Resolved");
         tooltip = tr("Dependencies are successfully resolved");
         break;
-    case PluginSpec::Loaded:
+    case PluginInfo::Loaded:
         text = tr("Loaded");
         tooltip = tr("Library is loaded");
         break;
-    case PluginSpec::Initialized:
+    case PluginInfo::Initialized:
         text = tr("Initialized");
         tooltip = tr("Plugin's initialization method succeeded");
         break;
-    case PluginSpec::Running:
+    case PluginInfo::Running:
         text = tr("Running");
         tooltip = tr("Plugin successfully loaded and running");
         break;
-    case PluginSpec::Stopped:
+    case PluginInfo::Stopped:
         text = tr("Stopped");
         tooltip = tr("Plugin was shut down");
-    case PluginSpec::Deleted:
+    case PluginInfo::Deleted:
         text = tr("Deleted");
         tooltip = tr("Plugin ended its life cycle and was deleted");
     }
     m_ui->state->setText(text);
     m_ui->state->setToolTip(tooltip);
-    m_ui->errorString->setText(spec->errorString());
+    m_ui->errorString->setText(info->errorString());
 }

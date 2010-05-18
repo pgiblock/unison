@@ -43,7 +43,7 @@ QT_END_NAMESPACE
 namespace ExtensionSystem {
 
 class PluginManager;
-class PluginSpec;
+class PluginInfo;
 class PluginCollection;
 
 namespace Internal {
@@ -61,12 +61,12 @@ public:
     PluginView(PluginManager *manager, QWidget *parent = 0);
     ~PluginView();
 
-    PluginSpec *currentPlugin() const;
+    PluginInfo *currentPlugin() const;
 
 signals:
-    void currentPluginChanged(ExtensionSystem::PluginSpec *spec);
-    void pluginActivated(ExtensionSystem::PluginSpec *spec);
-    void pluginSettingsChanged(ExtensionSystem::PluginSpec *spec);
+    void currentPluginChanged(ExtensionSystem::PluginInfo *info);
+    void pluginActivated(ExtensionSystem::PluginInfo *info);
+    void pluginSettingsChanged(ExtensionSystem::PluginInfo *info);
 
 private slots:
     void updatePluginSettings(QTreeWidgetItem *item, int column);
@@ -77,13 +77,13 @@ private slots:
 private:
     enum ParsedState { ParsedNone = 1, ParsedPartial = 2, ParsedAll = 4, ParsedWithErrors = 8};
     QIcon iconForState(int state);
-    void toggleRelatedPlugins(PluginSpec *spec, bool isPluginEnabled = true);
-    int parsePluginSpecs(QTreeWidgetItem *parentItem, Qt::CheckState &groupState, QList<PluginSpec*> plugins);
+    void toggleRelatedPlugins(PluginInfo *info, bool isPluginEnabled = true);
+    int parsePluginInfos(QTreeWidgetItem *parentItem, Qt::CheckState &groupState, QList<PluginInfo*> plugins);
 
     Internal::Ui::PluginView *m_ui;
     Internal::PluginViewPrivate *p;
     QList<QTreeWidgetItem*> m_items;
-    QHash<PluginSpec*, QTreeWidgetItem*> m_specToItem;
+    QHash<PluginInfo*, QTreeWidgetItem*> m_infoToItem;
 
     QStringList m_whitelist;
     QIcon m_okIcon;

@@ -27,8 +27,8 @@
 **
 **************************************************************************/
 
-#ifndef PLUGINSPEC_H
-#define PLUGINSPEC_H
+#ifndef PLUGININFO_H
+#define PLUGININFO_H
 
 #include "extensionsystem_global.h"
 
@@ -42,7 +42,7 @@ QT_END_NAMESPACE
 namespace ExtensionSystem {
 
 namespace Internal {
-    class PluginSpecPrivate;
+    class PluginInfoPrivate;
     class PluginManagerPrivate;
 }
 
@@ -62,12 +62,12 @@ struct EXTENSIONSYSTEM_EXPORT PluginArgumentDescription
     QString description;
 };
 
-class EXTENSIONSYSTEM_EXPORT PluginSpec
+class EXTENSIONSYSTEM_EXPORT PluginInfo
 {
 public:
     enum State { Invalid, Read, Resolved, Loaded, Initialized, Running, Stopped, Deleted};
 
-    ~PluginSpec();
+    ~PluginInfo();
 
     // information from the xml file, valid after 'Read' state is reached
     QString name() const;
@@ -100,15 +100,15 @@ public:
 
     bool provides(const QString &pluginName, const QString &version) const;
 
-    // dependency specs, valid after 'Resolved' state is reached
-    QList<PluginSpec *> dependencySpecs() const;
+    // dependency infos, valid after 'Resolved' state is reached
+    QList<PluginInfo *> dependencyInfos() const;
 
     // list of plugins that depend on this - e.g. this plugins provides for them
-    QList<PluginSpec *> providesSpecs() const;
+    QList<PluginInfo *> providesInfos() const;
 
-    // add/remove from providesSpecs
-    void addDependentPlugin(PluginSpec *dependent);
-    void removeDependentPlugin(PluginSpec *dependent);
+    // add/remove from providesInfos
+    void addDependentPlugin(PluginInfo *dependent);
+    void removeDependentPlugin(PluginInfo *dependent);
 
     // linked plugin instance, valid after 'Loaded' state is reached
     IPlugin *plugin() const;
@@ -119,13 +119,13 @@ public:
     QString errorString() const;
 
 private:
-    PluginSpec();
+    PluginInfo();
 
-    Internal::PluginSpecPrivate *d;
+    Internal::PluginInfoPrivate *d;
     friend class Internal::PluginManagerPrivate;
 };
 
 } // namespace ExtensionSystem
 
-#endif // PLUGINSPEC_H
+#endif // PLUGININFO_H
 

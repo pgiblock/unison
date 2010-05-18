@@ -29,13 +29,13 @@
 
 #include "plugindetailsview.h"
 #include "ui_plugindetailsview.h"
-#include "pluginspec.h"
+#include "plugininfo.h"
 
 #include <QtCore/QDir>
 
 /*!
     \class ExtensionSystem::PluginDetailsView
-    \brief Widget that displays the contents of a PluginSpec.
+    \brief Widget that displays the contents of a PluginInfo.
 
     Can be used for integration in the application that
     uses the plugin manager.
@@ -66,28 +66,28 @@ PluginDetailsView::~PluginDetailsView()
 }
 
 /*!
-    \fn void PluginDetailsView::update(PluginSpec *spec)
-    Reads the given \a spec and displays its values
+    \fn void PluginDetailsView::update(PluginInfo *info)
+    Reads the given \a info and displays its values
     in this PluginDetailsView.
 */
-void PluginDetailsView::update(PluginSpec *spec)
+void PluginDetailsView::update(PluginInfo *info)
 {
-    m_ui->name->setText(spec->name());
-    m_ui->version->setText(spec->version());
-    m_ui->compatVersion->setText(spec->compatVersion());
-    m_ui->vendor->setText(spec->vendor());
-    const QString link = QString::fromLatin1("<a href=\"%1\">%1</a>").arg(spec->url());
+    m_ui->name->setText(info->name());
+    m_ui->version->setText(info->version());
+    m_ui->compatVersion->setText(info->compatVersion());
+    m_ui->vendor->setText(info->vendor());
+    const QString link = QString::fromLatin1("<a href=\"%1\">%1</a>").arg(info->url());
     m_ui->url->setText(link);
     QString component = tr("None");
-    if (!spec->category().isEmpty())
-        component = spec->category();
+    if (!info->category().isEmpty())
+        component = info->category();
     m_ui->component->setText(component);
-    m_ui->location->setText(QDir::toNativeSeparators(spec->filePath()));
-    m_ui->description->setText(spec->description());
-    m_ui->copyright->setText(spec->copyright());
-    m_ui->license->setText(spec->license());
+    m_ui->location->setText(QDir::toNativeSeparators(info->filePath()));
+    m_ui->description->setText(info->description());
+    m_ui->copyright->setText(info->copyright());
+    m_ui->license->setText(info->license());
     QStringList depStrings;
-    foreach (const PluginDependency &dep, spec->dependencies()) {
+    foreach (const PluginDependency &dep, info->dependencies()) {
         QString depString = dep.name;
         depString += QLatin1String(" (");
         depString += dep.version;

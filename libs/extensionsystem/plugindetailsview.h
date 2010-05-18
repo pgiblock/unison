@@ -36,7 +36,7 @@
 
 namespace ExtensionSystem {
 
-class PluginSpec;
+class PluginInfo;
 
 namespace Internal {
 namespace Ui {
@@ -53,7 +53,7 @@ public:
     PluginDetailsView(QWidget *parent = 0);
     ~PluginDetailsView();
 
-    void update(PluginSpec *spec);
+    void update(PluginInfo *info);
 
 private:
     Internal::Ui::PluginDetailsView *m_ui;

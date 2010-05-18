@@ -27,7 +27,7 @@
 **
 **************************************************************************/
 
-#include "optionsparser.h"
+#include "OptionsParser.h"
 
 #include <QtCore/QCoreApplication>
 
@@ -103,14 +103,14 @@ bool OptionsParser::checkForTestOption()
     if (m_currentArg != QLatin1String(TEST_OPTION))
         return false;
     if (nextToken(RequiredToken)) {
-        PluginSpec *spec = m_pmPrivate->pluginByName(m_currentArg);
-        if (!spec) {
+        PluginInfo *info = m_pmPrivate->pluginByName(m_currentArg);
+        if (!info) {
             if (m_errorString)
                 *m_errorString = QCoreApplication::translate("PluginManager",
                                                              "The plugin '%1' does not exist.").arg(m_currentArg);
             m_hasError = true;
         } else {
-            m_pmPrivate->testSpecs.append(spec);
+            m_pmPrivate->testInfos.append(info);
         }
     }
     return true;
@@ -121,14 +121,14 @@ bool OptionsParser::checkForNoLoadOption()
     if (m_currentArg != QLatin1String(NO_LOAD_OPTION))
         return false;
     if (nextToken(RequiredToken)) {
-        PluginSpec *spec = m_pmPrivate->pluginByName(m_currentArg);
-        if (!spec) {
+        PluginInfo *info = m_pmPrivate->pluginByName(m_currentArg);
+        if (!info) {
             if (m_errorString)
                 *m_errorString = QCoreApplication::translate("PluginManager",
                                                              "The plugin '%1' does not exist.").arg(m_currentArg);
             m_hasError = true;
         } else {
-            m_pmPrivate->removePluginSpec(spec);
+            m_pmPrivate->removePluginInfo(info);
             m_isDependencyRefreshNeeded = true;
         }
     }
@@ -161,12 +161,12 @@ bool OptionsParser::checkForProfilingOption()
 bool OptionsParser::checkForPluginOption()
 {
     bool requiresParameter;
-    PluginSpec *spec = m_pmPrivate->pluginForOption(m_currentArg, &requiresParameter);
-    if (!spec)
+    PluginInfo *info = m_pmPrivate->pluginForOption(m_currentArg, &requiresParameter);
+    if (!info)
         return false;
-    spec->addArgument(m_currentArg);
+    info->addArgument(m_currentArg);
     if (requiresParameter && nextToken(RequiredToken)) {
-        spec->addArgument(m_currentArg);
+        info->addArgument(m_currentArg);
     }
     return true;
 }

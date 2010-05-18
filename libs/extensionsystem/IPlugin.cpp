@@ -27,10 +27,10 @@
 **
 **************************************************************************/
 
-#include "iplugin.h"
-#include "iplugin_p.h"
-#include "pluginmanager.h"
-#include "pluginspec.h"
+#include "IPlugin.h"
+#include "IPlugin_p.h"
+#include "PluginManager.h"
+#include "PluginInfo.h"
 
 /*!
     \class ExtensionSystem::IPlugin
@@ -44,8 +44,8 @@
 
     \tableofcontents
 
-    \section1 Plugin Specification
-    The plugin specification file is an xml file that contains all
+    \section1 Plugin Information
+    The plugin information file is an xml file that contains all
     information that are necessary for loading the plugin's library,
     plus some textual descriptions. The file must be located in
     (a subdir of) one of the plugin manager's plugin search paths,
@@ -162,7 +162,7 @@
             </license>
             <description>
         This plugin is just a test.
-            it demonstrates the great use of the plugin spec.
+            it demonstrates the great use of the plugin info.
             </description>
             <url>http://www.mycompany-online.com/products/greatplugin</url>
             <dependencyList>
@@ -276,13 +276,13 @@ IPlugin::~IPlugin()
 }
 
 /*!
-    \fn PluginSpec *IPlugin::pluginSpec() const
-    Returns the PluginSpec corresponding to this plugin.
+    \fn PluginInfo *IPlugin::pluginInfo() const
+    Returns the PluginInfo corresponding to this plugin.
     This is not available in the constructor.
 */
-PluginSpec *IPlugin::pluginSpec() const
+PluginInfo *IPlugin::pluginInfo() const
 {
-    return d->pluginSpec;
+    return d->pluginInfo;
 }
 
 /*!

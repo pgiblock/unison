@@ -30,7 +30,7 @@
 #ifndef PLUGINMANAGER_P_H
 #define PLUGINMANAGER_P_H
 
-#include "pluginspec.h"
+#include "PluginInfo.h"
 
 #include <QtCore/QList>
 #include <QtCore/QSet>
@@ -49,7 +49,7 @@ class PluginCollection;
 
 namespace Internal {
 
-class PluginSpecPrivate;
+class PluginInfoPrivate;
 
 class EXTENSIONSYSTEM_EXPORT PluginManagerPrivate
 {
@@ -64,18 +64,18 @@ public:
     // Plugin operations
     void loadPlugins();
     void setPluginPaths(const QStringList &paths);
-    QList<PluginSpec *> loadQueue();
-    void loadPlugin(PluginSpec *spec, PluginSpec::State destState);
+    QList<PluginInfo *> loadQueue();
+    void loadPlugin(PluginInfo *info, PluginInfo::State destState);
     void resolveDependencies();
     void initProfiling();
-    void profilingReport(const char *what, const PluginSpec *spec = 0);
+    void profilingReport(const char *what, const PluginInfo *info = 0);
     void loadSettings();
     void writeSettings();
-    void removePluginSpec(PluginSpec *spec);
+    void removePluginInfo(PluginInfo *info);
 
     QHash<QString, PluginCollection *> pluginCategories;
-    QList<PluginSpec *> pluginSpecs;
-    QList<PluginSpec *> testSpecs;
+    QList<PluginInfo *> pluginInfos;
+    QList<PluginInfo *> testInfos;
     QStringList pluginPaths;
     QString extension;
     QList<QObject *> allObjects; // ### make this a QList<QPointer<QObject> > > ?
@@ -86,21 +86,21 @@ public:
     QScopedPointer<QTime> m_profileTimer;
     int m_profileElapsedMS;
 
-    // Look in argument descriptions of the specs for the option.
-    PluginSpec *pluginForOption(const QString &option, bool *requiresArgument) const;
-    PluginSpec *pluginByName(const QString &name) const;
+    // Look in argument descriptions of the infos for the option.
+    PluginInfo *pluginForOption(const QString &option, bool *requiresArgument) const;
+    PluginInfo *pluginByName(const QString &name) const;
 
     // used by tests
-    static PluginSpec *createSpec();
-    static PluginSpecPrivate *privateSpec(PluginSpec *spec);
+    static PluginInfo *createInfo();
+    static PluginInfoPrivate *privateInfo(PluginInfo *info);
 private:
     PluginCollection *defaultCollection;
     PluginManager *q;
 
     void readPluginPaths();
-    bool loadQueue(PluginSpec *spec,
-            QList<PluginSpec *> &queue,
-            QList<PluginSpec *> &circularityCheckQueue);
+    bool loadQueue(PluginInfo *info,
+            QList<PluginInfo *> &queue,
+            QList<PluginInfo *> &circularityCheckQueue);
     void stopAll();
 };
 

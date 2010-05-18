@@ -30,7 +30,7 @@
 #include "pluginview.h"
 #include "pluginview_p.h"
 #include "pluginmanager.h"
-#include "pluginspec.h"
+#include "plugininfo.h"
 #include "plugincollection.h"
 #include "ui_pluginview.h"
 
@@ -54,20 +54,20 @@
 */
 
 /*!
-    \fn void PluginView::currentPluginChanged(ExtensionSystem::PluginSpec *spec)
+    \fn void PluginView::currentPluginChanged(ExtensionSystem::PluginInfo *info)
     The current selection in the plugin list has changed to the
-    plugin corresponding to \a spec.
+    plugin corresponding to \a info.
 */
 
 /*!
-    \fn void PluginView::pluginActivated(ExtensionSystem::PluginSpec *spec)
-    The plugin list entry corresponding to \a spec has been activated,
+    \fn void PluginView::pluginActivated(ExtensionSystem::PluginInfo *info)
+    The plugin list entry corresponding to \a info has been activated,
     e.g. by a double-click.
 */
 
 using namespace ExtensionSystem;
 
-Q_DECLARE_METATYPE(ExtensionSystem::PluginSpec*);
+Q_DECLARE_METATYPE(ExtensionSystem::PluginInfo*);
 Q_DECLARE_METATYPE(ExtensionSystem::PluginCollection*);
 
 /*!
@@ -118,15 +118,15 @@ PluginView::~PluginView()
 }
 
 /*!
-    \fn PluginSpec *PluginView::currentPlugin() const
+    \fn PluginInfo *PluginView::currentPlugin() const
     Returns the current selection in the list of plugins.
 */
-PluginSpec *PluginView::currentPlugin() const
+PluginInfo *PluginView::currentPlugin() const
 {
     if (!m_ui->categoryWidget->currentItem())
         return 0;
     if (!m_ui->categoryWidget->currentItem()->data(0, Qt::UserRole).isNull())
-        return m_ui->categoryWidget->currentItem()->data(0, Qt::UserRole).value<PluginSpec *>();
+        return m_ui->categoryWidget->currentItem()->data(0, Qt::UserRole).value<PluginInfo *>();
     return 0;
 }
 
@@ -151,7 +151,7 @@ void PluginView::updateList()
         m_items.append(collectionItem);
 
         Qt::CheckState groupState = Qt::Unchecked;
-        int state = parsePluginSpecs(collectionItem, groupState, collection->plugins());
+        int state = parsePluginInfos(collectionItem, groupState, collection->plugins());
 
         collectionItem->setIcon(0, iconForState(state));
         collectionItem->setData(C_LOAD, Qt::CheckStateRole, QVariant(groupState));
@@ -170,15 +170,15 @@ void PluginView::updateList()
 
     m_items.append(defaultCollectionItem);
     Qt::CheckState groupState = Qt::Unchecked;
-    int state = parsePluginSpecs(defaultCollectionItem, groupState, defaultCollection->plugins());
+    int state = parsePluginInfos(defaultCollectionItem, groupState, defaultCollection->plugins());
 
     defaultCollectionItem->setIcon(0, iconForState(state));
     defaultCollectionItem->setData(C_LOAD, Qt::CheckStateRole, QVariant(groupState));
     defaultCollectionItem->setToolTip(C_LOAD, tr("Load on Startup"));
     defaultCollectionItem->setData(0, Qt::UserRole, qVariantFromValue(defaultCollection));
 
-    foreach (PluginSpec *spec, m_specToItem.keys())
-        toggleRelatedPlugins(spec, spec->isEnabled() && !spec->isDisabledByDependency());
+    foreach (PluginInfo *info, m_infoToItem.keys())
+        toggleRelatedPlugins(info, info->isEnabled() && !info->isDisabledByDependency());
 
     m_ui->categoryWidget->clear();
     if (!m_items.isEmpty()) {
@@ -191,38 +191,38 @@ void PluginView::updateList()
         m_ui->categoryWidget->setCurrentItem(m_ui->categoryWidget->topLevelItem(0));
 }
 
-int PluginView::parsePluginSpecs(QTreeWidgetItem *parentItem, Qt::CheckState &groupState, QList<PluginSpec*> plugins)
+int PluginView::parsePluginInfos(QTreeWidgetItem *parentItem, Qt::CheckState &groupState, QList<PluginInfo*> plugins)
 {
     int ret = 0;
     int loadCount = 0;
 
     for (int i = 0; i < plugins.length(); ++i) {
-        PluginSpec *spec = plugins[i];
-        if (spec->hasError())
+        PluginInfo *info = plugins[i];
+        if (info->hasError())
             ret |= ParsedWithErrors;
 
         QTreeWidgetItem *pluginItem = new QTreeWidgetItem(QStringList()
-            << spec->name()
+            << info->name()
             << QString()    // load on startup
-            << QString::fromLatin1("%1 (%2)").arg(spec->version(), spec->compatVersion())
-            << spec->vendor());
+            << QString::fromLatin1("%1 (%2)").arg(info->version(), info->compatVersion())
+            << info->vendor());
 
-        pluginItem->setToolTip(0, QDir::toNativeSeparators(spec->filePath()));
-        bool ok = !spec->hasError();
+        pluginItem->setToolTip(0, QDir::toNativeSeparators(info->filePath()));
+        bool ok = !info->hasError();
         QIcon icon = ok ? m_okIcon : m_errorIcon;
-        if (ok && (spec->state() != PluginSpec::Running))
+        if (ok && (info->state() != PluginInfo::Running))
             icon = m_notLoadedIcon;
 
         pluginItem->setIcon(0, icon);
-        pluginItem->setData(0, Qt::UserRole, qVariantFromValue(spec));
+        pluginItem->setData(0, Qt::UserRole, qVariantFromValue(info));
 
         Qt::CheckState state = Qt::Unchecked;
-        if (spec->isEnabled()) {
+        if (info->isEnabled()) {
             state = Qt::Checked;
             ++loadCount;
         }
 
-        if (!m_whitelist.contains(spec->name()))
+        if (!m_whitelist.contains(info->name()))
             pluginItem->setData(C_LOAD, Qt::CheckStateRole, state);
         else {
             QColor disabledColor = palette().color(QPalette::Disabled,QPalette::WindowText).lighter(120);
@@ -234,7 +234,7 @@ int PluginView::parsePluginSpecs(QTreeWidgetItem *parentItem, Qt::CheckState &gr
         }
         pluginItem->setToolTip(C_LOAD, tr("Load on Startup"));
 
-        m_specToItem.insert(spec, pluginItem);
+        m_infoToItem.insert(info, pluginItem);
 
         if (parentItem)
             parentItem->addChild(pluginItem);
@@ -271,8 +271,8 @@ void PluginView::selectPlugin(QTreeWidgetItem *current)
 {
     if (!current)
         emit currentPluginChanged(0);
-    else if (current->data(0, Qt::UserRole).canConvert<PluginSpec*>())
-        emit currentPluginChanged(current->data(0, Qt::UserRole).value<PluginSpec *>());
+    else if (current->data(0, Qt::UserRole).canConvert<PluginInfo*>())
+        emit currentPluginChanged(current->data(0, Qt::UserRole).value<PluginInfo *>());
     else
         emit currentPluginChanged(0);
 
@@ -280,8 +280,8 @@ void PluginView::selectPlugin(QTreeWidgetItem *current)
 
 void PluginView::activatePlugin(QTreeWidgetItem *item)
 {
-    if (item->data(0, Qt::UserRole).canConvert<PluginSpec*>()) {
-        emit pluginActivated(item->data(0, Qt::UserRole).value<PluginSpec *>());
+    if (item->data(0, Qt::UserRole).canConvert<PluginInfo*>()) {
+        emit pluginActivated(item->data(0, Qt::UserRole).value<PluginInfo *>());
     } else
         emit pluginActivated(0);
 }
@@ -295,13 +295,13 @@ void PluginView::updatePluginSettings(QTreeWidgetItem *item, int column)
 
     bool loadOnStartup = item->data(C_LOAD, Qt::CheckStateRole).toBool();
 
-    if (item->data(0, Qt::UserRole).canConvert<PluginSpec*>()) {
-        PluginSpec *spec = item->data(0, Qt::UserRole).value<PluginSpec *>();
+    if (item->data(0, Qt::UserRole).canConvert<PluginInfo*>()) {
+        PluginInfo *info = item->data(0, Qt::UserRole).value<PluginInfo *>();
 
         if (column == C_LOAD) {
 
-            spec->setEnabled(loadOnStartup);
-            toggleRelatedPlugins(spec, loadOnStartup);
+            info->setEnabled(loadOnStartup);
+            toggleRelatedPlugins(info, loadOnStartup);
 
             if (item->parent()) {
                 PluginCollection *collection = item->parent()->data(0, Qt::UserRole).value<PluginCollection *>();
@@ -319,20 +319,20 @@ void PluginView::updatePluginSettings(QTreeWidgetItem *item, int column)
                 item->parent()->setData(C_LOAD, Qt::CheckStateRole, state);
             }
 
-            emit pluginSettingsChanged(spec);
+            emit pluginSettingsChanged(info);
         }
 
     } else {
         PluginCollection *collection = item->data(0, Qt::UserRole).value<PluginCollection *>();
         for (int i = 0; i < collection->plugins().length(); ++i) {
-            PluginSpec *spec = collection->plugins().at(i);
-            QTreeWidgetItem *child = m_specToItem.value(spec);
+            PluginInfo *info = collection->plugins().at(i);
+            QTreeWidgetItem *child = m_infoToItem.value(info);
 
-            if (!m_whitelist.contains(spec->name())) {
-                spec->setEnabled(loadOnStartup);
+            if (!m_whitelist.contains(info->name())) {
+                info->setEnabled(loadOnStartup);
                 Qt::CheckState state = (loadOnStartup ? Qt::Checked : Qt::Unchecked);
                 child->setData(C_LOAD, Qt::CheckStateRole, state);
-                toggleRelatedPlugins(spec, loadOnStartup);
+                toggleRelatedPlugins(info, loadOnStartup);
             } else {
                 child->setData(C_LOAD, Qt::CheckStateRole, Qt::Checked);
                 child->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
@@ -344,12 +344,12 @@ void PluginView::updatePluginSettings(QTreeWidgetItem *item, int column)
     m_allowCheckStateUpdate = true;
 }
 
-void PluginView::toggleRelatedPlugins(PluginSpec *modifiedPlugin, bool isPluginEnabled)
+void PluginView::toggleRelatedPlugins(PluginInfo *modifiedPlugin, bool isPluginEnabled)
 {
 
-    for(int i = 0; i < modifiedPlugin->providesSpecs().length(); ++i) {
-        PluginSpec *spec = modifiedPlugin->providesSpecs().at(i);
-        QTreeWidgetItem *childItem = m_specToItem.value(spec);
+    for(int i = 0; i < modifiedPlugin->providesInfos().length(); ++i) {
+        PluginInfo *info = modifiedPlugin->providesInfos().at(i);
+        QTreeWidgetItem *childItem = m_infoToItem.value(info);
 
         if (childItem->isDisabled() != !isPluginEnabled) {
             childItem->setDisabled(!isPluginEnabled);
@@ -357,7 +357,7 @@ void PluginView::toggleRelatedPlugins(PluginSpec *modifiedPlugin, bool isPluginE
                 childItem->parent()->setExpanded(true);
 
 
-            toggleRelatedPlugins(spec, isPluginEnabled);
+            toggleRelatedPlugins(info, isPluginEnabled);
         }
     }
 }

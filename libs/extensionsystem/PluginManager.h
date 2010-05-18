@@ -48,7 +48,7 @@ namespace Internal {
 }
 
 class IPlugin;
-class PluginSpec;
+class PluginInfo;
 
 class EXTENSIONSYSTEM_EXPORT PluginManager : public QObject
 {
@@ -94,7 +94,7 @@ public:
     void loadPlugins();
     QStringList pluginPaths() const;
     void setPluginPaths(const QStringList &paths);
-    QList<PluginSpec *> plugins() const;
+    QList<PluginInfo *> plugins() const;
     QHash<QString, PluginCollection *> pluginCollections() const;
     void setFileExtension(const QString &extension);
     QString fileExtension() const;

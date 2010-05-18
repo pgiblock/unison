@@ -7,7 +7,7 @@
 
 
 namespace ExtensionSystem {
-class PluginSpec;
+class PluginInfo;
 
 class EXTENSIONSYSTEM_EXPORT PluginCollection
 {
@@ -17,12 +17,12 @@ public:
     ~PluginCollection();
 
     QString name() const;
-    void addPlugin(PluginSpec *spec);
-    void removePlugin(PluginSpec *spec);
-    QList<PluginSpec *> plugins() const;
+    void addPlugin(PluginInfo *info);
+    void removePlugin(PluginInfo *info);
+    QList<PluginInfo *> plugins() const;
 private:
     QString m_name;
-    QList<PluginSpec *> m_plugins;
+    QList<PluginInfo *> m_plugins;
 
 };
 

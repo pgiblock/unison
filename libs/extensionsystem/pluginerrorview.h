@@ -36,7 +36,7 @@
 
 namespace ExtensionSystem {
 
-class PluginSpec;
+class PluginInfo;
 namespace Internal {
 namespace Ui {
     class PluginErrorView;
@@ -51,7 +51,7 @@ public:
     PluginErrorView(QWidget *parent = 0);
     ~PluginErrorView();
 
-    void update(PluginSpec *spec);
+    void update(PluginInfo *info);
 
 private:
     Internal::Ui::PluginErrorView *m_ui;

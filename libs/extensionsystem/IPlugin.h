@@ -38,11 +38,11 @@ namespace ExtensionSystem {
 
 namespace Internal {
     class IPluginPrivate;
-    class PluginSpecPrivate;
+    class PluginInfoPrivate;
 }
 
 class PluginManager;
-class PluginSpec;
+class PluginInfo;
 
 class EXTENSIONSYSTEM_EXPORT IPlugin : public QObject
 {
@@ -57,7 +57,7 @@ public:
     virtual void shutdown() { }
     virtual void remoteCommand(const QStringList & /* options */, const QStringList & /* arguments */) { }
 
-    PluginSpec *pluginSpec() const;
+    PluginInfo *pluginInfo() const;
 
     void addObject(QObject *obj);
     void addAutoReleasedObject(QObject *obj);
@@ -66,7 +66,7 @@ public:
 private:
     Internal::IPluginPrivate *d;
 
-    friend class Internal::PluginSpecPrivate;
+    friend class Internal::PluginInfoPrivate;
 };
 
 } // namespace ExtensionSystem

@@ -27,10 +27,10 @@
 **
 **************************************************************************/
 
-#ifndef PLUGINSPEC_P_H
-#define PLUGINSPEC_P_H
+#ifndef PLUGININFO_P_H
+#define PLUGININFO_P_H
 
-#include "pluginspec.h"
+#include "PluginInfo.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
@@ -43,16 +43,16 @@ class PluginManager;
 
 namespace Internal {
 
-class EXTENSIONSYSTEM_EXPORT PluginSpecPrivate : public QObject
+class EXTENSIONSYSTEM_EXPORT PluginInfoPrivate : public QObject
 {
     Q_OBJECT
 
 public:
-    PluginSpecPrivate(PluginSpec *spec);
+    PluginInfoPrivate(PluginInfo *info);
 
     bool read(const QString &fileName);
     bool provides(const QString &pluginName, const QString &version) const;
-    bool resolveDependencies(const QList<PluginSpec *> &specs);
+    bool resolveDependencies(const QList<PluginInfo *> &infos);
     bool loadLibrary();
     bool initializePlugin();
     bool initializeExtensions();
@@ -77,12 +77,12 @@ public:
     QString filePath;
     QStringList arguments;
 
-    QList<PluginSpec *> providesSpecs;
-    QList<PluginSpec *> dependencySpecs;
-    PluginSpec::PluginArgumentDescriptions argumentDescriptions;
+    QList<PluginInfo *> providesInfos;
+    QList<PluginInfo *> dependencyInfos;
+    PluginInfo::PluginArgumentDescriptions argumentDescriptions;
     IPlugin *plugin;
 
-    PluginSpec::State state;
+    PluginInfo::State state;
     bool hasError;
     QString errorString;
 
@@ -90,10 +90,10 @@ public:
     static int versionCompare(const QString &version1, const QString &version2);
 
 private:
-    PluginSpec *q;
+    PluginInfo *q;
 
     bool reportError(const QString &err);
-    void readPluginSpec(QXmlStreamReader &reader);
+    void readPluginInfo(QXmlStreamReader &reader);
     void readDependencies(QXmlStreamReader &reader);
     void readDependencyEntry(QXmlStreamReader &reader);
     void readArgumentDescriptions(QXmlStreamReader &reader);
@@ -105,4 +105,4 @@ private:
 } // namespace Internal
 } // namespace ExtensionSystem
 
-#endif // PLUGINSPEC_P_H
+#endif // PLUGININFO_P_H
