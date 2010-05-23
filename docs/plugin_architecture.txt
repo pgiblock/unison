@@ -1,0 +1,209 @@
+
+==== Bird's Eye View, no internal junk ==== 
+
+libs/
+    extensionsystem/
+        IPlugin                 // interface for a plugin
+        PluginManager           // Finds plugins, negotiates dependencies, loads them, can query a plugin
+    
+    aggregation/
+        Aggregate               // Allow bundling of objects together in lieu of multiple-inheritance
+
+plugins/
+
+    core/                       // # http://unisonstudio.org/ns/core
+        CorePlugin              // creates managers, access to non-singleton managers, holds onto some global state
+        IEngine                 // The engine that manages external audio/midi connections and invokes processing
+        UriManager              // map URI's to Integers
+        BufferProvider          // Creates buffers of the requested type (uses a set of IBufferFactory)
+        FileManager             // monitors files, save files, catches unsaved changes
+        IFile                   // managed through FileManager, by a particular IFileFactory
+        IFileFactory            // managed and used by FileManager
+        ModuleManager           // allows seaching for and instantiation of modules (Processor Plugins)
+        IModule                 // interface of a Module (a Processor Node)
+        IModuleFactory          // managed and used by ModuleManager, enumerates and instantiates Modules
+        MessageManager          // manage collection and presentation of messages to the user
+        SettingsStorage         // manages storage and loading of settings (could be backed by SQL, flatfile, QSettings)
+        FileManager             // ... manage open IFiles, call on IFileFactories, dirty-files, FS Watcher..
+        types                   // common types
+
+    jack/                       // # http://unisonstudio.org/ns/jack
+        JackPlugin              // Registers the JackEngine
+        JackEngine              // Jack-engine implementation
+    
+    lv2/                        // # http://unisonstudio.org/ns/lv2
+        Lv2Plugin               // Provide support for Lv2 Modules, allow features to register
+        Lv2Module               // implementation of an LV2 processing module
+        Lv2ModuleFactory        // enumeration and instantiation of LV2 modules
+        IFeature                // Interface for an LV2 Feature
+
+    lv2_uri_map/                // # http://unisonstudio.org/ns/lv2_uri_map
+        Lv2UriMapPlugin         // Provide support for Lv2 UriMaps
+        Lv2UriMapFeature        // The UriMap feature, uses core/UriManager
+
+    lv2_event/                  // # http://unisonstudio.org/ns/lv2_event
+        Lv2EventPlugin          // Provide support for Lv2 Event Extension
+        Lv2EventFeature         // The Event feature
+
+    lv2_midi/                   // # http://unisonstudio.org/ns/lv2_midi
+        Lv2MidiPlugin           // Provide support for Lv2 MIDI Extension
+        Lv2MidiFeature          // The MIDI feature
+
+    ladspa/                     // # http://unisonstudio.org/ns/ladspa
+        LadspaPlugin            // Provide support for LADSPA Modules
+        LadspaModule            // implementation of an LADSPA processing module
+        LadspaModuleFactory     // enumeration and instantiation of LADSPA modules
+
+    vst/                        // # http://unisonstudio.org/ns/vst
+        VstPlugin               // Provide support for VST and VSTi Modules
+        VstModule               // implementation of a VST processing module
+        VstModuleFactory        // enumeration and instantiation of VST modules
+
+    gui_core/                   // # http://unisonstudio.org/ns/gui_core
+        GuiCorePlugin           // Creation of main-window, hooks into decorating the gui with widgets and stuff
+        ActionManager           // responsible for registration of menus and menu items and keyboard shortcuts.
+        Command                 // managed by ActionManager
+        EditorManager           // responsible for registering and displaying editor based on file type
+        IEditor                 // managed by EditorManager
+        IExternalEditor         // managed by EditorManager
+        FileIconProvider        // allow registration of icons per-mime and querying of icons
+        dialogs/
+            SettingsDialog      // shows options
+            ISettingsPage       // used by SettingsDialog
+            contexts            // ...
+            modes               // ...
+            find (search)       // ...
+            navigation          // ...
+        widgets/
+            Knob
+            LcdSpinner
+
+    song_editor/                // # http://unisonstudio.org/ns/song_editor
+        SongEditorPlugin        // Registers the SongEditor
+        SongEditor              // SongEditor implementation
+
+    piano_roll/                 // # http://unisonstudio.org/ns/piano_roll
+        PianoRollPlugin         // Registers the Piano Roll pattern-editor
+        PianoRoll               // Piano Roll pattern-editor implementation
+
+    automation_editor/          // # http://unisonstudio.org/ns/automation_editor
+        AutomationEditorPlugin  // Registers the AutomationEditor
+        AutomationEditor        // AutomationEditor implementation
+
+    import_project/             // http://unisonstudio.org/ns/automation_editor 
+        ImportProjectPlugin     // Convenience menu option to import all resources from another project
+
+
+
+==== Things Unhandled ====
+Resources
+  Projects
+  Songs
+  Patterns
+  AudioFiles
+ResourceProviders
+  Disk
+  Zip (For zipped-Projects)
+  Web
+Tracks
+MetricMap
+Mixer
+FxLines
+Automation
+ControllerRack
+Sequencing
+
+
+==== Things to consider ====
+Android's "Activities"
+
+hard requirements (I require this plugin at this revision)
+soft requirements (I require any plugin that provides this feature)
+    Features and plugins can be represented as a URI
+
+
+==== More specific ====
+
+unison(/libs)/IExtension.h
+unison(/libs)/ExtensionManager.h
+
+unison/extensions/
+
+unison/extensions/core/
+unison/extensions/core/CorePlugin.h
+unison/extensions/core/IEngine.h
+unison/extensions/core/IEnginePort.h
+unison/extensions/core/IResourceProvider.h
+unison/extensions/core/IBufferProvider.h
+unison/extensions/core/UriMap.h
+unison/extensions/core/UriMap.cpp
+unison/extensions/core/ResourceManager.h
+unison/extensions/core/ResourceManager.cpp
+unison/extensions/core/Processor.h
+unison/extensions/core/Processor.cpp
+unison/extensions/core/CompositeProcessor.h
+unison/extensions/core/CompositeProcessor.cpp
+
+unison/extensions/lv2/Lv2Plugin.h
+unison/extensions/lv2/Lv2ResourceProvider.h
+unison/extensions/lv2/ILv2Feature.h
+
+# http://unisonstudio.org/ns/ext/lv2_uri_map
+unison/extensions/lv2_uri_map/Lv2UriMapPlugin.h
+unison/extensions/lv2_uri_map/Lv2UriMapFeature.h   // Uses core.uriMap and lv2.ILv2Feature
+
+# http://unisonstudio.org/ns/ext/jack
+unison/extensions/jack/JackEnginePlugin.h
+unison/extensions/jack/JackEngine.h
+unison/extensions/jack/JackEngine.cpp
+unison/extensions/jack/JackEnginePort.h
+unison/extensions/jack/JackEnginePort.cpp
+unison/extensions/jack/JackBufferProvider.h
+unison/extensions/jack/JackBufferProvider.cpp
+
+unison/extensions/pattern/
+unison/extensions/song/
+
+unison/common/event.lv2/
+unison/common/midi.lv2/
+unison/common/uri-map.lv2/
+
+
+libs/unison/Port.cpp
+libs/unison/PooledBufferProvider.cpp
+libs/unison/silly-add-to-any-processor.patch
+libs/unison/Doxyfile.in
+libs/unison/.PluginManager.cpp.swp
+libs/unison/.Lv2Port.cpp.swp
+libs/unison/.Session.cpp.swo
+libs/unison/Session.cpp
+libs/unison/midi.lv2
+libs/unison/midi.lv2/midi.ttl
+libs/unison/midi.lv2/manifest.ttl
+libs/unison/unison
+libs/unison/unison/ProcessingContext.h
+libs/unison/unison/Buffer.h
+libs/unison/unison/AudioBuffer.h
+libs/unison/unison/Lv2EventFeature.h
+libs/unison/unison/PluginManager.h
+libs/unison/unison/Lv2Port.h
+libs/unison/unison/types.h
+libs/unison/unison/PooledBufferProvider.h
+libs/unison/unison/Plugin.h
+libs/unison/unison/Session.h
+libs/unison/unison/.PluginManager.h.swp
+libs/unison/unison/EventBuffer.h
+libs/unison/unison/Processor.h
+libs/unison/unison/Port.h
+libs/unison/unison/Lv2UriMap.h
+libs/unison/unison/JackEngine.h
+libs/unison/unison/BufferProvider.h
+libs/unison/unison/Node.h
+libs/unison/unison/Command.h
+libs/unison/unison/ControlBuffer.h
+libs/unison/unison/Lv2Plugin.h
+libs/unison/unison/.types.h.swp
+libs/unison/unison/CMakeLists.txt
+libs/unison/CMakeLists.txt
+libs/unison/EventBuffer.cpp
+libs/unison/.swp
