@@ -20,23 +20,11 @@ if (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
 else (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
 
   find_path(RDF_INCLUDE_DIR
-    NAMES
-      rdf_init.h
-    PATHS
-      /usr/include
-      /usr/local/include
-      /opt/local/include
-      /sw/include
+    NAMES rdf_init.h
   )
 
   find_library(RDF_LIBRARY
-    NAMES
-      rdf
-    PATHS
-      /usr/lib
-      /usr/local/lib
-      /opt/local/lib
-      /sw/lib
+    NAMES rdf
   )
 
   set(RDF_INCLUDE_DIRS

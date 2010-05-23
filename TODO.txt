@@ -14,6 +14,13 @@ x Documentation and add UNISON_ to #ifndefs
 x ControlPorts
 x Release To SF.net
 
+  ExtensionSystem
+    core
+    lv2
+    lv2-features
+    Plugin => Component/Module/Extension ?
+    ::Internal => ::Private ?
+
   Add whatever we need to get compilations to happen automatically,
   Properly defer installing new graph until pre-process
 

@@ -26,12 +26,8 @@ if (NOT SLV2_LIBRARIES OR NOT SLV2_INCLUDE_DIRS)
     find_path(SLV2_INCLUDE_DIR
       NAMES
         slv2/slv2.h
-      PATHS
+      HINTS 
         ${_SLV2_INCLUDEDIR}
-        /usr/include
-        /usr/local/include
-        /opt/local/include
-        /sw/include
       PATH_SUFFIXES
         slv2
     )
@@ -39,12 +35,8 @@ if (NOT SLV2_LIBRARIES OR NOT SLV2_INCLUDE_DIRS)
     find_library(SLV2_LIBRARY
       NAMES
         slv2
-      PATHS
+      HINTS 
         ${_SLV2_LIBDIR}
-        /usr/lib
-        /usr/local/lib
-        /opt/local/lib
-        /sw/lib
     )
 
     set(SLV2_INCLUDE_DIRS

@@ -26,12 +26,8 @@ else (JACK_LIBRARIES AND JACK_INCLUDE_DIRS)
   find_path(JACK_INCLUDE_DIR
     NAMES
       jack/jack.h
-    PATHS
+    HINTS
       ${_JACK_INCLUDEDIR}
-      /usr/include
-      /usr/local/include
-      /opt/local/include
-      /sw/include
     PATH_SUFFIXES
       jack
   )
@@ -39,12 +35,8 @@ else (JACK_LIBRARIES AND JACK_INCLUDE_DIRS)
   find_library(JACK_LIBRARY
     NAMES
       jack
-    PATHS
+    HINTS
       ${_JACK_LIBDIR}
-      /usr/lib
-      /usr/local/lib
-      /opt/local/lib
-      /sw/lib
   )
 
   set(JACK_INCLUDE_DIRS

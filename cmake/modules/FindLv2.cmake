@@ -17,13 +17,7 @@
 if (NOT LV2_INCLUDE_DIRS)
 
   find_path(LV2_INCLUDE_DIR
-    NAMES
-      lv2.h
-    PATHS
-      /usr/include
-      /usr/local/include
-      /opt/local/include
-      /sw/include
+    NAMES lv2.h
   )
 
   set(LV2_INCLUDE_DIRS
