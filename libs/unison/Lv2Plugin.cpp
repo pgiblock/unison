@@ -268,8 +268,10 @@ Lv2PluginDescriptor::Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin) :
   slv2_value_free( data );
 
   data = slv2_plugin_get_author_name( plugin );
-  m_author = QString( slv2_value_as_string( data ) );
-  slv2_value_free( data );
+  if (data) {
+    m_author = QString( slv2_value_as_string( data ) );
+    slv2_value_free( data );
+  }
 
   m_audioInputs = slv2_plugin_get_num_ports_of_class( plugin,
           world.inputClass, world.audioClass, NULL );
