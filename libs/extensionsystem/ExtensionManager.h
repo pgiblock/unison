@@ -27,8 +27,8 @@
 **
 **************************************************************************/
 
-#ifndef EXTENSIONSYSTEM_PLUGINMANAGER_H
-#define EXTENSIONSYSTEM_PLUGINMANAGER_H
+#ifndef EXTENSIONSYSTEM_EXTENSIONMANAGER_H
+#define EXTENSIONSYSTEM_EXTENSIONMANAGER_H
 
 #include "extensionsystem_global.h"
 #include <aggregation/aggregate.h>
@@ -42,24 +42,24 @@ class QTextStream;
 QT_END_NAMESPACE
 
 namespace ExtensionSystem {
-class PluginCollection;
+class ExtensionCollection;
 namespace Internal {
-    class PluginManagerPrivate;
+    class ExtensionManagerPrivate;
 }
 
-class IPlugin;
-class PluginInfo;
+class IExtension;
+class ExtensionInfo;
 
-class EXTENSIONSYSTEM_EXPORT PluginManager : public QObject
+class EXTENSIONSYSTEM_EXPORT ExtensionManager : public QObject
 {
-    Q_DISABLE_COPY(PluginManager)
+    Q_DISABLE_COPY(ExtensionManager)
     Q_OBJECT
 
 public:
-    static PluginManager *instance();
+    static ExtensionManager *instance();
 
-    PluginManager();
-    virtual ~PluginManager();
+    ExtensionManager();
+    virtual ~ExtensionManager();
 
     // Object pool operations
     void addObject(QObject *obj);
@@ -90,12 +90,12 @@ public:
         return result;
     }
 
-    // Plugin operations
-    void loadPlugins();
-    QStringList pluginPaths() const;
-    void setPluginPaths(const QStringList &paths);
-    QList<PluginInfo *> plugins() const;
-    QHash<QString, PluginCollection *> pluginCollections() const;
+    // Extension operations
+    void loadExtensions();
+    QStringList extensionPaths() const;
+    void setExtensionPaths(const QStringList &paths);
+    QList<ExtensionInfo *> extensions() const;
+    QHash<QString, ExtensionCollection *> extensionCollections() const;
     void setFileExtension(const QString &extension);
     QString fileExtension() const;
 
@@ -110,8 +110,8 @@ public:
         QMap<QString, QString> *foundAppOptions,
         QString *errorString);
     static void formatOptions(QTextStream &str, int optionIndentation, int descriptionIndentation);
-    void formatPluginOptions(QTextStream &str, int optionIndentation, int descriptionIndentation) const;
-    void formatPluginVersions(QTextStream &str) const;
+    void formatExtensionOptions(QTextStream &str, int optionIndentation, int descriptionIndentation) const;
+    void formatExtensionVersions(QTextStream &str) const;
 
     QString serializedArguments() const;
 
@@ -122,7 +122,7 @@ signals:
     void objectAdded(QObject *obj);
     void aboutToRemoveObject(QObject *obj);
 
-    void pluginsChanged();
+    void extensionsChanged();
 
 public slots:
     void remoteArguments(const QString &serializedArguments);
@@ -131,13 +131,13 @@ private slots:
     void startTests();
 
 private:
-    Internal::PluginManagerPrivate *d;
-    static PluginManager *m_instance;
+    Internal::ExtensionManagerPrivate *d;
+    static ExtensionManager *m_instance;
     mutable QReadWriteLock m_lock;
 
-    friend class Internal::PluginManagerPrivate;
+    friend class Internal::ExtensionManagerPrivate;
 };
 
 } // namespace ExtensionSystem
 
-#endif // EXTENSIONSYSTEM_PLUGINMANAGER_H
+#endif // EXTENSIONSYSTEM_EXTENSIONMANAGER_H

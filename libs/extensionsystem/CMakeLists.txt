@@ -25,26 +25,26 @@ include(FindQt4)
 include(FindSoprano)
 
 set(EXTENSIONSYSTEM_SRCS
-    IPlugin.cpp
+    IExtension.cpp
     OptionsParser.cpp
-    PluginCollection.cpp
-    PluginInfo.cpp
-    PluginManager.cpp
+    ExtensionCollection.cpp
+    ExtensionInfo.cpp
+    ExtensionManager.cpp
 )
 
 set(EXTENSIONSYSTEM_HEADERS
-    IPlugin.h
+    IExtension.h
     OptionsParser.h
-    PluginCollection.h
-    PluginInfo.h
-    PluginManager.h
+    ExtensionCollection.h
+    ExtensionInfo.h
+    ExtensionManager.h
     extensionsystem_global.h
 )
 
 set(EXTENSIONSYSTEM_MOC_HEADERS
-    IPlugin.h
-    PluginInfo_p.h
-    PluginManager.h
+    IExtension.h
+    ExtensionInfo_p.h
+    ExtensionManager.h
 )
 
 qt4_wrap_cpp(EXTENSIONSYSTEM_MOC_SRCS ${EXTENSIONSYSTEM_MOC_HEADERS})

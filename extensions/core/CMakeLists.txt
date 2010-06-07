@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt - LFO Controller CMake file
+# CMakeLists.txt - Core Plugin CMake file
 #
 # Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
 #
@@ -25,10 +25,28 @@
 #    LfoController.c
 #)
 
-configure_file(Core.pluginspec   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
-#add_library(LfoController SHARED ${LFO_CONTROLLER_SRCS})
+configure_file(Core.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
-set(INSTALL_DIR lib/unison/plugins)
+set(CORE_SRCS
+    CoreExtension.cpp
+)
 
-#install(TARGETS LfoController LIBRARY DESTINATION ${INSTALL_DIR})
-install(FILES   Core.pluginspec  DESTINATION ${INSTALL_DIR})
+set(CORE_MOC_HEADERS
+    CoreExtension.h
+)
+
+qt4_wrap_cpp(CORE_MOC_SRCS ${CORE_MOC_HEADERS})
+
+include_directories(${COMMON_LIBS_INCLUDE_DIR})
+
+add_library(Core SHARED ${CORE_MOC_SRCS} ${CORE_SRCS})
+
+target_link_libraries(Core
+    ${QT_LIBRARIES}
+    aggregation
+    extensionsystem
+)
+
+set(INSTALL_DIR lib/unison/extensions)
+install(FILES   Core.extinfo DESTINATION ${INSTALL_DIR})
+install(TARGETS Core    LIBRARY DESTINATION ${INSTALL_DIR})

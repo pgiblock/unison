@@ -27,10 +27,10 @@
 **
 **************************************************************************/
 
-#ifndef PLUGINMANAGER_P_H
-#define PLUGINMANAGER_P_H
+#ifndef EXTENSIONMANAGER_P_H
+#define EXTENSIONMANAGER_P_H
 
-#include "PluginInfo.h"
+#include "ExtensionInfo.h"
 
 #include <QtCore/QList>
 #include <QtCore/QSet>
@@ -44,67 +44,67 @@ QT_END_NAMESPACE
 
 namespace ExtensionSystem {
 
-class PluginManager;
-class PluginCollection;
+class ExtensionManager;
+class ExtensionCollection;
 
 namespace Internal {
 
-class PluginInfoPrivate;
+class ExtensionInfoPrivate;
 
-class EXTENSIONSYSTEM_EXPORT PluginManagerPrivate
+class EXTENSIONSYSTEM_EXPORT ExtensionManagerPrivate
 {
 public:
-    PluginManagerPrivate(PluginManager *pluginManager);
-    virtual ~PluginManagerPrivate();
+    ExtensionManagerPrivate(ExtensionManager *extensionManager);
+    virtual ~ExtensionManagerPrivate();
 
     // Object pool operations
     void addObject(QObject *obj);
     void removeObject(QObject *obj);
 
-    // Plugin operations
-    void loadPlugins();
-    void setPluginPaths(const QStringList &paths);
-    QList<PluginInfo *> loadQueue();
-    void loadPlugin(PluginInfo *info, PluginInfo::State destState);
+    // Extension operations
+    void loadExtensions();
+    void setExtensionPaths(const QStringList &paths);
+    QList<ExtensionInfo *> loadQueue();
+    void loadExtension(ExtensionInfo *info, ExtensionInfo::State destState);
     void resolveDependencies();
     void initProfiling();
-    void profilingReport(const char *what, const PluginInfo *info = 0);
+    void profilingReport(const char *what, const ExtensionInfo *info = 0);
     void loadSettings();
     void writeSettings();
-    void removePluginInfo(PluginInfo *info);
+    void removeExtensionInfo(ExtensionInfo *info);
 
-    QHash<QString, PluginCollection *> pluginCategories;
-    QList<PluginInfo *> pluginInfos;
-    QList<PluginInfo *> testInfos;
-    QStringList pluginPaths;
+    QHash<QString, ExtensionCollection *> extensionCategories;
+    QList<ExtensionInfo *> extensionInfos;
+    QList<ExtensionInfo *> testInfos;
+    QStringList extensionPaths;
     QString extension;
     QList<QObject *> allObjects; // ### make this a QList<QPointer<QObject> > > ?
-    QStringList disabledPlugins;
-    QStringList forceEnabledPlugins;
+    QStringList disabledExtensions;
+    QStringList forceEnabledExtensions;
 
     QStringList arguments;
     QScopedPointer<QTime> m_profileTimer;
     int m_profileElapsedMS;
 
     // Look in argument descriptions of the infos for the option.
-    PluginInfo *pluginForOption(const QString &option, bool *requiresArgument) const;
-    PluginInfo *pluginByName(const QString &name) const;
+    ExtensionInfo *extensionForOption(const QString &option, bool *requiresArgument) const;
+    ExtensionInfo *extensionByName(const QString &name) const;
 
     // used by tests
-    static PluginInfo *createInfo();
-    static PluginInfoPrivate *privateInfo(PluginInfo *info);
+    static ExtensionInfo *createInfo();
+    static ExtensionInfoPrivate *privateInfo(ExtensionInfo *info);
 private:
-    PluginCollection *defaultCollection;
-    PluginManager *q;
+    ExtensionCollection *defaultCollection;
+    ExtensionManager *q;
 
-    void readPluginPaths();
-    bool loadQueue(PluginInfo *info,
-            QList<PluginInfo *> &queue,
-            QList<PluginInfo *> &circularityCheckQueue);
+    void readExtensionPaths();
+    bool loadQueue(ExtensionInfo *info,
+            QList<ExtensionInfo *> &queue,
+            QList<ExtensionInfo *> &circularityCheckQueue);
     void stopAll();
 };
 
 } // namespace Internal
 } // namespace ExtensionSystem
 
-#endif // PLUGINMANAGER_P_H
+#endif // EXTENSIONMANAGER_P_H

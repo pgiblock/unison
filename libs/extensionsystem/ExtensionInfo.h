@@ -27,8 +27,8 @@
 **
 **************************************************************************/
 
-#ifndef PLUGININFO_H
-#define PLUGININFO_H
+#ifndef EXTENSIONINFO_H
+#define EXTENSIONINFO_H
 
 #include "extensionsystem_global.h"
 
@@ -42,32 +42,32 @@ QT_END_NAMESPACE
 namespace ExtensionSystem {
 
 namespace Internal {
-    class PluginInfoPrivate;
-    class PluginManagerPrivate;
+    class ExtensionInfoPrivate;
+    class ExtensionManagerPrivate;
 }
 
-class IPlugin;
+class IExtension;
 
-struct EXTENSIONSYSTEM_EXPORT PluginDependency
+struct EXTENSIONSYSTEM_EXPORT ExtensionDependency
 {
     QString name;
     QString version;
-    bool operator==(const PluginDependency &other);
+    bool operator==(const ExtensionDependency &other);
 };
 
-struct EXTENSIONSYSTEM_EXPORT PluginArgumentDescription
+struct EXTENSIONSYSTEM_EXPORT ExtensionArgumentDescription
 {
     QString name;
     QString parameter;
     QString description;
 };
 
-class EXTENSIONSYSTEM_EXPORT PluginInfo
+class EXTENSIONSYSTEM_EXPORT ExtensionInfo
 {
 public:
     enum State { Invalid, Read, Resolved, Loaded, Initialized, Running, Stopped, Deleted};
 
-    ~PluginInfo();
+    ~ExtensionInfo();
 
     // information from the xml file, valid after 'Read' state is reached
     QString name() const;
@@ -81,12 +81,12 @@ public:
     QString category() const;
     bool isExperimental() const;
     bool isEnabled() const;
-    // true if loading was not done due to user unselecting this plugin or its dependencies
+    // true if loading was not done due to user unselecting this extension or its dependencies
     bool isDisabledByDependency() const;
-    QList<PluginDependency> dependencies() const;
+    QList<ExtensionDependency> dependencies() const;
 
-    typedef QList<PluginArgumentDescription> PluginArgumentDescriptions;
-    PluginArgumentDescriptions argumentDescriptions() const;
+    typedef QList<ExtensionArgumentDescription> ExtensionArgumentDescriptions;
+    ExtensionArgumentDescriptions argumentDescriptions() const;
 
     // other information, valid after 'Read' state is reached
     QString location() const;
@@ -98,20 +98,20 @@ public:
     void setArguments(const QStringList &arguments);
     void addArgument(const QString &argument);
 
-    bool provides(const QString &pluginName, const QString &version) const;
+    bool provides(const QString &extensionName, const QString &version) const;
 
     // dependency infos, valid after 'Resolved' state is reached
-    QList<PluginInfo *> dependencyInfos() const;
+    QList<ExtensionInfo *> dependencyInfos() const;
 
-    // list of plugins that depend on this - e.g. this plugins provides for them
-    QList<PluginInfo *> providesInfos() const;
+    // list of extensions that depend on this - e.g. this extensions provides for them
+    QList<ExtensionInfo *> providesInfos() const;
 
     // add/remove from providesInfos
-    void addDependentPlugin(PluginInfo *dependent);
-    void removeDependentPlugin(PluginInfo *dependent);
+    void addDependentExtension(ExtensionInfo *dependent);
+    void removeDependentExtension(ExtensionInfo *dependent);
 
-    // linked plugin instance, valid after 'Loaded' state is reached
-    IPlugin *plugin() const;
+    // linked extension instance, valid after 'Loaded' state is reached
+    IExtension *extension() const;
 
     // state
     State state() const;
@@ -119,13 +119,13 @@ public:
     QString errorString() const;
 
 private:
-    PluginInfo();
+    ExtensionInfo();
 
-    Internal::PluginInfoPrivate *d;
-    friend class Internal::PluginManagerPrivate;
+    Internal::ExtensionInfoPrivate *d;
+    friend class Internal::ExtensionManagerPrivate;
 };
 
 } // namespace ExtensionSystem
 
-#endif // PLUGININFO_H
+#endif // EXTENSIONINFO_H
 

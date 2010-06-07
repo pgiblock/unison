@@ -43,7 +43,7 @@ OptionsParser::OptionsParser(const QStringList &args,
         const QMap<QString, bool> &appOptions,
         QMap<QString, QString> *foundAppOptions,
         QString *errorString,
-        PluginManagerPrivate *pmPrivate)
+        ExtensionManagerPrivate *pmPrivate)
     : m_args(args), m_appOptions(appOptions),
       m_foundAppOptions(foundAppOptions),
       m_errorString(errorString),
@@ -76,7 +76,7 @@ bool OptionsParser::parse()
             continue;
         if (checkForAppOption())
             continue;
-        if (checkForPluginOption())
+        if (checkForExtensionOption())
             continue;
         if (checkForUnknownOption())
             break;
@@ -103,11 +103,11 @@ bool OptionsParser::checkForTestOption()
     if (m_currentArg != QLatin1String(TEST_OPTION))
         return false;
     if (nextToken(RequiredToken)) {
-        PluginInfo *info = m_pmPrivate->pluginByName(m_currentArg);
+        ExtensionInfo *info = m_pmPrivate->extensionByName(m_currentArg);
         if (!info) {
             if (m_errorString)
-                *m_errorString = QCoreApplication::translate("PluginManager",
-                                                             "The plugin '%1' does not exist.").arg(m_currentArg);
+                *m_errorString = QCoreApplication::translate("ExtensionManager",
+                                                             "The extension '%1' does not exist.").arg(m_currentArg);
             m_hasError = true;
         } else {
             m_pmPrivate->testInfos.append(info);
@@ -121,14 +121,14 @@ bool OptionsParser::checkForNoLoadOption()
     if (m_currentArg != QLatin1String(NO_LOAD_OPTION))
         return false;
     if (nextToken(RequiredToken)) {
-        PluginInfo *info = m_pmPrivate->pluginByName(m_currentArg);
+        ExtensionInfo *info = m_pmPrivate->extensionByName(m_currentArg);
         if (!info) {
             if (m_errorString)
-                *m_errorString = QCoreApplication::translate("PluginManager",
-                                                             "The plugin '%1' does not exist.").arg(m_currentArg);
+                *m_errorString = QCoreApplication::translate("ExtensionManager",
+                                                             "The extension '%1' does not exist.").arg(m_currentArg);
             m_hasError = true;
         } else {
-            m_pmPrivate->removePluginInfo(info);
+            m_pmPrivate->removeExtensionInfo(info);
             m_isDependencyRefreshNeeded = true;
         }
     }
@@ -158,10 +158,10 @@ bool OptionsParser::checkForProfilingOption()
     return true;
 }
 
-bool OptionsParser::checkForPluginOption()
+bool OptionsParser::checkForExtensionOption()
 {
     bool requiresParameter;
-    PluginInfo *info = m_pmPrivate->pluginForOption(m_currentArg, &requiresParameter);
+    ExtensionInfo *info = m_pmPrivate->extensionForOption(m_currentArg, &requiresParameter);
     if (!info)
         return false;
     info->addArgument(m_currentArg);
@@ -176,7 +176,7 @@ bool OptionsParser::checkForUnknownOption()
     if (!m_currentArg.startsWith(QLatin1Char('-')))
         return false;
     if (m_errorString)
-        *m_errorString = QCoreApplication::translate("PluginManager",
+        *m_errorString = QCoreApplication::translate("ExtensionManager",
                                                      "Unknown option %1").arg(m_currentArg);
     m_hasError = true;
     return true;
@@ -188,7 +188,7 @@ bool OptionsParser::nextToken(OptionsParser::TokenType type)
         if (type == OptionsParser::RequiredToken) {
             m_hasError = true;
             if (m_errorString)
-                *m_errorString = QCoreApplication::translate("PluginManager",
+                *m_errorString = QCoreApplication::translate("ExtensionManager",
                                                              "The option %1 requires an argument.").arg(m_currentArg);
         }
         return false;

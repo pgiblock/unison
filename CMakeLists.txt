@@ -106,5 +106,6 @@ set(COMMON_LIBS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs)
 
 #Directories
 add_subdirectory(libs)
+add_subdirectory(extensions)
 add_subdirectory(plugins)
 add_subdirectory(unisonstudio)

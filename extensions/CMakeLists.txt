@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt - LFO Controller CMake file
+# CMakeLists.txt - CMake for extensions
 #
 # Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
 #
@@ -21,14 +21,7 @@
 # Boston, MA 02110-1301 USA.
 #
 
-#set(LFO_CONTROLLER_SRCS
-#    LfoController.c
-#)
-
-configure_file(GuiCore.pluginspec   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
-#add_library(LfoController SHARED ${LFO_CONTROLLER_SRCS})
-
-set(INSTALL_DIR lib/unison/plugins)
-
-#install(TARGETS LfoController LIBRARY DESTINATION ${INSTALL_DIR})
-install(FILES   GuiCore.pluginspec  DESTINATION ${INSTALL_DIR})
+add_subdirectory(core)
+add_subdirectory(guicore)
+add_subdirectory(jack)
+add_subdirectory(lv2)

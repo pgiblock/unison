@@ -27,10 +27,10 @@
 **
 **************************************************************************/
 
-#ifndef PLUGININFO_P_H
-#define PLUGININFO_P_H
+#ifndef EXTENSIONINFO_P_H
+#define EXTENSIONINFO_P_H
 
-#include "PluginInfo.h"
+#include "ExtensionInfo.h"
 
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
@@ -38,23 +38,23 @@
 
 namespace ExtensionSystem {
 
-class IPlugin;
-class PluginManager;
+class IExtension;
+class ExtensionManager;
 
 namespace Internal {
 
-class EXTENSIONSYSTEM_EXPORT PluginInfoPrivate : public QObject
+class EXTENSIONSYSTEM_EXPORT ExtensionInfoPrivate : public QObject
 {
     Q_OBJECT
 
 public:
-    PluginInfoPrivate(PluginInfo *info);
+    ExtensionInfoPrivate(ExtensionInfo *info);
 
     bool read(const QString &fileName);
-    bool provides(const QString &pluginName, const QString &version) const;
-    bool resolveDependencies(const QList<PluginInfo *> &infos);
+    bool provides(const QString &extensionName, const QString &version) const;
+    bool resolveDependencies(const QList<ExtensionInfo *> &infos);
     bool loadLibrary();
-    bool initializePlugin();
+    bool initializeExtension();
     bool initializeExtensions();
     void stop();
     void kill();
@@ -69,7 +69,7 @@ public:
     QString description;
     QString url;
     QString category;
-    QList<PluginDependency> dependencies;
+    QList<ExtensionDependency> dependencies;
     bool enabled;
     bool disabledByDependency;
 
@@ -77,12 +77,12 @@ public:
     QString filePath;
     QStringList arguments;
 
-    QList<PluginInfo *> providesInfos;
-    QList<PluginInfo *> dependencyInfos;
-    PluginInfo::PluginArgumentDescriptions argumentDescriptions;
-    IPlugin *plugin;
+    QList<ExtensionInfo *> providesInfos;
+    QList<ExtensionInfo *> dependencyInfos;
+    ExtensionInfo::ExtensionArgumentDescriptions argumentDescriptions;
+    IExtension *extension;
 
-    PluginInfo::State state;
+    ExtensionInfo::State state;
     bool hasError;
     QString errorString;
 
@@ -90,10 +90,10 @@ public:
     static int versionCompare(const QString &version1, const QString &version2);
 
 private:
-    PluginInfo *q;
+    ExtensionInfo *q;
 
     bool reportError(const QString &err);
-    void readPluginInfo(QXmlStreamReader &reader);
+    void readExtensionInfo(QXmlStreamReader &reader);
     void readDependencies(QXmlStreamReader &reader);
     void readDependencyEntry(QXmlStreamReader &reader);
     void readArgumentDescriptions(QXmlStreamReader &reader);
@@ -105,4 +105,4 @@ private:
 } // namespace Internal
 } // namespace ExtensionSystem
 
-#endif // PLUGININFO_P_H
+#endif // EXTENSIONINFO_P_H

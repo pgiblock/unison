@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt - CMake for plugins
+# CMakeLists.txt - JACK Plugin CMake file
 #
 # Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
 #
@@ -21,4 +21,28 @@
 # Boston, MA 02110-1301 USA.
 #
 
-add_subdirectory(LfoController)
+configure_file(Jack.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+
+set(JACK_SRCS
+    JackExtension.cpp
+)
+
+set(JACK_MOC_HEADERS
+    JackExtension.h
+)
+
+qt4_wrap_cpp(JACK_MOC_SRCS ${JACK_MOC_HEADERS})
+
+include_directories(${COMMON_LIBS_INCLUDE_DIR})
+
+add_library(Jack SHARED ${JACK_MOC_SRCS} ${JACK_SRCS})
+
+target_link_libraries(Jack
+    ${QT_LIBRARIES}
+    aggregation
+    extensionsystem
+)
+
+set(INSTALL_DIR lib/unison/extensions)
+install(FILES   Jack.extinfo  DESTINATION ${INSTALL_DIR})
+install(TARGETS Jack    LIBRARY  DESTINATION ${INSTALL_DIR})

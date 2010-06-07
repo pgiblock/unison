@@ -27,24 +27,24 @@
 **
 **************************************************************************/
 
-#ifndef IPLUGIN_P_H
-#define IPLUGIN_P_H
+#ifndef IEXTENSION_P_H
+#define IEXTENSION_P_H
 
-#include "IPlugin.h"
+#include "IExtension.h"
 
 #include <QtCore/QString>
 
 namespace ExtensionSystem {
 
-class PluginManager;
-class PluginInfo;
+class ExtensionManager;
+class ExtensionInfo;
 
 namespace Internal {
 
-class IPluginPrivate
+class IExtensionPrivate
 {
 public:
-    PluginInfo *pluginInfo;
+    ExtensionInfo *extensionInfo;
 
     QList<QObject *> addedObjectsInReverseOrder;
 };
@@ -52,4 +52,4 @@ public:
 } // namespace Internal
 } // namespace ExtensionSystem
 
-#endif // IPLUGIN_P_H
+#endif // IEXTENSION_P_H

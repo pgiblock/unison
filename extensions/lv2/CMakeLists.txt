@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt - CMake for plugins
+# CMakeLists.txt - LV2 Plugin CMake file
 #
 # Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
 #
@@ -21,4 +21,28 @@
 # Boston, MA 02110-1301 USA.
 #
 
-add_subdirectory(LfoController)
+configure_file(Lv2.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+
+set(LV2_SRCS
+    Lv2Extension.cpp
+)
+
+set(LV2_MOC_HEADERS
+    Lv2Extension.h
+)
+
+qt4_wrap_cpp(LV2_MOC_SRCS ${LV2_MOC_HEADERS})
+
+include_directories(${COMMON_LIBS_INCLUDE_DIR})
+
+add_library(Lv2 SHARED ${LV2_MOC_SRCS} ${LV2_SRCS})
+
+target_link_libraries(Lv2
+    ${QT_LIBRARIES}
+    aggregation
+    extensionsystem
+)
+
+set(INSTALL_DIR lib/unison/extensions)
+install(FILES   Lv2.extinfo  DESTINATION ${INSTALL_DIR})
+install(TARGETS Lv2    LIBRARY  DESTINATION ${INSTALL_DIR})

@@ -30,15 +30,15 @@
 
 #include <QtGui/QApplication>
 
-#include "extensionsystem/PluginManager.h"
-#include "extensionsystem/PluginInfo.h"
-#include "extensionsystem/IPlugin.h"
+#include "extensionsystem/ExtensionManager.h"
+#include "extensionsystem/ExtensionInfo.h"
+#include "extensionsystem/IExtension.h"
 
 //using namespace Unison;
 
 enum { OptionIndent = 4, DescriptionIndent = 24 };
 
-static const char *CORE_PLUGIN_NAME = "Core";
+static const char *CORE_EXTENSION_NAME = "Core";
 
 
 /** Draws an ascii UNISON logo */
@@ -63,12 +63,12 @@ void printDisclaimer()
 }
 
 
-static void printHelp(const QString &a0, const ExtensionSystem::PluginManager &pm)
+static void printHelp(const QString &a0, const ExtensionSystem::ExtensionManager &em)
 {
   QTextStream str(stdout);
   str << "Usage: " << a0  << "Some standard options";
-  ExtensionSystem::PluginManager::formatOptions(str, OptionIndent, DescriptionIndent);
-  pm.formatPluginOptions(str,  OptionIndent, DescriptionIndent);
+  ExtensionSystem::ExtensionManager::formatOptions(str, OptionIndent, DescriptionIndent);
+  em.formatExtensionOptions(str,  OptionIndent, DescriptionIndent);
 }
 
 
@@ -78,7 +78,7 @@ static inline QString msgCoreLoadFailure(const QString &why)
 }
 
 
-static inline QStringList getPluginPaths()
+static inline QStringList getExtensionPaths()
 {
   // TODO: This needs to be improved to work with other Operating systems
   QStringList rc;
@@ -86,15 +86,15 @@ static inline QStringList getPluginPaths()
   QDir rootDir = QApplication::applicationDirPath();
   rootDir.cdUp();
   const QString rootDirPath = rootDir.canonicalPath();
-  // 1) system plugins
-  QString pluginPath = rootDirPath;
-  pluginPath += QLatin1Char('/');
-  pluginPath += QLatin1String("lib");
-  pluginPath += QLatin1Char('/');
-  pluginPath += QLatin1String("unison");
-  pluginPath += QLatin1Char('/');
-  pluginPath += QLatin1String("plugins");
-  rc.push_back(pluginPath);
+  // 1) system extensions
+  QString extensionPath = rootDirPath;
+  extensionPath += QLatin1Char('/');
+  extensionPath += QLatin1String("lib");
+  extensionPath += QLatin1Char('/');
+  extensionPath += QLatin1String("unison");
+  extensionPath += QLatin1Char('/');
+  extensionPath += QLatin1String("extensions");
+  rc.push_back(extensionPath);
   // 2) additional search paths??
   // ...
   return rc;
@@ -149,11 +149,11 @@ int main (int argc, char **argv)
   QNetworkProxyFactory::setUseSystemConfiguration(true);
 
   // Load
-  ExtensionSystem::PluginManager pluginManager;
-  pluginManager.setFileExtension(QLatin1String("pluginspec"));
+  ExtensionSystem::ExtensionManager extensionManager;
+  extensionManager.setFileExtension(QLatin1String("extinfo"));
 
-  const QStringList pluginPaths = getPluginPaths();
-  pluginManager.setPluginPaths(pluginPaths);
+  const QStringList extensionPaths = getExtensionPaths();
+  extensionManager.setExtensionPaths(extensionPaths);
 
   const QStringList arguments = QCoreApplication::arguments();
   QMap<QString, QString> foundAppOptions;
@@ -166,33 +166,34 @@ int main (int argc, char **argv)
     //appOptions.insert(QLatin1String(VERSION_OPTION), false);
     //appOptions.insert(QLatin1String(CLIENT_OPTION), false);
     QString errorMessage;
-    bool parseOk = pluginManager.parseOptions(arguments, appOptions,
-                                              &foundAppOptions, &errorMessage);
+    bool parseOk = extensionManager.parseOptions(
+        arguments, appOptions, &foundAppOptions, &errorMessage);
+    
     if (!parseOk) {
       qWarning() <<errorMessage;
       printHelp(QFileInfo(QApplication::applicationFilePath()).baseName(),
-                pluginManager);
+                extensionManager);
       return -1;
     }
   }
 
-  const QList<ExtensionSystem::PluginInfo *> plugins = pluginManager.plugins();
-  ExtensionSystem::PluginInfo *coreplugin = 0;
-  foreach (ExtensionSystem::PluginInfo *info, plugins) {
-    if (info->name() == QLatin1String(CORE_PLUGIN_NAME)) {
-      coreplugin = info;
+  const QList<ExtensionSystem::ExtensionInfo *> extensions = extensionManager.extensions();
+  ExtensionSystem::ExtensionInfo *coreextension = 0;
+  foreach (ExtensionSystem::ExtensionInfo *info, extensions) {
+    if (info->name() == QLatin1String(CORE_EXTENSION_NAME)) {
+      coreextension = info;
       break;
     }
   }
-  if (!coreplugin) {
-      QString nativePaths = QDir::toNativeSeparators(pluginPaths.join(QLatin1String(",")));
+  if (!coreextension) {
+      QString nativePaths = QDir::toNativeSeparators(extensionPaths.join(QLatin1String(",")));
       const QString reason = QCoreApplication::translate("Application",
-          "Could not find 'Core.pluginspec' in %1").arg(nativePaths);
+          "Could not find 'Core.extinfo' in %1").arg(nativePaths);
       qWarning() << msgCoreLoadFailure(reason);
       return 1;
   }
-  if (coreplugin->hasError()) {
-      qWarning() << msgCoreLoadFailure(coreplugin->errorString());
+  if (coreextension->hasError()) {
+      qWarning() << msgCoreLoadFailure(coreextension->errorString());
       return 1;
   }
   //if (foundAppOptions.contains(QLatin1String(VERSION_OPTION))) {
@@ -217,21 +218,21 @@ int main (int argc, char **argv)
   //    return 0;
   //}
 
-  pluginManager.loadPlugins();
-  if (coreplugin->hasError()) {
-    qWarning() << msgCoreLoadFailure(coreplugin->errorString());
+  extensionManager.loadExtensions();
+  if (coreextension->hasError()) {
+    qWarning() << msgCoreLoadFailure(coreextension->errorString());
     return 1;
   }
   {
     QStringList errors;
-    foreach (ExtensionSystem::PluginInfo *p, pluginManager.plugins()) {
+    foreach (ExtensionSystem::ExtensionInfo *p, extensionManager.extensions()) {
       if (p->hasError()) {
           errors.append(p->errorString());
       }
     }
     if (!errors.isEmpty()) {
       qWarning() << QCoreApplication::translate("Application",
-                      "Unison Studio - Plugin loader messages");
+                      "Unison Studio - Extension loader messages");
       qWarning() << errors.join(QString::fromLatin1("\n\n"));
     }
   }

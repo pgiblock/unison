@@ -27,8 +27,8 @@
 **
 **************************************************************************/
 
-#ifndef IPLUGIN_H
-#define IPLUGIN_H
+#ifndef IEXTENSION_H
+#define IEXTENSION_H
 
 #include "extensionsystem_global.h"
 
@@ -37,38 +37,38 @@
 namespace ExtensionSystem {
 
 namespace Internal {
-    class IPluginPrivate;
-    class PluginInfoPrivate;
+    class IExtensionPrivate;
+    class ExtensionInfoPrivate;
 }
 
-class PluginManager;
-class PluginInfo;
+class ExtensionManager;
+class ExtensionInfo;
 
-class EXTENSIONSYSTEM_EXPORT IPlugin : public QObject
+class EXTENSIONSYSTEM_EXPORT IExtension : public QObject
 {
     Q_OBJECT
 
 public:
-    IPlugin();
-    virtual ~IPlugin();
+    IExtension();
+    virtual ~IExtension();
 
     virtual bool initialize(const QStringList &arguments, QString *errorString) = 0;
     virtual void extensionsInitialized() = 0;
     virtual void shutdown() { }
     virtual void remoteCommand(const QStringList & /* options */, const QStringList & /* arguments */) { }
 
-    PluginInfo *pluginInfo() const;
+    ExtensionInfo *extensionInfo() const;
 
     void addObject(QObject *obj);
     void addAutoReleasedObject(QObject *obj);
     void removeObject(QObject *obj);
 
 private:
-    Internal::IPluginPrivate *d;
+    Internal::IExtensionPrivate *d;
 
-    friend class Internal::PluginInfoPrivate;
+    friend class Internal::ExtensionInfoPrivate;
 };
 
 } // namespace ExtensionSystem
 
-#endif // IPLUGIN_H
+#endif // IEXTENSION_H

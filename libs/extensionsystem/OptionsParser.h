@@ -30,7 +30,7 @@
 #ifndef OPTIONSPARSER_H
 #define OPTIONSPARSER_H
 
-#include "PluginManager_p.h"
+#include "ExtensionManager_p.h"
 
 #include <QtCore/QStringList>
 #include <QtCore/QMap>
@@ -45,7 +45,7 @@ public:
         const QMap<QString, bool> &appOptions,
         QMap<QString, QString> *foundAppOptions,
         QString *errorString,
-        PluginManagerPrivate *pmPrivate);
+        ExtensionManagerPrivate *pmPrivate);
 
     bool parse();
 
@@ -59,7 +59,7 @@ private:
     bool checkForNoLoadOption();
     bool checkForTestOption();
     bool checkForAppOption();
-    bool checkForPluginOption();
+    bool checkForExtensionOption();
     bool checkForProfilingOption();
     bool checkForUnknownOption();
 
@@ -70,7 +70,7 @@ private:
     const QMap<QString, bool> &m_appOptions;
     QMap<QString, QString> *m_foundAppOptions;
     QString *m_errorString;
-    PluginManagerPrivate *m_pmPrivate;
+    ExtensionManagerPrivate *m_pmPrivate;
 
     // state
     QString m_currentArg;
