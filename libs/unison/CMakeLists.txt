@@ -21,13 +21,6 @@
 # Boston, MA 02110-1301 USA.
 #
 
-include(UseDoxygen)
-#set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
-               ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-
-
-
 set(UNISON_SRCS
     CompositeProcessor.cpp
     PooledBufferProvider.cpp

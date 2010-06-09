@@ -37,6 +37,11 @@ include(FindPkgConfig)
 include(FindJack)
 include(FindSlv2)
 
+include(UseDoxygen)
+
+configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
+               ${CMAKE_BINARY_DIR}/Doxyfile)
+
 find_package(Qt4 4.5.0 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED )
 include(${QT_USE_FILE})
 
