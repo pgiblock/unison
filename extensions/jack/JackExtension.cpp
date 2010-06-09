@@ -28,7 +28,6 @@
 
 #include <QtCore/QtPlugin>
 
-using namespace Jack;
 using namespace Jack::Internal;
 
 JackExtension::JackExtension()

@@ -22,15 +22,16 @@
  *
  */
 
+#include "JackBufferProvider.h"
+#include "JackPort.h"
+
+#include <unison/AudioBuffer.h>
+
 #include <jack/jack.h>
 #include <QDebug>
 
-#include "unison/AudioBuffer.h"
-#include "unison/JackBufferProvider.h"
-#include "unison/JackPort.h"
-
-namespace Unison
-{
+using namespace Jack::Internal;
+using namespace Unison;
 
 SharedBufferPtr JackBufferProvider::acquire (
     const JackPort* port, nframes_t nframes)
@@ -52,7 +53,5 @@ SharedBufferPtr JackBufferProvider::zeroAudioBuffer () const
   qCritical() << "JackBufferProvider acquire called, programming error";
   return NULL;
 }
-
-} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

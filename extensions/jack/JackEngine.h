@@ -25,15 +25,17 @@
 #ifndef UNISON_JACK_ENGINE_H
 #define UNISON_JACK_ENGINE_H
 
+#include "JackPort.h"
+
+#include <prg/Uncopyable.h>
 #include <QVarLengthArray>
 
-#include "prg/Uncopyable.h"
-#include "unison/JackPort.h"
+namespace Unison {
+  class Session;
+}
 
-namespace Unison
-{
-
-class Session;
+namespace Jack {
+namespace Internal {
 
 /**
  * JackEngine encapsulates JACK compatibility.  There could theoretically be
@@ -54,7 +56,7 @@ class JackEngine : public QObject, PRG::Uncopyable
     /**
      * Set the session of this engine,  generally called by Session's ctor.
      * JackEngine's behavior is undefined if a Session is not assigned. */
-    void setSession (Session * session);
+    void setSession (Unison::Session * session);
 
     /**
      * Remove the session of this engine.  JackEngine is in an undefined state
@@ -70,14 +72,14 @@ class JackEngine : public QObject, PRG::Uncopyable
 
     /**
      * FIXME: BufferLength change support is currently lacking. */
-    nframes_t bufferLength () const;
-    nframes_t sampleRate () const;
+    Unison::nframes_t bufferLength () const;
+    Unison::nframes_t sampleRate () const;
     bool isFreewheeling () const;
 
     /**
      * Register a port with Jack.
      * @returns the newly registered port */
-    JackPort* registerPort (QString name, PortDirection direction);
+    JackPort* registerPort (QString name, Unison::PortDirection direction);
 
     /**
      * Unregister a port with Jack.
@@ -93,32 +95,33 @@ class JackEngine : public QObject, PRG::Uncopyable
 
     int connect (const QString& source, const QString& dest);
     int disconnect (const QString& source, const QString& dest);
-    int disconnect (Port *);
+    int disconnect (Unison::Port *);
 
   private:
     void initClient();
 
     static void shutdown (void* engine);
-    static int bufferSizeCb (nframes_t nframes, void* engine);
+    static int bufferSizeCb (Unison::nframes_t nframes, void* engine);
     static void freewheelCb (int starting, void* engine);
     static int graphOrderCb (void* engine);
-    static int processCb (nframes_t nframes, void* engine);
-    static int sampleRateCb (nframes_t nframes, void* engine);
+    static int processCb (Unison::nframes_t nframes, void* engine);
+    static int sampleRateCb (Unison::nframes_t nframes, void* engine);
     static int syncCb (jack_transport_state_t, jack_position_t*, void* eng);
     static void threadInitCb (void* engine);
-    static void timebaseCb (jack_transport_state_t, nframes_t, jack_position_t*, int, void*);
+    static void timebaseCb (jack_transport_state_t, Unison::nframes_t, jack_position_t*, int, void*);
     static int xrunCb (void* engine);
 
-    Session* m_session;
+    Unison::Session* m_session;
     jack_client_t* m_client;
     QVarLengthArray<JackPort*> m_myPorts;
-    nframes_t m_bufferLength;
-    nframes_t m_sampleRate;
+    Unison::nframes_t m_bufferLength;
+    Unison::nframes_t m_sampleRate;
     bool m_freewheeling;
     bool m_running;
 };
 
-} // Unison
+} // Internal
+} // Jack
 
 #endif
 

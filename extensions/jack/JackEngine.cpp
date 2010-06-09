@@ -22,14 +22,15 @@
  *
  */
 
+#include "JackEngine.h"
+
+#include <unison/Session.h>
+
 #include <QDebug>
 #include <jack/jack.h>
 
-#include "unison/JackEngine.h"
-#include "unison/Session.h"
-
-namespace Unison
-{
+using namespace Jack::Internal;
+using namespace Unison;
 
 JackEngine::JackEngine () :
   m_session(NULL),
@@ -273,7 +274,5 @@ int JackEngine::xrunCb (void* engine) {
   return 0;
 }
 
-
-} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

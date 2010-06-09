@@ -22,16 +22,17 @@
  *
  */
 
+#include "JackPort.h"
+#include "JackBufferProvider.h"
+#include "JackEngine.h"
+
+#include <unison/AudioBuffer.h>
+
 #include <jack/jack.h>
 #include <QDebug>
 
-#include "unison/AudioBuffer.h"
-#include "unison/JackBufferProvider.h"
-#include "unison/JackEngine.h"
-#include "unison/JackPort.h"
-
-namespace Unison
-{
+using namespace Jack::Internal;
+using namespace Unison;
 
   JackBufferProvider* JackPort::m_jackBufferProvider =
       new JackBufferProvider();

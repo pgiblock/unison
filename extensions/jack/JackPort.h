@@ -25,21 +25,19 @@
 #ifndef UNISON_JACK_PORT_H
 #define UNISON_JACK_PORT_H
 
+#include <unison/Port.h>
+#include <unison/ProcessingContext.h>
 #include <jack/jack.h>
 
-#include "unison/Port.h"
-#include "unison/ProcessingContext.h"
-
-namespace Unison
-{
+namespace Jack {
+namespace Internal {
 
 class JackBufferProvider;
 class JackEngine;
 
-
 /**
  * Encapsulates a registered port of the jack-client. */
-class JackPort : public Port
+class JackPort : public Unison::Port
 {
   public:
     JackPort(JackEngine & engine, jack_port_t * port) :
@@ -49,7 +47,7 @@ class JackPort : public Port
     {
     }
 
-    Node* parent () const
+    Unison::Node* parent () const
     {
       return NULL;
     }
@@ -65,18 +63,18 @@ class JackPort : public Port
       return jack_port_name( m_port );
     }
 
-    PortDirection direction() const
+    Unison::PortDirection direction() const
     {
       JackPortFlags flags = (JackPortFlags)jack_port_flags( m_port );
-      if (flags & JackPortIsInput)  { return OUTPUT;  }
-      if (flags & JackPortIsOutput) { return INPUT; }
+      if (flags & JackPortIsInput)  { return Unison::OUTPUT;  }
+      if (flags & JackPortIsOutput) { return Unison::INPUT; }
       Q_ASSERT_X(0, "JackPort", "direction is neither Input or Output.");
-      return (PortDirection)0;
+      return (Unison::PortDirection)0;
     }
 
-    PortType type () const
+    Unison::PortType type () const
     {
-      return AUDIO_PORT;
+      return Unison::AUDIO_PORT;
     }
 
     float value () const
@@ -113,14 +111,14 @@ class JackPort : public Port
       return false;
     }
 
-    const QSet<Node* const> interfacedNodes () const;
+    const QSet<Unison::Node* const> interfacedNodes () const;
 
     jack_port_t* jackPort () const
     {
       return m_port;
     }
 
-    void connectToBuffer (BufferProvider &);
+    void connectToBuffer (Unison::BufferProvider &);
 
   private:
     JackEngine& m_engine;
@@ -129,7 +127,8 @@ class JackPort : public Port
     static JackBufferProvider * m_jackBufferProvider;
 };
 
-} // Unison
+} // Internal
+} // Jack
 
 #endif
 

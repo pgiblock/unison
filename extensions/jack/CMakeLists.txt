@@ -27,6 +27,10 @@ add_definitions(-DJACK_EXTENSION)
 
 set(JACK_SRCS
     JackExtension.cpp
+    JackBufferProvider.cpp
+    JackEngine.cpp
+    JackExtension.cpp
+    JackPort.cpp
 )
 
 set(JACK_MOC_HEADERS
@@ -35,14 +39,16 @@ set(JACK_MOC_HEADERS
 
 qt4_wrap_cpp(JACK_MOC_SRCS ${JACK_MOC_HEADERS})
 
-include_directories(${COMMON_LIBS_INCLUDE_DIR})
+include_directories(.. ${COMMON_LIBS_INCLUDE_DIR} ${PRG_INCLUDE_DIR})
 
 add_library(Jack SHARED ${JACK_MOC_SRCS} ${JACK_SRCS})
 
 target_link_libraries(Jack
     ${QT_LIBRARIES}
+    ${JACK_LIBRARIES}
     aggregation
     extensionsystem
+    unison
 )
 
 set_target_properties(Jack PROPERTIES
