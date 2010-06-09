@@ -32,11 +32,12 @@
 
 namespace Core {
 
-/** Provides a database of Plugins.  The PluginProvider interface abstracts
- *  the features needed for listing and querying plugins for a specific plugin
- *  technology.  Any extensions wishing to implement this functionality must
- *  add their implemenation to ExtensionManager with addObject(), the
- *  implementation will then be used by PluginManager.
+/**
+ * Provides a database of Plugins.  The PluginProvider interface abstracts the
+ * features needed for listing and querying plugins for a specific plugin
+ * technology.  Any extensions wishing to implement this functionality must add
+ * their implemenation to ExtensionManager with addObject(), the implementation
+ * will then be used by PluginManager.
  */
 CORE_EXPORT class IPluginProvider : public QObject
 {
