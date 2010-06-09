@@ -22,15 +22,16 @@
  *
  */
 
+#include "Lv2Plugin.h"
+#include "Lv2Port.h"
+
+#include <unison/ProcessingContext.h>
+
 #include <QDebug>
 #include <QSet>
 
-#include "unison/Lv2Plugin.h"
-#include "unison/Lv2Port.h"
-#include "unison/ProcessingContext.h"
-
-namespace Unison
-{
+using namespace Lv2::Internal;
+using namespace Unison;
 
 Lv2World::Lv2World ()
 {
@@ -308,7 +309,5 @@ PluginPtr Lv2PluginDescriptor::createPlugin (nframes_t sampleRate) const
 {
   return PluginPtr( new Lv2Plugin( m_world, m_plugin, sampleRate ) );
 }
-
-} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

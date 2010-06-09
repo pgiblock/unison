@@ -30,8 +30,7 @@
 #include "unison/PooledBufferProvider.h"
 #include "unison/JackEngine.h"
 
-namespace Unison
-{
+namespace Core {
 
 Session::Session (JackEngine& engine) :
   m_rootProcessor(NULL),
@@ -82,6 +81,6 @@ void Session::remove (Processor* processor)
   m_rootProcessor->remove(processor);
 }
 
-} // Unison
+} // Core
 
 // vim: ts=8 sw=2 sts=2 et sta noai

@@ -1,5 +1,5 @@
 /*
- * Command.h
+ * GuiCore_global.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,21 +22,15 @@
  *
  */
 
+#ifndef GUICORE_GLOBAL_H
+#define GUICORE_GLOBAL_H
 
-#ifndef UNISON_COMMAND_H
-#define UNISON_COMMAND_H
+#include <QtCore/qglobal.h>
 
-#include <QUndoCommand>
-
-namespace Core {
-
-/** A Command, used for commanding the models and for providing undo and
- *  redo support.  Typedefing QUndoCommand incase we need to add extra fields
- *  in the future. */
-typedef QUndoCommand Command;
-
-} // Core
-
+#if defined(GUICORE_EXTENSION)
+#  define GUICORE_EXPORT Q_DECL_EXPORT
+#else
+#  define GUICORE_EXPORT Q_DECL_IMPORT
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+#endif

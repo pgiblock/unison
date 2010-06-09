@@ -23,17 +23,15 @@
  */
 
 
-#ifndef UNISON_GUICOREEXTENSION_H
-#define UNISON_GUICOREEXTENSION_H
+#ifndef UNISON_LV2EXTENSION_H
+#define UNISON_LV2EXTENSION_H
 
 #include <extensionsystem/IExtension.h>
 
 namespace Lv2 {
-//class DesignMode;
 namespace Internal {
 
-//class EditMode;
-//class MainWindow;
+class Lv2PluginProvider;
 
 class Lv2Extension : public ExtensionSystem::IExtension
 {
@@ -46,21 +44,19 @@ public:
   virtual bool initialize(const QStringList &arguments, QString *errorMessage = 0);
   virtual void extensionsInitialized();
   virtual void shutdown();
-  virtual void remoteCommand(const QStringList & /* options */, const QStringList &args);
+  virtual void remoteCommand(const QStringList &options, const QStringList &args);
 
 //public slots:
 //    void fileOpenRequest(const QString&);
 
 private:
-  void parseArguments(const QStringList & arguments);
+  void parseArguments(const QStringList &arguments);
 
-//    MainWindow *m_mainWindow;
-//    EditMode *m_editMode;
-//    DesignMode *m_designMode;
+  Lv2PluginProvider *m_pluginProvider;
 };
 
 } // namespace Internal
-} // namespace Core
+} // namespace Lv2
 
 #endif
 

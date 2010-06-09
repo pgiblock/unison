@@ -23,26 +23,44 @@
 
 configure_file(Lv2.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
+add_definitions(-DLV2_EXTENSION)
+
+set(UNISON_BUFFER_LENGTH "1024" CACHE STRING
+    "Audio buffer length. A work-around until runtime change is supported.")
+
+
 set(LV2_SRCS
     Lv2Extension.cpp
+    Lv2Plugin.cpp
+    Lv2PluginProvider.cpp
+    Lv2Port.cpp
 )
 
 set(LV2_MOC_HEADERS
     Lv2Extension.h
+    Lv2PluginProvider.h
 )
 
 qt4_wrap_cpp(LV2_MOC_SRCS ${LV2_MOC_HEADERS})
 
-include_directories(${COMMON_LIBS_INCLUDE_DIR})
+include_directories(.. ${COMMON_LIBS_INCLUDE_DIR} ${PRG_INCLUDE_DIR})
 
 add_library(Lv2 SHARED ${LV2_MOC_SRCS} ${LV2_SRCS})
 
 target_link_libraries(Lv2
     ${QT_LIBRARIES}
+    ${SLV2_LIBRARY}
+    #${RDF_LIBRARY}
     aggregation
     extensionsystem
+    unison
+    Core
+)
+
+set_target_properties(Lv2 PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${EXTENSIONS_RPATH}"
 )
 
 set(INSTALL_DIR lib/unison/extensions)
 install(FILES   Lv2.extinfo  DESTINATION ${INSTALL_DIR})
-install(TARGETS Lv2    LIBRARY  DESTINATION ${INSTALL_DIR})
+install(TARGETS Lv2 LIBRARY  DESTINATION ${INSTALL_DIR})

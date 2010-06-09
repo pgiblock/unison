@@ -29,11 +29,7 @@
 #include <extensionsystem/IExtension.h>
 
 namespace GuiCore {
-//class DesignMode;
 namespace Internal {
-
-//class EditMode;
-//class MainWindow;
 
 class GuiCoreExtension : public ExtensionSystem::IExtension
 {
@@ -46,21 +42,14 @@ public:
   virtual bool initialize(const QStringList &arguments, QString *errorMessage = 0);
   virtual void extensionsInitialized();
   virtual void shutdown();
-  virtual void remoteCommand(const QStringList & /* options */, const QStringList &args);
-
-//public slots:
-//    void fileOpenRequest(const QString&);
+  virtual void remoteCommand(const QStringList &options, const QStringList &args);
 
 private:
-  void parseArguments(const QStringList & arguments);
-
-//    MainWindow *m_mainWindow;
-//    EditMode *m_editMode;
-//    DesignMode *m_designMode;
+  void parseArguments(const QStringList &arguments);
 };
 
 } // namespace Internal
-} // namespace Core
+} // namespace GuiCore
 
 #endif
 

@@ -21,7 +21,10 @@
 # Boston, MA 02110-1301 USA.
 #
 
+set(EXTENSIONS_RPATH ${CMAKE_INSTALL_PREFIX}/lib/unison/extensions)
+
 add_subdirectory(core)
 add_subdirectory(guicore)
 add_subdirectory(jack)
 add_subdirectory(lv2)
+

@@ -27,16 +27,14 @@
 
 configure_file(Core.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
-add_definitions(-DCORE_EXTENSION)
-
 set(CORE_SRCS
     CoreExtension.cpp
-    PluginManager.cpp
+    #PluginManager.cpp
+    #Session.cpp
 )
 
 set(CORE_MOC_HEADERS
     CoreExtension.h
-    IPluginProvider.h
 )
 
 qt4_wrap_cpp(CORE_MOC_SRCS ${CORE_MOC_HEADERS})

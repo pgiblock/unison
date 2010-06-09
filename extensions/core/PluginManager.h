@@ -2,7 +2,6 @@
  * PluginManager.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
- * Copyright (c) 2009 Martin Andrews <mdda/at/users.sourceforge.net>
  *
  * This file is part of Unison - http://unison.sourceforge.net
  *
@@ -29,39 +28,20 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include <QtCore/QMap>
-#include <QtCore/QPair>
 #include <QtCore/QString>
-#include <QtCore/QStringList>
 
-#include <slv2/world.h>
-#include <slv2/plugin.h>
-#include <slv2/scalepoint.h>
+#include "unison/Plugin.h"
 
-#include "unison/Lv2Plugin.h"
+namespace Core {
 
-#ifdef HAVE_SLV2_SCALEPOINTS_H
-#include <slv2/scalepoints.h>
-#endif
-
-namespace Unison
-{
-
-/** Provides a database of LV2 plug-ins.  Upon instantiation,
- *  it loads all of the plug-ins found in the LV2_PATH environmental variable
- *  and stores their access descriptors according in a dictionary keyed on
- *  the filename the plug-in was loaded from and the label of the plug-in.
- *  Can be retrieved by using lv2_key_t (which is really just the LV2 URI) */
 class PluginManager
 {
   public:
 
-    /** Describes the requested plugin.  Right now, only LV2 plugins are
-     *  supported. This could take a param, or split into multiple functions
-     *  for distinguishing between LADSPA, VST, etc..
+    /** Describes the requested plugin.  
      *  @param plugin  The URI of the plugin to describe
      *  @return The Plugin Descriptor */
-    PluginDescriptorPtr descriptor (const QString plugin);
+    Unison::PluginDescriptorPtr descriptor (const QString plugin);
 
     /** Creates our singleton instance.  Must be called during application
      *  boot. */
@@ -91,17 +71,11 @@ class PluginManager
     virtual ~PluginManager ();
 
   private:
-    void addLv2Plugin (SLV2Plugin _plugin);
-
-    Lv2World m_lv2World;
-
-    typedef QMap<QString, PluginDescriptorPtr> Lv2PluginDescriptorMap;
-    Lv2PluginDescriptorMap m_lv2DescriptorMap;
 
     static PluginManager * m_instance;
 };
 
-} // Unison
+} // Core
 
 #endif
 

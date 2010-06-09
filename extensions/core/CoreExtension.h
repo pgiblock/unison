@@ -29,11 +29,7 @@
 #include <extensionsystem/IExtension.h>
 
 namespace Core {
-//class DesignMode;
 namespace Internal {
-
-//class EditMode;
-//class MainWindow;
 
 class CoreExtension : public ExtensionSystem::IExtension
 {

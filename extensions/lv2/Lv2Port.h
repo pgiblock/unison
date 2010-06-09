@@ -25,14 +25,15 @@
 #ifndef UNISON_LV2_PORT_H
 #define UNISON_LV2_PORT_H
 
+#include "Lv2Plugin.h"
+
+#include <unison/Port.h>
+#include <unison/types.h>
+
 #include <slv2/slv2.h>
 
-#include "unison/Lv2Plugin.h"
-#include "unison/Port.h"
-#include "unison/types.h"
-
-namespace Unison
-{
+namespace Lv2 {
+namespace Internal {
 
 /** A Port on a plugin.  I wonder if we should be calling slv2 functions, or
  *  maybe we should just copy all the data into the class?  Another idea is a
@@ -40,7 +41,7 @@ namespace Unison
  *  is needed for Lv2, VST, DSSI, plugins..
  *  Overall, Lv2Port does alot of stuff that should be reused when
  *  implementing ports for other processor types (VST etc..) */
-class Lv2Port : public Port
+class Lv2Port : public Unison::Port
 {
   public:
     Lv2Port (const Lv2World & world, Lv2Plugin * plugin, uint32_t index);
@@ -49,8 +50,8 @@ class Lv2Port : public Port
 
     QString id () const;
     QString name () const;
-    PortType type () const;
-    PortDirection direction () const;
+    Unison::PortType type () const;
+    Unison::PortDirection direction () const;
 
     float value () const;
     void setValue (float value);
@@ -82,14 +83,14 @@ class Lv2Port : public Port
     }
 
     Node* parent () const;
-    const QSet<Node* const> interfacedNodes () const;
+    const QSet<Unison::Node* const> interfacedNodes () const;
 
-    void connectToBuffer (BufferProvider & provider);
+    void connectToBuffer (Unison::BufferProvider & provider);
 
 
   private:
-    void acquireInputBuffer (BufferProvider& provider);
-    void acquireOutputBuffer (BufferProvider& provider);
+    void acquireInputBuffer (Unison::BufferProvider& provider);
+    void acquireOutputBuffer (Unison::BufferProvider& provider);
     void updateBufferValue ();
 
     const Lv2World & m_world;
@@ -104,7 +105,8 @@ class Lv2Port : public Port
     bool  m_isSampleRate;
 };
 
-} // Unison
+} // Internal
+} // Lv2
 
 #endif
 

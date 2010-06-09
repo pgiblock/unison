@@ -1,31 +1,26 @@
-/**************************************************************************
-**
-** This file is part of Qt Creator
-**
-** Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
-**
-** Contact: Nokia Corporation (qt-info@nokia.com)
-**
-** Commercial Usage
-**
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Nokia.
-**
-** GNU Lesser General Public License Usage
-**
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
-**
-**************************************************************************/
+/*
+ * CoreExtension.cpp
+ *
+ * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
+ *
+ * This file is part of Unison - http://unison.sourceforge.net
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program (see COPYING); if not, write to the
+ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301 USA.
+ *
+ */
 
 #include "CoreExtension.h"
 /*
@@ -74,6 +69,7 @@ CoreExtension::~CoreExtension()
 
 void CoreExtension::parseArguments(const QStringList &arguments)
 {
+  Q_UNUSED(arguments)
   /*
   for (int i = 0; i < arguments.size() - 1; i++) {
     if (arguments.at(i) == QLatin1String("-color")) {
@@ -88,6 +84,7 @@ void CoreExtension::parseArguments(const QStringList &arguments)
 
 bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessage)
 {
+  Q_UNUSED(errorMessage);
   parseArguments(arguments);
   /*
   const bool success = m_mainWindow->init(errorMessage);
@@ -114,6 +111,7 @@ void CoreExtension::extensionsInitialized()
 void CoreExtension::remoteCommand(const QStringList &options, const QStringList &args)
 {
   Q_UNUSED(options)
+  Q_UNUSED(args)
   //m_mainWindow->openFiles(args);
   //m_mainWindow->activateWindow();
 }

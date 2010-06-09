@@ -27,6 +27,8 @@
 
 configure_file(GuiCore.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
+add_definitions(-DGUICORE_EXTENSION)
+
 set(GUICORE_SRCS
     GuiCoreExtension.cpp
 )
@@ -45,6 +47,10 @@ target_link_libraries(GuiCore
     ${QT_LIBRARIES}
     aggregation
     extensionsystem
+)
+
+set_target_properties(GuiCore PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${EXTENSIONS_RPATH}"
 )
 
 set(INSTALL_DIR lib/unison/extensions)

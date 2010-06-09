@@ -24,4 +24,4 @@
 add_subdirectory(aggregation)
 add_subdirectory(extensionsystem)
 add_subdirectory(prg)
-#add_subdirectory(unison)
+add_subdirectory(unison)

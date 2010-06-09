@@ -1,5 +1,5 @@
 /*
- * Command.h
+ * IPluginProvider.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,20 +22,35 @@
  *
  */
 
+#ifndef UNISON_IPLUGIN_PROVIDER_H
+#define UNISON_IPLUGIN_PROVIDER_H
 
-#ifndef UNISON_COMMAND_H
-#define UNISON_COMMAND_H
+#include "Core_global.h"
+#include "unison/Plugin.h"
 
-#include <QUndoCommand>
+#include <QtCore/QObject>
 
 namespace Core {
 
-/** A Command, used for commanding the models and for providing undo and
- *  redo support.  Typedefing QUndoCommand incase we need to add extra fields
- *  in the future. */
-typedef QUndoCommand Command;
+/** Provides a database of Plugins.  The PluginProvider interface abstracts
+ *  the features needed for listing and querying plugins for a specific plugin
+ *  technology.  Any extensions wishing to implement this functionality must
+ *  add their implemenation to ExtensionManager with addObject(), the
+ *  implementation will then be used by PluginManager.
+ */
+CORE_EXPORT class IPluginProvider : public QObject
+{
+  Q_OBJECT
+  public:
+    IPluginProvider(QObject *parent = 0) : QObject(parent) {};
+    virtual ~IPluginProvider() {};
+
+    virtual QString displayName() = 0;
+    virtual Unison::PluginDescriptorPtr descriptor(const QString uniqueId) = 0;
+};
 
 } // Core
+
 
 #endif
 

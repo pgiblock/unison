@@ -98,10 +98,9 @@ SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/unison")
 # which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
-
 #Internal location, TODO: Don't hardcode platform-specific paths!!
 set(PRG_INCLUDE_DIR    ${CMAKE_SOURCE_DIR}/libs/prg)
-set(UNISON_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/unison)
+set(UNISON_INCLUDE_DIR ) #${CMAKE_SOURCE_DIR}/libs/unison)
 set(COMMON_LIBS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs)
 
 #Directories

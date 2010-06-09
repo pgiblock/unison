@@ -27,11 +27,11 @@
 
 #include <QList>
 
+#include "Core_global.h"
 #include "prg/Uncopyable.h"
 #include "unison/ProcessingContext.h"
 
-namespace Unison
-{
+namespace Core {
 
 class CompositeProcessor;
 class PooledBufferProvider;
@@ -47,7 +47,7 @@ class Processor;
  * classes, but referenced from here.  A little like LMMS's Engine class except
  * theoretically multiple Sessions could possibly be open in the editor at the
  * same time. */
-class Session : PRG::Uncopyable
+CORE_EXPORT class Session : PRG::Uncopyable
 {
   public:
     Session (JackEngine& engine);
@@ -73,7 +73,7 @@ class Session : PRG::Uncopyable
     JackEngine* m_engine;
 };
 
-} // Unison
+} // Core
 
 #endif
 

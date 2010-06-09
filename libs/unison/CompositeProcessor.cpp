@@ -26,7 +26,6 @@
 
 #include "unison/Node.h"
 #include "unison/CompositeProcessor.h"
-#include "unison/Session.h"
 #include "unison/BufferProvider.h"
 
 namespace Unison

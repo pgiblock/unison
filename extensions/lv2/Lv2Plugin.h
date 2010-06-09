@@ -25,14 +25,15 @@
 #ifndef UNISON_LV2_PLUGIN_H
 #define UNISON_LV2_PLUGIN_H
 
+#include <unison/Plugin.h>
+#include <unison/types.h>
+
 #include <QVarLengthArray>
 #include <slv2/slv2.h>
 
-#include "unison/Plugin.h"
-#include "unison/types.h"
+namespace Lv2 {
+namespace Internal {
 
-namespace Unison
-{
 
 /** The SLV2World, and various cached (as symbols, fast) URIs.
  *  This object represents everything Unison 'knows' about LV2
@@ -64,10 +65,11 @@ struct Lv2World
 /** Plugin implementation for an Lv2Plugin.  Most values are queried directly
  *  from slv2 on demand.  It will probably be wise to cache some values when
  *  it is safe to do so (like num-ports, port-descriptors, etc..) */
-class Lv2Plugin : public Plugin
+class Lv2Plugin : public Unison::Plugin
 {
   public:
-    Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframes_t sampleRate);
+    Lv2Plugin (Lv2World& world, SLV2Plugin plugin,
+               Unison::nframes_t sampleRate);
     Lv2Plugin (const Lv2Plugin &);
 
     ~Lv2Plugin ();
@@ -97,8 +99,8 @@ class Lv2Plugin : public Plugin
       return slv2_plugin_get_num_ports(m_plugin);
     }
 
-    Port* port (int idx) const;
-    Port* port (QString name) const;
+    Unison::Port* port (int idx) const;
+    Unison::Port* port (QString name) const;
 
     /** @returns The underlying SLV2Plugin */
     SLV2Plugin slv2Plugin() const
@@ -115,27 +117,27 @@ class Lv2Plugin : public Plugin
     void activate ();
     void deactivate ();
 
-    void process(const ProcessingContext & context);
+    void process(const Unison::ProcessingContext & context);
 
-    const QSet<Node* const> dependencies () const;
-    const QSet<Node* const> dependents () const;
+    const QSet<Unison::Node* const> dependencies () const;
+    const QSet<Unison::Node* const> dependents () const;
 
     // TODO: loadState and saveState
 
   private:
-    Lv2World&      m_world;
-    SLV2Plugin     m_plugin;
-    QVarLengthArray<Port*, 16> m_ports;
-    nframes_t       m_sampleRate;
+    Lv2World&         m_world;
+    SLV2Plugin        m_plugin;
 
-    SLV2Instance   m_instance;
-    SLV2Value      m_name;
-    SLV2Value      m_authorName;
-    SLV2Value      m_authorEmail;
-    SLV2Value      m_authorHomepage;
-    SLV2Value      m_copyright;
+    SLV2Instance      m_instance;
+    SLV2Value         m_name;
+    SLV2Value         m_authorName;
+    SLV2Value         m_authorEmail;
+    SLV2Value         m_authorHomepage;
+    SLV2Value         m_copyright;
 
-    bool           m_activated;
+    bool              m_activated;
+    Unison::nframes_t m_sampleRate;
+    QVarLengthArray<Unison::Port*, 16> m_ports;
 
     void init ();
 };
@@ -145,20 +147,21 @@ class Lv2Plugin : public Plugin
 /** A description of a LV2 plugin.  This descriptor allows us to query LV2
  *  plugins without actually instantiating them.  This can be abstracted
  *  into a PluginDescriptor if othe plugin types are ever needed. */
-class Lv2PluginDescriptor : public PluginDescriptor
+class Lv2PluginDescriptor : public Unison::PluginDescriptor
 {
   public:
     Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin);
     Lv2PluginDescriptor (const Lv2PluginDescriptor& descriptor);
 
-    PluginPtr createPlugin (nframes_t sampleRate) const;
+    Unison::PluginPtr createPlugin (Unison::nframes_t sampleRate) const;
 
   private:
     Lv2World& m_world;
     SLV2Plugin m_plugin;
 };
 
-} // Unison
+} // Internal
+} // Lv2
 
 #endif
 

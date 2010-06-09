@@ -21,51 +21,48 @@
 # Boston, MA 02110-1301 USA.
 #
 
-add_subdirectory(unison) # Nothing really in here
-
 include(UseDoxygen)
 #set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
                ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
 
-set(UNISON_BUFFER_LENGTH "1024" CACHE STRING
-    "Audio buffer length. A work-around until runtime change is supported.")
 
-#file(GLOB UNISON_SRCS *.cpp)
 set(UNISON_SRCS
     CompositeProcessor.cpp
-    JackBufferProvider.cpp
-    JackEngine.cpp
-    JackPort.cpp
-    Lv2Plugin.cpp
-    Lv2Port.cpp
-    PluginManager.cpp
     PooledBufferProvider.cpp
     Port.cpp
     Processor.cpp
-    Session.cpp
 )
 
-#TODO: Move this back into the unison/CMakeLists if there is a good way to
-#      propagate a variable to the parent.
-set(UNISON_MOC_HEADERS
-    unison/JackEngine.h
+set(UNISON_INCLUDES
+    AudioBuffer.h
+    Buffer.h
+    BufferProvider.h
+    CompositeProcessor.h
+    ControlBuffer.h
+    Node.h
+    Plugin.h
+    PooledBufferProvider.h
+    Port.h
+    ProcessingContext.h
+    Processor.h
+    types.h
 )
 
 qt4_wrap_cpp(UNISON_MOC_SRCS ${UNISON_MOC_HEADERS})
 
-include_directories(${PRG_INCLUDE_DIR})
+include_directories(.. ${PRG_INCLUDE_DIR})
 
 add_definitions(-D'UNISON_BUFFER_LENGTH=${UNISON_BUFFER_LENGTH}')
 add_library(unison SHARED ${UNISON_MOC_SRCS} ${UNISON_SRCS})
 
 target_link_libraries(unison
-    ${JACK_LIBRARIES}
     ${QT_LIBRARIES}
-    ${RDF_LIBRARY}
-    ${SLV2_LIBRARY}
 )
 
 install(TARGETS unison LIBRARY
-        DESTINATION lib/)
+        DESTINATION lib/unison)
+
+install(FILES ${UNISON_INCLUDES}
+        DESTINATION include/unison/)

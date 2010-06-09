@@ -23,17 +23,13 @@
  */
 
 
-#ifndef UNISON_GUICOREEXTENSION_H
-#define UNISON_GUICOREEXTENSION_H
+#ifndef UNISON_JACKEXTENSION_H
+#define UNISON_JACKEXTENSION_H
 
 #include <extensionsystem/IExtension.h>
 
 namespace Jack {
-//class DesignMode;
 namespace Internal {
-
-//class EditMode;
-//class MainWindow;
 
 class JackExtension : public ExtensionSystem::IExtension
 {
@@ -46,21 +42,14 @@ public:
   virtual bool initialize(const QStringList &arguments, QString *errorMessage = 0);
   virtual void extensionsInitialized();
   virtual void shutdown();
-  virtual void remoteCommand(const QStringList & /* options */, const QStringList &args);
-
-//public slots:
-//    void fileOpenRequest(const QString&);
+  virtual void remoteCommand(const QStringList &options, const QStringList &args);
 
 private:
-  void parseArguments(const QStringList & arguments);
-
-//    MainWindow *m_mainWindow;
-//    EditMode *m_editMode;
-//    DesignMode *m_designMode;
+  void parseArguments(const QStringList &arguments);
 };
 
 } // namespace Internal
-} // namespace Core
+} // namespace Jack
 
 #endif
 

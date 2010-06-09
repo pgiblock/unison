@@ -22,13 +22,17 @@
  *
  */
 
+#include "Lv2Port.h"
+
+#include <unison/BufferProvider.h>
+
 #include <QDebug>
 #include <QSet>
-#include "unison/Lv2Port.h"
-#include "unison/BufferProvider.h"
 
-namespace Unison
-{
+using namespace Lv2::Internal;
+using namespace Unison;
+
+#define UNISON_BUFFER_LENGTH 1024
 
 Lv2Port::Lv2Port (const Lv2World& world, Lv2Plugin* plugin, uint32_t index) :
   Port(),
@@ -200,6 +204,7 @@ void Lv2Port::acquireInputBuffer (BufferProvider& provider)
   }
 }
 
+
 void Lv2Port::acquireOutputBuffer (BufferProvider& provider)
 {
   int numConnections = dependents().count();
@@ -216,9 +221,5 @@ void Lv2Port::acquireOutputBuffer (BufferProvider& provider)
     m_buffer = provider.acquire(type(), UNISON_BUFFER_LENGTH);
   }
 }
-
-
-
-} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai
