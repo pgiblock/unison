@@ -22,7 +22,6 @@
 #
 
 include(FindQt4)
-include(FindSoprano)
 
 set(EXTENSIONSYSTEM_SRCS
     IExtension.cpp
@@ -50,7 +49,6 @@ set(EXTENSIONSYSTEM_MOC_HEADERS
 qt4_wrap_cpp(EXTENSIONSYSTEM_MOC_SRCS ${EXTENSIONSYSTEM_MOC_HEADERS})
 
 include_directories(
-    ${SOPRANO_INCLUDE_DIRS}
     ..
 )
 
@@ -58,7 +56,6 @@ add_library(extensionsystem SHARED ${EXTENSIONSYSTEM_MOC_SRCS} ${EXTENSIONSYSTEM
     
 target_link_libraries(extensionsystem
     ${QT_LIBRARIES}
-    ${SOPRANO_LIBRARIES}
     aggregation
 )
 
