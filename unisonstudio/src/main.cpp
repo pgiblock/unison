@@ -22,13 +22,13 @@
  *
  */
 
-#include <QtCore/QDir>
-#include <QtCore/QDebug>
-#include <QtCore/QSettings>
+#include <QDir>
+#include <QDebug>
+#include <QSettings>
 
 #include <QtNetwork/QNetworkProxyFactory>
 
-#include <QtGui/QApplication>
+#include <QApplication>
 
 #include "extensionsystem/ExtensionManager.h"
 #include "extensionsystem/ExtensionInfo.h"

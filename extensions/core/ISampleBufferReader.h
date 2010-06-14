@@ -28,7 +28,7 @@
 #include "Core_global.h"
 
 #include <unison/SampleBuffer.h>
-#include <QtCore/QObject>
+#include <QObject>
 
 namespace Core {
 

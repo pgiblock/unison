@@ -33,9 +33,9 @@
 #include "extensionsystem_global.h"
 #include <aggregation/aggregate.h>
 
-#include <QtCore/QObject>
-#include <QtCore/QStringList>
-#include <QtCore/QReadWriteLock>
+#include <QObject>
+#include <QStringList>
+#include <QReadWriteLock>
 
 QT_BEGIN_NAMESPACE
 class QTextStream;

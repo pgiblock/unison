@@ -32,11 +32,11 @@
 
 #include "ExtensionInfo.h"
 
-#include <QtCore/QList>
-#include <QtCore/QSet>
-#include <QtCore/QStringList>
-#include <QtCore/QObject>
-#include <QtCore/QScopedPointer>
+#include <QList>
+#include <QSet>
+#include <QStringList>
+#include <QObject>
+#include <QScopedPointer>
 
 QT_BEGIN_NAMESPACE
 class QTime;

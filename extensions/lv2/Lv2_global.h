@@ -25,7 +25,7 @@
 #ifndef LV2_GLOBAL_H
 #define LV2_GLOBAL_H
 
-#include <QtCore/qglobal.h>
+#include <qglobal.h>
 
 #if defined(LV2_EXTENSION)
 #  define LV2_EXPORT Q_DECL_EXPORT

@@ -25,7 +25,7 @@
 #ifndef CORE_GLOBAL_H
 #define CORE_GLOBAL_H
 
-#include <QtCore/qglobal.h>
+#include <qglobal.h>
 
 #if defined(CORE_EXTENSION)
 #  define CORE_EXPORT Q_DECL_EXPORT

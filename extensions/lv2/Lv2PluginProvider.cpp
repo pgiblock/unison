@@ -22,11 +22,11 @@
  *
  */
 
-#include <QtCore/QDir>
-#include <QtCore/QFileInfo>
-#include <QtCore/QLibrary>
-#include <QtCore/QFile>
-#include <QtCore/QTextStream>
+#include <QDir>
+#include <QFileInfo>
+#include <QLibrary>
+#include <QFile>
+#include <QTextStream>
 
 #include <math.h>
 

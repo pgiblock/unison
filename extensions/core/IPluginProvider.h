@@ -28,7 +28,7 @@
 #include "Core_global.h"
 #include "unison/Plugin.h"
 
-#include <QtCore/QObject>
+#include <QObject>
 
 namespace Core {
 

@@ -35,13 +35,13 @@
 #include "IExtension.h"
 #include "ExtensionCollection.h"
 
-#include <QtCore/QMetaProperty>
-#include <QtCore/QDir>
-#include <QtCore/QTextStream>
-#include <QtCore/QWriteLocker>
-#include <QtCore/QTime>
-#include <QtCore/QDateTime>
-#include <QtCore/QSettings>
+#include <QMetaProperty>
+#include <QDir>
+#include <QTextStream>
+#include <QWriteLocker>
+#include <QTime>
+#include <QDateTime>
+#include <QSettings>
 #include <QtDebug>
 #ifdef WITH_TESTS
 #include <QTest>

@@ -25,7 +25,7 @@
 #ifndef JACK_GLOBAL_H
 #define JACK_GLOBAL_H
 
-#include <QtCore/qglobal.h>
+#include <qglobal.h>
 
 #if defined(JACK_EXTENSION)
 #  define JACK_EXPORT Q_DECL_EXPORT
