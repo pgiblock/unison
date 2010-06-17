@@ -34,10 +34,10 @@
 using namespace ExtensionSystem;
 using namespace ExtensionSystem::Internal;
 
-static const char END_OF_OPTIONS[] = "--";
-const char *OptionsParser::NO_LOAD_OPTION = "-noload";
-const char *OptionsParser::TEST_OPTION = "-test";
-const char *OptionsParser::PROFILE_OPTION = "-profile";
+static const char END_OF_OPTIONS[] = "---";
+const char *OptionsParser::NO_LOAD_OPTION = "--noload";
+const char *OptionsParser::TEST_OPTION = "--test";
+const char *OptionsParser::PROFILE_OPTION = "--profile";
 
 OptionsParser::OptionsParser(const QStringList &args,
         const QMap<QString, bool> &appOptions,
