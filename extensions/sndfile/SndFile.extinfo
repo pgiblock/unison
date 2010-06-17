@@ -16,8 +16,7 @@ You should have received a copy of the GNU General Public License along with
 this softawre. If not, see http://www.gnu.org/licenses/.
     </license>
     <description>
-The sndfile plugin for Unison Studio. Allows reading of various popular
-sound file formats such as WAV,FLAC,VOC,RAW,...
+Support for wav, snd, raw, voc, and more file formats
     </description>
     <url>http://www.unisonstudio.org</url>
     <dependencies>

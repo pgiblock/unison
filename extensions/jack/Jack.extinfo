@@ -15,7 +15,7 @@ details.
 You should have received a copy of the GNU General Public License along with
 this softawre. If not, see http://www.gnu.org/licenses/.
     </license>
-    <description>The JACK plugin for Unison Studio.</description>
+    <description>Supports JACK server as a backend</description>
     <url>http://www.unisonstudio.org</url>
     <dependencies>
         <dependency name="Core" version="0.0.1"/>
