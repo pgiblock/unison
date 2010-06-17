@@ -1,5 +1,5 @@
 /*
- * ISampleBufferReader.h
+ * SndFileBufferReader.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,18 +22,16 @@
  *
  */
 
-#ifndef UNISON_ISAMPLE_BUFFER_READER_H
-#define UNISON_ISAMPLE_BUFFER_READER_H
+#ifndef UNISON_SNDFILE_BUFFER_READER_H
+#define UNISON_SNDFILE_BUFFER_READER_H
 
-#include "Core_global.h"
+#include "SndFile_global.h"
 
+#include <core/ISampleBufferReader.h>
 #include <QObject>
 
-namespace Unison {
-  class SampleBuffer;
-}
-
-namespace Core {
+namespace SndFile {
+namespace Internal {
 
 /**
  * Provides an interface for readers capable of reading SampleBuffers from a
@@ -42,14 +40,21 @@ namespace Core {
  * implemenation to ExtensionManager with addObject(), the implementation will
  * then be used by PluginManager.
  * All ISampleBufferReader implementations MUST be reentrant.*/
-CORE_EXPORT class ISampleBufferReader : public QObject
+class SndFileBufferReader : public Core::ISampleBufferReader
 {
   Q_OBJECT
   public:
-    ISampleBufferReader(QObject *parent = 0) : QObject(parent) {};
-    virtual ~ISampleBufferReader() {};
+    SndFileBufferReader (QObject *parent = 0) :
+      Core::ISampleBufferReader(parent)
+    {};
 
-    virtual QString displayName() = 0;
+    ~SndFileBufferReader ()
+    {};
+
+    QString displayName ()
+    {
+      return "libsndfile buffer reader.";
+    };
 
     /**
      * Read a SampleBuffer out of the given filename.  The function returns
@@ -58,14 +63,11 @@ CORE_EXPORT class ISampleBufferReader : public QObject
      *
      * @param fileName the name of the file to attempt reading.
      * @return non-zero pointer on success, null on failure */
-    virtual Unison::SampleBuffer *read(const QString &fileName) = 0;
-
-    //virtual Core::SampleBuffer *read(const QIODevice &io) = 0;
-    //virtual QStringList mimeTypes() const = 0;
-
+    Unison::SampleBuffer *read (const QString &fileName);
 };
 
-} // Core
+} // Internal
+} // SndFile
 
 
 #endif
