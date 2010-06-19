@@ -72,9 +72,9 @@ Unison::SampleBuffer *SndFileBufferReader::read (const QString &filename)
     ; // Error
 
   // Read from it.
-  short *buf = NULL;
+  float *buf = NULL;
   sf_count_t amount = sf_info.channels * sf_info.frames;
-  if (sf_read_short(snd_file, buf, amount) < amount)
+  if (sf_read_float(snd_file, buf, amount) < amount)
     ; // Error
 
   // Close file.

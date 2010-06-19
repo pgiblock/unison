@@ -1,15 +1,23 @@
 #ifndef UNISON_SAMPLE_BUFFER_H
 #define UNISON_SAMPLE_BUFFER_H
 
+#define DEFAULT_CHANNELS 2
+
 namespace Unison
 {
+
+typedef float sample_t;
+typedef sample_t sampleFrame[DEFAULT_CHANNELS];
 
 class SampleBuffer
 {
   public:
-    SampleBuffer(short *buf, int frames): m_data(buf), m_frames(frames) {}
+    SampleBuffer(float *buf, int frames)
+  {
+    //m_data = new 
+  }
   private:
-    short *m_data;
+    sampleFrame *m_data;
     int m_frames;
 };
 
