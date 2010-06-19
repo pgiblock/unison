@@ -25,6 +25,7 @@
 #include <sndfile.h>
 
 #include "SndFileBufferReader.h"
+#include "unison/SampleBuffer.h"
 
 using namespace SndFile::Internal;
 using namespace Core;
@@ -79,7 +80,10 @@ Unison::SampleBuffer *SndFileBufferReader::read (const QString &filename)
   // Close file.
   sf_close(snd_file);
 
-  return NULL;
+  // Create and return a SampleBuffer .
+  Unison::SampleBuffer *temp = new Unison::SampleBuffer(buf, sf_info.frames);
+
+  return temp;
 }
 
 // vim: ts=8 sw=2 sts=2 et sta noai

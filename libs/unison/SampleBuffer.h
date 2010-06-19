@@ -6,8 +6,10 @@ namespace Unison
 
 class SampleBuffer
 {
-private:
-    void* m_data;
+  public:
+    SampleBuffer(short *buf, int frames): m_data(buf), m_frames(frames) {}
+  private:
+    short *m_data;
     int m_frames;
 };
 
