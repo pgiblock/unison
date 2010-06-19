@@ -6,9 +6,20 @@
 namespace Unison
 {
 
+/** A float is a common abstraction for a sample.  We use float all throughout 
+ * Unison - manipulating integer samples will cause bad aliasing.  Why not 
+ * make it int anyways? because the SndFile loader is not the only file 
+ * format - perhaps some formats only support float.
+ */
 typedef float sample_t;
+
 typedef sample_t sampleFrame[DEFAULT_CHANNELS];
 
+/** A buffer of samples
+ *
+ * When a buffer of samples is replayed, it should recreate a wave.  A frame 
+ * is a timeslice, and a sample is the value of a wave at a particular time.
+ */
 class SampleBuffer
 {
   public:
