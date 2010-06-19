@@ -40,6 +40,7 @@ set(UNISON_INCLUDES
     Port.h
     ProcessingContext.h
     Processor.h
+    SampleBuffer.h
     types.h
 )
 
