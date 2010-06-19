@@ -69,21 +69,26 @@ Unison::SampleBuffer *SndFileBufferReader::read (const QString &filename)
   SF_INFO sf_info;
   snd_file = sf_open(filename.toLatin1(), SFM_READ, &sf_info);
   if (snd_file == NULL)
-    ; // Error
+  {
+    // Error
+  }
 
   // Read from it.
-  float *buf = NULL;
   sf_count_t amount = sf_info.channels * sf_info.frames;
+  float *buf = new Unison::sample_t[amount];
   if (sf_read_float(snd_file, buf, amount) < amount)
-    ; // Error
+  {
+    // Error
+  }
 
   // Close file.
   sf_close(snd_file);
 
   // Create and return a SampleBuffer .
-  Unison::SampleBuffer *temp = new Unison::SampleBuffer(buf, sf_info.frames);
+  Unison::SampleBuffer *sampleBuffer = new Unison::SampleBuffer(buf, sf_info.frames, sf_info.channels, sf_info.samplerate);
+  delete buf;
 
-  return temp;
+  return sampleBuffer;
 }
 
 // vim: ts=8 sw=2 sts=2 et sta noai

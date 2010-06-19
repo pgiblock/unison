@@ -12,13 +12,15 @@ typedef sample_t sampleFrame[DEFAULT_CHANNELS];
 class SampleBuffer
 {
   public:
-    SampleBuffer(float *buf, int frames)
-  {
-    //m_data = new 
-  }
+    SampleBuffer(float *buf, int frames, int channels, int samplerate):
+      m_data(buf), m_frames(frames), m_channels(channels), m_samplerate(samplerate)
+  {}
+
   private:
-    sampleFrame *m_data;
+    sample_t *m_data;
     int m_frames;
+    int m_channels;
+    int m_samplerate;
 };
 
 }
