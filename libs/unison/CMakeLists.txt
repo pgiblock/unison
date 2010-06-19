@@ -26,6 +26,7 @@ set(UNISON_SRCS
     PooledBufferProvider.cpp
     Port.cpp
     Processor.cpp
+    SampleBuffer.cpp
 )
 
 set(UNISON_INCLUDES

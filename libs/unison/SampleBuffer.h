@@ -9,7 +9,7 @@ class SampleBuffer
 private:
     void* m_data;
     int m_frames;
-}
+};
 
 }
 
