@@ -48,6 +48,8 @@ SndFileExtension::~SndFileExtension()
 bool SndFileExtension::initialize(const QStringList &arguments, QString *errorMessage)
 {
   Q_UNUSED(errorMessage)
+  Q_UNUSED(arguments)
+  addObject(m_bufferReader);
   return true;
 }
 
