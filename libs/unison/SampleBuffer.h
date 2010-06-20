@@ -13,12 +13,21 @@ namespace Unison
  */
 typedef float sample_t;
 
+/** A sampleFrame is 2 floats (for stereo). */
 typedef sample_t sampleFrame[DEFAULT_CHANNELS];
 
-/** A buffer of samples
+/** A buffer of samples.
  *
  * When a buffer of samples is replayed, it should recreate a wave.  A frame 
  * is a timeslice, and a sample is the value of a wave at a particular time.
+ *
+ * The difference between a SampleBuffer and an AudioBuffer is that the former 
+ * represents an "audio resource" - something that is loaded, recorded, 
+ * generated.. something that cannot be modified (at least for now).  
+ * AudioBuffer, on the other hand, does not represent an external resource, 
+ * and CAN be modified - it acts like a FIFO between 2 different processors.  
+ * For example, an outputPort and an inputPort communicate via a shared 
+ * AudioBuffer.
  */
 class SampleBuffer
 {
