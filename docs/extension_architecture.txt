@@ -9,8 +9,20 @@ libs/
     aggregation/
         Aggregate               // Allow bundling of objects together in lieu of multiple-inheritance
 
-plugins/
+    prg/                        // Paul R Giblock's utilities    
 
+    unison/                     // Unison libraries
+        Node
+        Processor
+        CompositeProcessor
+        Plugin
+        Port
+        (*)Buffer
+        (*)BufferProvider
+        ProcessingContext
+
+
+extensions/
     core/                       // # http://unisonstudio.org/ns/core
         CorePlugin              // creates managers, access to non-singleton managers, holds onto some global state
         IEngine                 // The engine that manages external audio/midi connections and invokes processing
@@ -58,6 +70,18 @@ plugins/
         VstPlugin               // Provide support for VST and VSTi Modules
         VstModule               // implementation of a VST processing module
         VstModuleFactory        // enumeration and instantiation of VST modules
+
+    sndfile/
+
+    mp3/
+
+    drumsynth/
+
+    oggvorbis/
+
+    flac/
+
+    aac/
 
     gui_core/                   // # http://unisonstudio.org/ns/gui_core
         GuiCorePlugin           // Creation of main-window, hooks into decorating the gui with widgets and stuff
