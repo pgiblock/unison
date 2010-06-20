@@ -23,6 +23,7 @@
 
 set(UNISON_SRCS
     CompositeProcessor.cpp
+    FxLine.cpp
     PooledBufferProvider.cpp
     Port.cpp
     Processor.cpp
@@ -35,6 +36,7 @@ set(UNISON_INCLUDES
     BufferProvider.h
     CompositeProcessor.h
     ControlBuffer.h
+    FxLine.h
     Node.h
     Plugin.h
     PooledBufferProvider.h
@@ -47,7 +49,7 @@ set(UNISON_INCLUDES
 
 qt4_wrap_cpp(UNISON_MOC_SRCS ${UNISON_MOC_HEADERS})
 
-include_directories(.. ${PRG_INCLUDE_DIR})
+include_directories(.. ${PRG_INCLUDE_DIR} ${PROJECT_SOURCE_DIR})
 
 add_definitions(-D'UNISON_BUFFER_LENGTH=${UNISON_BUFFER_LENGTH}')
 add_library(unison SHARED ${UNISON_MOC_SRCS} ${UNISON_SRCS})
