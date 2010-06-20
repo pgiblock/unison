@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt - CMake for extensions
+# CMakeLists.txt - libvorbisfile extension CMake file
 #
 # Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
 #
@@ -21,11 +21,36 @@
 # Boston, MA 02110-1301 USA.
 #
 
-set(EXTENSIONS_RPATH ${CMAKE_INSTALL_PREFIX}/lib/unison/extensions)
+configure_file(OggVorbis.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
-add_subdirectory(core)
-add_subdirectory(guicore)
-add_subdirectory(jack)
-add_subdirectory(lv2)
-add_subdirectory(oggvorbis)
-add_subdirectory(sndfile)
+add_definitions(-DOGGVORBIS_EXTENSION)
+
+set(OGGVORBIS_SRCS
+    OggVorbisExtension.cpp
+)
+
+set(OGGVORBIS_MOC_HEADERS
+    OggVorbisExtension.h
+)
+
+qt4_wrap_cpp(OGGVORBIS_MOC_SRCS ${OGGVORBIS_MOC_HEADERS})
+
+include_directories(.. ${COMMON_LIBS_INCLUDE_DIR})
+
+add_library(OggVorbis SHARED ${OGGVORBIS_MOC_SRCS} 
+    ${OGGVORBIS_SRCS})
+
+target_link_libraries(OggVorbis
+    ${QT_LIBRARIES}
+    aggregation
+    extensionsystem
+    Core
+)
+
+set_target_properties(OggVorbis PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${EXTENSIONS_RPATH}"
+)
+
+set(INSTALL_DIR lib/unison/extensions)
+install(FILES   OggVorbis.extinfo  DESTINATION ${INSTALL_DIR})
+install(TARGETS OggVorbis LIBRARY  DESTINATION ${INSTALL_DIR})
