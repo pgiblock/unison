@@ -23,8 +23,8 @@
  */
 
 
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef UNISON_TYPES_H
+#define UNISON_TYPES_H
 
 #include <stdint.h>
 
@@ -34,10 +34,15 @@ namespace Unison
 typedef uint32_t nframes_t;
 typedef uint32_t nticks_t;
 
+/** A float is a common abstraction for a sample.  We use float all throughout 
+ * Unison - manipulating integer samples will cause aliasing etc..
+ */
+typedef float sample_t;
+
 enum PortType { AUDIO_PORT=1, CONTROL_PORT=2, MIDI_PORT=4, UNKNOWN_PORT=0 };
 enum PortDirection { INPUT=1, OUTPUT=2 };
 
 } // Unison
 
-#endif // TYPES_H
+#endif // UNISON_TYPES_H
 
