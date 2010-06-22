@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt - CMake for extensions
+# CMakeLists.txt - libflac++ extension CMake file
 #
 # Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
 #
@@ -21,11 +21,37 @@
 # Boston, MA 02110-1301 USA.
 #
 
-set(EXTENSIONS_RPATH ${CMAKE_INSTALL_PREFIX}/lib/unison/extensions)
+configure_file(FLACPP.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
-add_subdirectory(core)
-add_subdirectory(flac)
-add_subdirectory(guicore)
-add_subdirectory(jack)
-add_subdirectory(lv2)
-add_subdirectory(sndfile)
+add_definitions(-DFLACPP_EXTENSION)
+
+set(FLACPP_SRCS
+    FLACPPExtension.cpp
+    FLACPPBufferReader.cpp
+)
+
+set(FLACPP_MOC_HEADERS
+    FLACPPExtension.h
+    FLACPPBufferReader.h
+)
+
+qt4_wrap_cpp(FLACPP_MOC_SRCS ${FLACPP_MOC_HEADERS})
+
+include_directories(.. ${COMMON_LIBS_INCLUDE_DIR})
+
+add_library(FLACPP SHARED ${FLACPP_MOC_SRCS} ${FLACPP_SRCS})
+
+target_link_libraries(FLACPP
+    ${QT_LIBRARIES}
+    aggregation
+    extensionsystem
+    Core
+)
+
+set_target_properties(FLACPP PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${EXTENSIONS_RPATH}"
+)
+
+set(INSTALL_DIR lib/unison/extensions)
+install(FILES   FLACPP.extinfo  DESTINATION ${INSTALL_DIR})
+install(TARGETS FLACPP LIBRARY  DESTINATION ${INSTALL_DIR})
