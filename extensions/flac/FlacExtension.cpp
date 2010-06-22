@@ -1,5 +1,5 @@
 /*
- * FLACPPExtension.cpp
+ * FlacExtension.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,30 +22,30 @@
  *
  */
 
-#include "FLACPPExtension.h"
-#include "FLACPPBufferReader.h"
+#include "FlacExtension.h"
+#include "FlacBufferReader.h"
 
 #include <extensionsystem/ExtensionManager.h>
 
 #include <QtPlugin>
 
-using namespace FLACPP;
-using namespace FLACPP::Internal;
+using namespace Flac;
+using namespace Flac::Internal;
 
-FLACPPExtension::FLACPPExtension()
+FlacExtension::FlacExtension()
 {
-  m_bufferReader = new FLACPPBufferReader();
+  m_bufferReader = new FlacBufferReader();
 }
 
 
-FLACPPExtension::~FLACPPExtension()
+FlacExtension::~FlacExtension()
 {
   removeObject(m_bufferReader);
   delete m_bufferReader;
 }
 
 
-bool FLACPPExtension::initialize(const QStringList &arguments, QString *errorMessage)
+bool FlacExtension::initialize(const QStringList &arguments, QString *errorMessage)
 {
   Q_UNUSED(errorMessage)
   Q_UNUSED(arguments)
@@ -54,22 +54,22 @@ bool FLACPPExtension::initialize(const QStringList &arguments, QString *errorMes
 }
 
 
-void FLACPPExtension::extensionsInitialized()
+void FlacExtension::extensionsInitialized()
 {
 }
 
 
-void FLACPPExtension::remoteCommand(const QStringList &options, const QStringList &args)
+void FlacExtension::remoteCommand(const QStringList &options, const QStringList &args)
 {
   Q_UNUSED(options)
   Q_UNUSED(args)
 }
 
 
-void FLACPPExtension::shutdown()
+void FlacExtension::shutdown()
 {
 }
 
-EXPORT_EXTENSION(FLACPPExtension)
+EXPORT_EXTENSION(FlacExtension)
 
 // vim: ts=8 sw=2 sts=2 et sta noai

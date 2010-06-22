@@ -1,5 +1,5 @@
 /*
- * FLACPPBufferReader.h
+ * FlacBufferReader.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,13 +22,13 @@
  *
  */
 
-#ifndef UNISON_FLACPP_BUFFER_READER_H
-#define UNISON_FLACPP_BUFFER_READER_H
+#ifndef UNISON_FLAC_BUFFER_READER_H
+#define UNISON_FLAC_BUFFER_READER_H
 
 #include <core/ISampleBufferReader.h>
 #include <QObject>
 
-namespace FLACPP {
+namespace Flac {
 namespace Internal {
 
 /**
@@ -38,20 +38,20 @@ namespace Internal {
  * implemenation to ExtensionManager with addObject(), the implementation will
  * then be used by PluginManager.
  * All ISampleBufferReader implementations MUST be reentrant.*/
-class FLACPPBufferReader : public Core::ISampleBufferReader
+class FlacBufferReader : public Core::ISampleBufferReader
 {
   Q_OBJECT
   public:
-    FLACPPBufferReader (QObject *parent = 0) :
+    FlacBufferReader (QObject *parent = 0) :
       Core::ISampleBufferReader(parent)
     {};
 
-    ~FLACPPBufferReader ()
+    ~FlacBufferReader ()
     {};
 
     QString displayName ()
     {
-      return "libFLACPP buffer reader.";
+      return "libFlac buffer reader.";
     };
 
     /**
@@ -65,7 +65,7 @@ class FLACPPBufferReader : public Core::ISampleBufferReader
 };
 
 } // Internal
-} // FLACPP
+} // Flac
 
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * FLACPPBufferReader.cpp
+ * FlacExtension.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,15 +22,38 @@
  *
  */
 
-#include "FLACPPBufferReader.h"
-#include "unison/SampleBuffer.h"
 
-using namespace FLACPP::Internal;
-using namespace Core;
+#ifndef UNISON_FLACEXTENSION_H
+#define UNISON_FLACEXTENSION_H
 
-Unison::SampleBuffer *FLACPPBufferReader::read (const QString &filename)
+#include <extensionsystem/IExtension.h>
+
+namespace Flac {
+namespace Internal {
+
+class FlacBufferReader;
+
+class FlacExtension : public ExtensionSystem::IExtension
 {
-  return NULL;
-}
+  Q_OBJECT
+
+public:
+  FlacExtension();
+  ~FlacExtension();
+
+  bool initialize(const QStringList &arguments, QString *errorMessage = 0);
+  void extensionsInitialized();
+  void shutdown();
+  void remoteCommand(const QStringList &options, const QStringList &args);
+
+private:
+  FlacBufferReader *m_bufferReader;
+  
+};
+
+} // namespace Internal
+} // namespace Flac
+
+#endif
 
 // vim: ts=8 sw=2 sts=2 et sta noai

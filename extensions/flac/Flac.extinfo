@@ -1,13 +1,13 @@
-<extension name="FLACPP" version="0.0.1" compatVersion="0.0.1">
+<extension name="Flac" version="0.0.1" compatVersion="0.0.1">
     <vendor>Unison</vendor>
     <copyright>(C) 2010 Paul Giblock</copyright>
     <license>
-Unison FLACPP Plugin is free software: you can redistribute it and/or modify
+Unison Flac Plugin is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by the Free
 Software Foundation, either version 3 of the License, or (at your option) any
 later version.
 
-Unison FLACPP Plugin is distributed in the hope that it will be useful, but
+Unison Flac Plugin is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 details.
