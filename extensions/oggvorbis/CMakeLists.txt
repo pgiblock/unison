@@ -27,10 +27,12 @@ add_definitions(-DOGGVORBIS_EXTENSION)
 
 set(OGGVORBIS_SRCS
     OggVorbisExtension.cpp
+    OggVorbisBufferReader.cpp
 )
 
 set(OGGVORBIS_MOC_HEADERS
     OggVorbisExtension.h
+    OggVorbisBufferReader.h
 )
 
 qt4_wrap_cpp(OGGVORBIS_MOC_SRCS ${OGGVORBIS_MOC_HEADERS})
