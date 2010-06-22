@@ -30,6 +30,8 @@
 using namespace Unison;
 
 const int SampleBuffer::DEFAULT_CHANNELS;
+const int SampleBuffer::LEFT_CHANNEL;
+const int SampleBuffer::RIGHT_CHANNEL;
 
 SampleBuffer::SampleBuffer (float *buf, int frames, int channels, int samplerate) :
   m_data(0),
@@ -74,6 +76,28 @@ SampleBuffer::~SampleBuffer ()
     if (m_data) {
         delete m_data;
     }
+}
+
+
+int SampleBuffer::seek (nframes_t frame)
+{
+  if (frame <= m_frames) {
+    m_pos = m_data + (frame * m_channels);
+    return frame;
+  }
+  return -1;
+}
+
+
+int SampleBuffer::write (sample_t *ptr, nframes_t frames)
+{
+  size_t chunkSize = frames * m_channels;
+  if (m_pos + chunkSize > (void*)m_frames) {
+    return 0;
+  }
+
+  std::memcpy(m_pos, ptr, frames*m_channels*sizeof(sample_t));
+  return frames;
 }
 
 // vim: ts=8 sw=2 sts=2 et sta noai
