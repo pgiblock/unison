@@ -123,7 +123,7 @@ Unison::SampleBuffer *OggVorbisBufferReader::read (const QString &filename)
   ov_pcm_seek( &vf, 0 );
 
   int channels = ov_info( &vf, -1 )->channels;
-  //_samplerate = ov_info( &vf, -1 )->rate;
+  int samplerate = ov_info( &vf, -1 )->rate;
 
   ogg_int64_t total = ov_pcm_total( &vf, -1 );
 
@@ -147,7 +147,8 @@ Unison::SampleBuffer *OggVorbisBufferReader::read (const QString &filename)
   while( bytes_read != 0 && bitstream == 0 );
 
   ov_clear( &vf );
-  return NULL;
+  Unison::SampleBuffer *sampleBuffer = new Unison::SampleBuffer(buf, total, channels, samplerate);
+  return sampleBuffer;
 }
 
 // vim: ts=8 sw=2 sts=2 et sta noai
