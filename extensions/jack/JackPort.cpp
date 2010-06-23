@@ -24,46 +24,47 @@
 
 #include "JackPort.h"
 #include "JackBufferProvider.h"
-#include "JackEngine.h"
+#include "JackBackend.h"
 
 #include <unison/AudioBuffer.h>
 
 #include <jack/jack.h>
 #include <QDebug>
 
+
+const int UNISON_BUFFER_LENGTH = 1024;
+
 using namespace Jack::Internal;
 using namespace Unison;
 
-  JackBufferProvider* JackPort::m_jackBufferProvider =
-      new JackBufferProvider();
+JackBufferProvider* JackPort::m_jackBufferProvider =
+    new JackBufferProvider();
 
-  const QSet<Node* const> JackPort::interfacedNodes () const
-  {
-    const char** name = jack_port_get_connections( m_port );
-    uint32_t count = m_engine.portCount();
+const QSet<Node* const> JackPort::interfacedNodes() const
+{
+  const char** name = jack_port_get_connections( m_port );
+  uint32_t count = m_backend.portCount();
 
-    QSet<Node* const> dependencies;
-    // Within all connected ports
-    while (name != NULL) {
-      // See if we own the port
-      for (uint32_t i = 0; i < count; ++i) {
-        JackPort* port = m_engine.port( i );
-        if (port->name() == *name) {
-          dependencies += port;
-        }
+  QSet<Node* const> dependencies;
+  // Within all connected ports
+  while (name != NULL) {
+    // See if we own the port
+    for (uint32_t i = 0; i < count; ++i) {
+      JackPort* port = m_backend.port(i);
+      if (port->name() == *name) {
+        dependencies += port;
       }
     }
-    return dependencies;
   }
+  return dependencies;
+}
 
 
-  void JackPort::connectToBuffer (BufferProvider &)
-  {
-    // TODO use a callback for buffer-size (more JACK CBs in general.)
-    nframes_t size = UNISON_BUFFER_LENGTH; //jack_get_buffer_size(m_engine.jackClient());
-    m_buffer = m_jackBufferProvider->acquire(this, size);
-  }
-
-} // Unison
+void JackPort::connectToBuffer (BufferProvider &)
+{
+  // TODO use a callback for buffer-size (more JACK CBs in general.)
+  nframes_t size = UNISON_BUFFER_LENGTH; //jack_get_buffer_size(m_backend.jackClient());
+  m_buffer = m_jackBufferProvider->acquire(this, size);
+}
 
 // vim: ts=8 sw=2 sts=2 et sta noai

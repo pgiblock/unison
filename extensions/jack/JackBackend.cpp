@@ -1,5 +1,5 @@
 /*
- * JackEngine.cpp
+ * JackBackend.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,9 +22,8 @@
  *
  */
 
-#include "JackEngine.h"
-
-#include <unison/Session.h>
+#include "JackBackend.h"
+#include "JackPort.h"
 
 #include <QDebug>
 #include <jack/jack.h>
@@ -32,8 +31,7 @@
 using namespace Jack::Internal;
 using namespace Unison;
 
-JackEngine::JackEngine () :
-  m_session(NULL),
+JackBackend::JackBackend () :
   m_client(NULL),
   m_myPorts(),
   m_bufferLength(0),
@@ -45,13 +43,13 @@ JackEngine::JackEngine () :
 }
 
 
-JackEngine::~JackEngine ()
+JackBackend::~JackBackend ()
 {
   jack_client_close(m_client);
 }
 
 
-void JackEngine::initClient()
+void JackBackend::initClient()
 {
   QString name = tr("Unison Studio");
 
@@ -68,22 +66,22 @@ void JackEngine::initClient()
   m_bufferLength = jack_get_buffer_size(m_client);
   m_sampleRate = jack_get_sample_rate(m_client);
 
-  jack_on_shutdown (m_client, &JackEngine::shutdown, this);
-  jack_set_buffer_size_callback(m_client, &JackEngine::bufferSizeCb, this);
-  jack_set_freewheel_callback(  m_client, &JackEngine::freewheelCb, this);
-  jack_set_graph_order_callback(m_client, &JackEngine::graphOrderCb, this);
-  jack_set_process_callback(    m_client, &JackEngine::processCb, this);
-  jack_set_sample_rate_callback(m_client, &JackEngine::sampleRateCb, this);
-  jack_set_sync_callback(       m_client, &JackEngine::syncCb, this);
-  jack_set_thread_init_callback(m_client, &JackEngine::threadInitCb, this);
-  jack_set_xrun_callback(       m_client, &JackEngine::xrunCb, this );
+  jack_on_shutdown (m_client, &JackBackend::shutdown, this);
+  jack_set_buffer_size_callback(m_client, &JackBackend::bufferSizeCb, this);
+  jack_set_freewheel_callback(  m_client, &JackBackend::freewheelCb, this);
+  jack_set_graph_order_callback(m_client, &JackBackend::graphOrderCb, this);
+  jack_set_process_callback(    m_client, &JackBackend::processCb, this);
+  jack_set_sample_rate_callback(m_client, &JackBackend::sampleRateCb, this);
+  jack_set_sync_callback(       m_client, &JackBackend::syncCb, this);
+  jack_set_thread_init_callback(m_client, &JackBackend::threadInitCb, this);
+  jack_set_xrun_callback(       m_client, &JackBackend::xrunCb, this );
 
   // TODO: Timebase CB..
 
 }
 
 
-void JackEngine::activate ()
+void JackBackend::activate ()
 {
   if (!m_running) {
     m_running = jack_activate(m_client) == 0;
@@ -91,27 +89,14 @@ void JackEngine::activate ()
 }
 
 
-void JackEngine::deactivate ()
+void JackBackend::deactivate ()
 {
   jack_deactivate(m_client);
   m_running = false;
 }
 
 
-void JackEngine::setSession (Session * session) {
-  if (!m_session) {
-    m_session = session;
-  }
-}
-
-
-void JackEngine::removeSession () {
-  // Should probably queue this action until processing()
-  qWarning() << "JackEngine.removeSession currently unimplemented.";
-}
-
-
-JackPort* JackEngine::registerPort (QString name, PortDirection direction)
+JackPort* JackBackend::registerPort (QString name, PortDirection direction)
 {
   // Build Jack flags, currently just direction. Which, is reversed since
   // our Ports' directions are relative to Unison's connections but
@@ -139,137 +124,169 @@ JackPort* JackEngine::registerPort (QString name, PortDirection direction)
   return NULL;
 }
 
-void JackEngine::unregisterPort (JackPort * port)
+
+void JackBackend::unregisterPort (BackendPort *port)
+{
+  JackPort *jackPort = dynamic_cast<JackPort*>(port);
+  //Q_ASSERT_X(jackPort !=  NULL, "Jack Backend", "cannot unregister a non-Jack port");
+  unregisterPort(jackPort);
+}
+
+
+void JackBackend::unregisterPort (JackPort *port)
 {
   jack_port_unregister(client(), port->jackPort());
   delete port;
 }
 
 
-nframes_t JackEngine::bufferLength () const
+nframes_t JackBackend::bufferLength () const
 {
   return m_bufferLength;
 }
 
 
-nframes_t JackEngine::sampleRate () const
+nframes_t JackBackend::sampleRate () const
 {
   return m_sampleRate;
 }
 
 
-bool JackEngine::isFreewheeling () const
+bool JackBackend::isFreewheeling () const
 {
   return m_freewheeling;
 }
 
 
-int JackEngine::portCount () const
+int JackBackend::portCount () const
 {
   return m_myPorts.count();
 }
 
 
-JackPort* JackEngine::port (int index) const
+JackPort* JackBackend::port (int index) const
 {
   return m_myPorts[index];
 }
 
 
-JackPort* JackEngine::port (QString name) const
+JackPort* JackBackend::port (QString name) const
 {
   return NULL; // TODO: implement
 }
 
 
-void JackEngine::shutdown (void* a)
+int JackBackend::connect (const QString& source, const QString& dest)
 {
-  JackEngine* engine = static_cast<JackEngine*>(a);
-  engine->m_running = false;
+  return 0;
+}
+
+
+int JackBackend::disconnect (const QString& source, const QString& dest)
+{
+  return 0;
+}
+
+
+int JackBackend::disconnect (Unison::Port *)
+{
+  return 0;
+}
+
+
+void JackBackend::shutdown (void* a)
+{
+  JackBackend* backend = static_cast<JackBackend*>(a);
+  backend->m_running = false;
   // probably need to signal
 }
 
 
-int JackEngine::bufferSizeCb (nframes_t nframes, void* a)
+
+
+int JackBackend::bufferSizeCb (nframes_t nframes, void* a)
 {
-  JackEngine* engine = static_cast<JackEngine*>(a);
+  JackBackend* backend = static_cast<JackBackend*>(a);
   qDebug() << "JACK buffer size changed";
   qCritical() << "Buffer size changes currently not supported";
-  engine->m_bufferLength = nframes;
+  backend->m_bufferLength = nframes;
   // TODO-NOW: somehow update or inform ports/buffers of bufferSize change.
   return 0;
 }
 
 
-void JackEngine::freewheelCb (int starting, void* a)
+void JackBackend::freewheelCb (int starting, void* a)
 {
-  JackEngine* engine = static_cast<JackEngine*>(a);
+  JackBackend* backend = static_cast<JackBackend*>(a);
   qDebug() << "JACK freewheeling " << starting;
   qCritical() << "Freewheeling mode currently not supported";
-  engine->m_freewheeling = starting;
+  backend->m_freewheeling = starting;
 }
 
 
-int JackEngine::graphOrderCb (void* a)
+int JackBackend::graphOrderCb (void* a)
 {
-  JackEngine* engine = static_cast<JackEngine*>(a);
+  JackBackend* backend = static_cast<JackBackend*>(a);
   qDebug() << "JACK graph order changed";
   // TODO-NOW: somehow ensure our graph is recompiled.
   return 0;
 }
 
 
-int JackEngine::processCb (nframes_t nframes, void* a)
+int JackBackend::processCb (nframes_t nframes, void* a)
 {
-  JackEngine* engine = static_cast<JackEngine*>(a);
-  if (engine->m_session) {
+  JackBackend* backend = static_cast<JackBackend*>(a);
+  // TODO: make session-agnostic
+  /*
+  if (backend->m_session) {
 
     // Aquire JACK buffers
-    for (int i=0; i<engine->portCount(); ++i) {
-      Port *port = engine->port(i);
-      port->connectToBuffer(engine->m_session->bufferProvider());
+    for (int i=0; i<backend->portCount(); ++i) {
+      Port *port = backend->port(i);
+      port->connectToBuffer(backend->m_session->bufferProvider());
 
       // Re-acquire buffers on ports connected to JACK
       foreach (Port *other, port->connectedPorts()) {
-        other->connectToBuffer(engine->m_session->bufferProvider());
+        other->connectToBuffer(backend->m_session->bufferProvider());
       }
     }
 
     ProcessingContext context( nframes );
-    engine->m_session->process(context);
+    backend->m_session->process(context);
 
   }
+  */
   return 0;
 }
 
 
-int JackEngine::sampleRateCb (nframes_t nframes, void* a) {
-  JackEngine* engine = static_cast<JackEngine*>(a);
+int JackBackend::sampleRateCb (nframes_t nframes, void* a) {
+  JackBackend* backend = static_cast<JackBackend*>(a);
   qDebug() << "JACK sampling rate changed";
   qCritical() << "Sampling rate changes currently not supported";
-  engine->m_sampleRate = nframes;
+  backend->m_sampleRate = nframes;
   // TODO: inform Session, Sequencer, MetricMap about sampleRate change.
   return 0;
 }
 
 
-int JackEngine::syncCb (jack_transport_state_t, jack_position_t*, void* eng) {
+int JackBackend::syncCb (jack_transport_state_t, jack_position_t*, void* eng) {
   //qDebug() << "JACK sync";
   return 0;
 }
 
 
-void JackEngine::threadInitCb (void* engine) {
+void JackBackend::threadInitCb (void* backend) {
   qDebug() << "JACK thread init";
 }
 
 
-void JackEngine::timebaseCb (jack_transport_state_t, nframes_t, jack_position_t*, int, void*) {
+void JackBackend::timebaseCb (jack_transport_state_t, nframes_t, jack_position_t*, int, void*) {
   //qCritical() << "Timebase master currently not supported";
 }
 
 
-int JackEngine::xrunCb (void* engine) {
+int JackBackend::xrunCb (void* backend) {
   //qWarning() << "XRun occured";
   return 0;
 }

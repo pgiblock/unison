@@ -25,7 +25,7 @@
 #ifndef UNISON_JACK_PORT_H
 #define UNISON_JACK_PORT_H
 
-#include <unison/Port.h>
+#include <unison/BackendPort.h>
 #include <unison/ProcessingContext.h>
 #include <jack/jack.h>
 
@@ -33,16 +33,16 @@ namespace Jack {
 namespace Internal {
 
 class JackBufferProvider;
-class JackEngine;
+class JackBackend;
 
 /**
  * Encapsulates a registered port of the jack-client. */
-class JackPort : public Unison::Port
+class JackPort : public Unison::BackendPort
 {
   public:
-    JackPort(JackEngine & engine, jack_port_t * port) :
-        Port(),
-        m_engine(engine),
+    JackPort(JackBackend & backend, jack_port_t * port) :
+        BackendPort(),
+        m_backend(backend),
         m_port(port)
     {
     }
@@ -121,7 +121,7 @@ class JackPort : public Unison::Port
     void connectToBuffer (Unison::BufferProvider &);
 
   private:
-    JackEngine& m_engine;
+    JackBackend& m_backend;
     jack_port_t* m_port;
 
     static JackBufferProvider * m_jackBufferProvider;

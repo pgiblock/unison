@@ -26,14 +26,14 @@ configure_file(Jack.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 add_definitions(-DJACK_EXTENSION)
 
 set(JACK_SRCS
-    JackExtension.cpp
+    JackBackend.cpp
     JackBufferProvider.cpp
-    JackEngine.cpp
     JackExtension.cpp
     JackPort.cpp
 )
 
 set(JACK_MOC_HEADERS
+    JackBackend.h
     JackExtension.h
 )
 

@@ -1,5 +1,5 @@
 /*
- * JackEngine.h
+ * JackBackend.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,46 +22,34 @@
  *
  */
 
-#ifndef UNISON_JACK_ENGINE_H
-#define UNISON_JACK_ENGINE_H
+#ifndef UNISON_JACK_BACKEND_H
+#define UNISON_JACK_BACKEND_H
 
 #include "JackPort.h"
 
-#include <prg/Uncopyable.h>
+#include <unison/Backend.h>
+#include <jack/jack.h>
+#include <QObject>
 #include <QVarLengthArray>
-
-namespace Unison {
-  class Session;
-}
 
 namespace Jack {
 namespace Internal {
 
 /**
- * JackEngine encapsulates JACK compatibility.  There could theoretically be
- * multiple Engine classes (AsioEngine, for example), but this requires us to
- * implement missing features like connecting ports.  Therefore, right now we
- * are only targeting Jack, with the knowledge that this class may be
+ * JackBackend encapsulates JACK compatibility.  There could theoretically be
+ * multiple Backend classes (AsioBackend, for example), but this requires
+ * us to implement missing features like connecting ports.  Therefore, right
+ * now we are only targeting Jack, with the knowledge that this class may be
  * generalized.  The primary functionality included is the processing
- * entry-point and the ability to register ports, query system ports, and
- * make (external) connections. */
-class JackEngine : public QObject, PRG::Uncopyable
+ * entry-point and the ability to register ports, query system ports, and make
+ * (external) connections. */
+class JackBackend : public Unison::Backend
 {
   Q_OBJECT
 
   public:
-    JackEngine ();
-    virtual ~JackEngine ();
-
-    /**
-     * Set the session of this engine,  generally called by Session's ctor.
-     * JackEngine's behavior is undefined if a Session is not assigned. */
-    void setSession (Unison::Session * session);
-
-    /**
-     * Remove the session of this engine.  JackEngine is in an undefined state
-     * until a Session is added. */
-    void removeSession ();
+    JackBackend ();
+    virtual ~JackBackend ();
 
     /**
      * @returns the underlying Jack client. */
@@ -85,6 +73,7 @@ class JackEngine : public QObject, PRG::Uncopyable
      * Unregister a port with Jack.
      * FIXME: Consider disconnecting ports when unregistering */
     void unregisterPort (JackPort *);
+    void unregisterPort (Unison::BackendPort *);
 
     void activate ();
     void deactivate ();
@@ -100,18 +89,17 @@ class JackEngine : public QObject, PRG::Uncopyable
   private:
     void initClient();
 
-    static void shutdown (void* engine);
-    static int bufferSizeCb (Unison::nframes_t nframes, void* engine);
-    static void freewheelCb (int starting, void* engine);
-    static int graphOrderCb (void* engine);
-    static int processCb (Unison::nframes_t nframes, void* engine);
-    static int sampleRateCb (Unison::nframes_t nframes, void* engine);
+    static void shutdown (void* backend);
+    static int bufferSizeCb (Unison::nframes_t nframes, void* backend);
+    static void freewheelCb (int starting, void* backend);
+    static int graphOrderCb (void* backend);
+    static int processCb (Unison::nframes_t nframes, void* backend);
+    static int sampleRateCb (Unison::nframes_t nframes, void* backend);
     static int syncCb (jack_transport_state_t, jack_position_t*, void* eng);
-    static void threadInitCb (void* engine);
+    static void threadInitCb (void* backend);
     static void timebaseCb (jack_transport_state_t, Unison::nframes_t, jack_position_t*, int, void*);
-    static int xrunCb (void* engine);
+    static int xrunCb (void* backend);
 
-    Unison::Session* m_session;
     jack_client_t* m_client;
     QVarLengthArray<JackPort*> m_myPorts;
     Unison::nframes_t m_bufferLength;

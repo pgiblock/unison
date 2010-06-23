@@ -35,8 +35,14 @@ set(UNISON_SRCS
     Processor.cpp
 )
 
+set(UNISON_MOC_HEADERS
+    Backend.h
+)
+
 set(UNISON_INCLUDES
     AudioBuffer.h
+    Backend.h
+    BackendPort.h
     Buffer.h
     BufferProvider.h
     CompositeProcessor.h
