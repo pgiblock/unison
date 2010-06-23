@@ -1,9 +1,9 @@
 /*
- * types.h - Common types used in Unison
+ * endian_handling.h - handle endianess
  *
- * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
- *
- * This file is part of Unison - http://unison.sourceforge.net
+ * Copyright (c) 2005-2008 Tobias Doerffel <tobydox/at/users.sourceforge.net>
+ * 
+ * This file is part of Linux MultiMedia Studio - http://lmms.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public
@@ -23,28 +23,31 @@
  */
 
 
-#ifndef UNISON_TYPES_H
-#define UNISON_TYPES_H
+#ifndef _ENDIAN_HANDLING_H
+#define _ENDIAN_HANDLING_H
 
-#include <stdint.h>
+#include <QtCore/QSysInfo>
 
-namespace Unison
+//#include "lmms_basics.h"
+
+inline bool isLittleEndian()
 {
+	return( QSysInfo::ByteOrder == QSysInfo::LittleEndian );
+}
 
-typedef uint32_t nframes_t;
-typedef uint32_t nticks_t;
 
-/** A float is a common abstraction for a sample.  We use float all throughout 
- * Unison - manipulating integer samples will cause aliasing etc..
- */
-typedef float sample_t;
+/*inline Sint16 swap16IfBE( Sint16 _i )
+{
+	return( isLittleEndian() ? _i : ( ( _i & 0xFF ) << 8) | ( ( _i >> 8 ) & 0xFF ) );
+}
 
-enum PortType { AUDIO_PORT=1, CONTROL_PORT=2, MIDI_PORT=4, UNKNOWN_PORT=0 };
-enum PortDirection { INPUT=1, OUTPUT=2 };
 
-const int BYTES_PER_INT_SAMPLE = sizeof( sample_t );
+inline Sint32 swap32IfBE( Sint32 _i )
+{
+	return( isLittleEndian() ? _i : ( ( _i & 0xff000000 ) >> 24 ) |
+					( ( _i & 0x00ff0000 ) >> 8 )  |
+					( ( _i & 0x0000ff00 ) << 8 )  |
+					( ( _i & 0x000000ff ) << 24 ) );
+}*/
 
-} // Unison
-
-#endif // UNISON_TYPES_H
-
+#endif

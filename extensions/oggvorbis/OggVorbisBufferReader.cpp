@@ -22,71 +22,131 @@
  *
  */
 
+#include <QFile>
+#include "vorbis/vorbisfile.h"
+
 #include "OggVorbisBufferReader.h"
 #include "unison/SampleBuffer.h"
+#include "unison/endian_handling.h"
 
 using namespace OggVorbis::Internal;
 using namespace Core;
 
+size_t qfileReadCallback( void * _ptr, size_t _size, size_t _n, void * _udata )
+{
+	return static_cast<QFile *>( _udata )->read( (char*) _ptr,
+								_size * _n );
+}
+
+int qfileSeekCallback( void * _udata, ogg_int64_t _offset, int _whence )
+{
+	QFile * f = static_cast<QFile *>( _udata );
+
+	if( _whence == SEEK_CUR )
+	{
+		f->seek( f->pos() + _offset );
+	}
+	else if( _whence == SEEK_END )
+	{
+		f->seek( f->size() + _offset );
+	}
+	else
+	{
+		f->seek( _offset );
+	}
+	return 0;
+}
+
+int qfileCloseCallback( void * _udata )
+{
+	delete static_cast<QFile *>( _udata );
+	return 0;
+}
+
+long qfileTellCallback( void * _udata )
+{
+	return static_cast<QFile *>( _udata )->pos();
+}
+
 Unison::SampleBuffer *OggVorbisBufferReader::read (const QString &filename)
 {
-  /*f_cnt_t sampleBuffer::decodeSampleSF( const char * _f,
-					int_sample_t * & _buf,
-					ch_cnt_t & _channels,
-					sample_rate_t & _samplerate )*/
-  /*SNDFILE * snd_file;
-  SF_INFO sf_info;
-  f_cnt_t frames = 0;
-  if( ( snd_file = sf_open( filename, SFM_READ, &sf_info ) ) != NULL )
+  static ov_callbacks callbacks =
   {
-    frames = sf_info.frames;
-    _buf = new int_sample_t[sf_info.channels * frames];
-    if( sf_read_short( snd_file, _buf, sf_info.channels * frames )
-        < sf_info.channels * frames )
+    qfileReadCallback,
+    qfileSeekCallback,
+    qfileCloseCallback,
+    qfileTellCallback
+  } ;
+
+  OggVorbis_File vf;
+
+  int frames = 0;
+
+  QFile * f = new QFile( filename );
+  if( f->open( QFile::ReadOnly ) == false )
+  {
+    delete f;
+    return 0;
+  }
+
+  int err = ov_open_callbacks( f, &vf, NULL, 0, callbacks );
+
+  if( err < 0 )
+  {
+    switch( err )
     {
-#ifdef DEBUG_LMMS
-      printf( "sampleBuffer::decodeSampleSF(): could not read"
-          " sample %s: %s\n", _f, sf_strerror( NULL ) );
-#endif
+      case OV_EREAD:
+        printf( "sampleBuffer::decodeSampleOGGVorbis():"
+            " media read error\n" );
+        break;
+      case OV_ENOTVORBIS:
+        /*				printf( "sampleBuffer::decodeSampleOGGVorbis():"
+                                        " not an Ogg Vorbis file\n" );*/
+        break;
+      case OV_EVERSION:
+        printf( "sampleBuffer::decodeSampleOGGVorbis():"
+            " vorbis version mismatch\n" );
+        break;
+      case OV_EBADHEADER:
+        printf( "sampleBuffer::decodeSampleOGGVorbis():"
+            " invalid Vorbis bitstream header\n" );
+        break;
+      case OV_EFAULT:
+        printf( "sampleBuffer::decodeSampleOgg(): "
+            "internal logic fault\n" );
+        break;
     }
-    _channels = sf_info.channels;
-    _samplerate = sf_info.samplerate;
-
-    sf_close( snd_file );
-  }
-  else
-  {
-#ifdef DEBUG_LMMS
-    printf( "sampleBuffer::decodeSampleSF(): could not load "
-        "sample %s: %s\n", _f, sf_strerror( NULL ) );
-#endif
-  }*/
-
-  // Open file.
-  /*SNDFILE *snd_file;
-  SF_INFO sf_info;
-  snd_file = sf_open(filename.toLatin1(), SFM_READ, &sf_info);
-  if (snd_file == NULL)
-  {
-    // Error
+    delete f;
+    return 0;
   }
 
-  // Read from it.
-  sf_count_t amount = sf_info.channels * sf_info.frames;
-  float *buf = new Unison::sample_t[amount];
-  if (sf_read_float(snd_file, buf, amount) < amount)
+  ov_pcm_seek( &vf, 0 );
+
+  int channels = ov_info( &vf, -1 )->channels;
+  //_samplerate = ov_info( &vf, -1 )->rate;
+
+  ogg_int64_t total = ov_pcm_total( &vf, -1 );
+
+  float *buf = new Unison::sample_t[total * channels];
+  int bitstream = 0;
+  long bytes_read = 0;
+
+  do
   {
-    // Error
+    bytes_read = ov_read( &vf, (char *) &buf[frames * channels],
+        ( total - frames ) * channels *
+        Unison::BYTES_PER_INT_SAMPLE,
+        isLittleEndian() ? 0 : 1,
+        Unison::BYTES_PER_INT_SAMPLE, 1, &bitstream );
+    if( bytes_read < 0 )
+    {
+      break;
+    }
+    frames += bytes_read / ( channels * Unison::BYTES_PER_INT_SAMPLE );
   }
+  while( bytes_read != 0 && bitstream == 0 );
 
-  // Close file.
-  sf_close(snd_file);
-
-  // Create and return a SampleBuffer .
-  Unison::SampleBuffer *sampleBuffer = new Unison::SampleBuffer(buf, sf_info.frames, sf_info.channels, sf_info.samplerate);
-  delete buf;
-
-  return sampleBuffer;*/
+  ov_clear( &vf );
   return NULL;
 }
 
