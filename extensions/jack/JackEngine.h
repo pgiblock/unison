@@ -28,7 +28,7 @@
 #include <QVarLengthArray>
 
 #include "prg/Uncopyable.h"
-#include "unison/JackPort.h"
+#include "JackPort.h"
 
 namespace Unison
 {

@@ -30,6 +30,8 @@
 #include "Core_global.h"
 #include "prg/Uncopyable.h"
 #include "unison/ProcessingContext.h"
+#include "unison/BufferProvider.h"
+#include "extensions/jack/JackEngine.h"
 
 namespace Core {
 
@@ -58,9 +60,9 @@ CORE_EXPORT class Session : PRG::Uncopyable
       return *m_engine;
     }
 
-    BufferProvider& bufferProvider () const;
+    Unison::BufferProvider& bufferProvider () const;
 
-    void process (const ProcessingContext& context);
+    void process (const Unison::ProcessingContext& context);
 
     // TODO: Compiler? Song, Sequencer, Redo/Undo, whatever..
     void hackCompile ();
