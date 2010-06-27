@@ -1,5 +1,5 @@
 /*
- * types.h - Common types used in Unison
+ * FlacExtension.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -23,26 +23,37 @@
  */
 
 
-#ifndef UNISON_TYPES_H
-#define UNISON_TYPES_H
+#ifndef UNISON_FLACEXTENSION_H
+#define UNISON_FLACEXTENSION_H
 
-#include <stdint.h>
+#include <extensionsystem/IExtension.h>
 
-namespace Unison
+namespace Flac {
+namespace Internal {
+
+class FlacBufferReader;
+
+class FlacExtension : public ExtensionSystem::IExtension
 {
+  Q_OBJECT
 
-typedef uint32_t nframes_t;
-typedef uint32_t nticks_t;
+public:
+  FlacExtension();
+  ~FlacExtension();
 
-/** A float is a common abstraction for a sample.  We use float all throughout 
- * Unison - manipulating integer samples will cause aliasing etc..
- */
-typedef float sample_t;
+  bool initialize(const QStringList &arguments, QString *errorMessage = 0);
+  void extensionsInitialized();
+  void shutdown();
+  void remoteCommand(const QStringList &options, const QStringList &args);
 
-enum PortType { AUDIO_PORT=1, CONTROL_PORT=2, MIDI_PORT=4, UNKNOWN_PORT=0 };
-enum PortDirection { INPUT=1, OUTPUT=2 };
+private:
+  FlacBufferReader *m_bufferReader;
+  
+};
 
-} // Unison
+} // namespace Internal
+} // namespace Flac
 
-#endif // UNISON_TYPES_H
+#endif
 
+// vim: ts=8 sw=2 sts=2 et sta noai

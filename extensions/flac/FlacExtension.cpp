@@ -1,5 +1,5 @@
 /*
- * types.h - Common types used in Unison
+ * FlacExtension.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,27 +22,54 @@
  *
  */
 
+#include "FlacExtension.h"
+#include "FlacBufferReader.h"
 
-#ifndef UNISON_TYPES_H
-#define UNISON_TYPES_H
+#include <extensionsystem/ExtensionManager.h>
 
-#include <stdint.h>
+#include <QtPlugin>
 
-namespace Unison
+using namespace Flac;
+using namespace Flac::Internal;
+
+FlacExtension::FlacExtension()
 {
+  m_bufferReader = new FlacBufferReader();
+}
 
-typedef uint32_t nframes_t;
-typedef uint32_t nticks_t;
 
-/** A float is a common abstraction for a sample.  We use float all throughout 
- * Unison - manipulating integer samples will cause aliasing etc..
- */
-typedef float sample_t;
+FlacExtension::~FlacExtension()
+{
+  removeObject(m_bufferReader);
+  delete m_bufferReader;
+}
 
-enum PortType { AUDIO_PORT=1, CONTROL_PORT=2, MIDI_PORT=4, UNKNOWN_PORT=0 };
-enum PortDirection { INPUT=1, OUTPUT=2 };
 
-} // Unison
+bool FlacExtension::initialize(const QStringList &arguments, QString *errorMessage)
+{
+  Q_UNUSED(errorMessage)
+  Q_UNUSED(arguments)
+  addObject(m_bufferReader);
+  return true;
+}
 
-#endif // UNISON_TYPES_H
 
+void FlacExtension::extensionsInitialized()
+{
+}
+
+
+void FlacExtension::remoteCommand(const QStringList &options, const QStringList &args)
+{
+  Q_UNUSED(options)
+  Q_UNUSED(args)
+}
+
+
+void FlacExtension::shutdown()
+{
+}
+
+EXPORT_EXTENSION(FlacExtension)
+
+// vim: ts=8 sw=2 sts=2 et sta noai

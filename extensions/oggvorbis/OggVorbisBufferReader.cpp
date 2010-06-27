@@ -32,6 +32,8 @@
 using namespace OggVorbis::Internal;
 using namespace Core;
 
+const int BYTES_PER_INT_SAMPLE = sizeof(uint16_t);
+
 size_t qfileReadCallback( void * _ptr, size_t _size, size_t _n, void * _udata )
 {
 	return static_cast<QFile *>( _udata )->read( (char*) _ptr,
@@ -135,14 +137,14 @@ Unison::SampleBuffer *OggVorbisBufferReader::read (const QString &filename)
   {
     bytes_read = ov_read( &vf, (char *) &buf[frames * channels],
         ( total - frames ) * channels *
-        Unison::BYTES_PER_INT_SAMPLE,
+        BYTES_PER_INT_SAMPLE,
         isLittleEndian() ? 0 : 1,
-        Unison::BYTES_PER_INT_SAMPLE, 1, &bitstream );
+        BYTES_PER_INT_SAMPLE, 1, &bitstream );
     if( bytes_read < 0 )
     {
       break;
     }
-    frames += bytes_read / ( channels * Unison::BYTES_PER_INT_SAMPLE );
+    frames += bytes_read / ( channels * BYTES_PER_INT_SAMPLE );
   }
   while( bytes_read != 0 && bitstream == 0 );
 
