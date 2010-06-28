@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt - Core Plugin CMake file
+# CMakeLists.txt - libsndfile extension CMake file
 #
 # Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
 #
@@ -21,40 +21,37 @@
 # Boston, MA 02110-1301 USA.
 #
 
-#set(LFO_CONTROLLER_SRCS
-#    LfoController.c
-#)
+configure_file(SndFile.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
-configure_file(Core.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+add_definitions(-DSNDFILE_EXTENSION)
 
-add_definitions(-DCORE_EXTENSION)
-
-set(CORE_SRCS
-    CoreExtension.cpp
-    PluginManager.cpp
+set(SNDFILE_SRCS
+    SndFileExtension.cpp
+    SndFileBufferReader.cpp
 )
 
-set(CORE_MOC_HEADERS
-    CoreExtension.h
-    IPluginProvider.h
-    ISampleBufferReader.h
+set(SNDFILE_MOC_HEADERS
+    SndFileExtension.h
+    SndFileBufferReader.h
 )
 
-qt4_wrap_cpp(CORE_MOC_SRCS ${CORE_MOC_HEADERS})
+qt4_wrap_cpp(SNDFILE_MOC_SRCS ${SNDFILE_MOC_HEADERS})
 
-include_directories(
-    ${COMMON_LIBS_INCLUDE_DIR}
-    ${PRG_INCLUDE_DIR}
-    )
+include_directories(.. ${COMMON_LIBS_INCLUDE_DIR})
 
-add_library(Core SHARED ${CORE_MOC_SRCS} ${CORE_SRCS})
+add_library(SndFile SHARED ${SNDFILE_MOC_SRCS} ${SNDFILE_SRCS})
 
-target_link_libraries(Core
+target_link_libraries(SndFile
     ${QT_LIBRARIES}
     aggregation
     extensionsystem
+    Core
+)
+
+set_target_properties(SndFile PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${EXTENSIONS_RPATH}"
 )
 
 set(INSTALL_DIR lib/unison/extensions)
-install(FILES   Core.extinfo DESTINATION ${INSTALL_DIR})
-install(TARGETS Core    LIBRARY DESTINATION ${INSTALL_DIR})
+install(FILES   SndFile.extinfo  DESTINATION ${INSTALL_DIR})
+install(TARGETS SndFile LIBRARY  DESTINATION ${INSTALL_DIR})

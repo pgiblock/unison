@@ -25,7 +25,7 @@
 #ifndef GUICORE_GLOBAL_H
 #define GUICORE_GLOBAL_H
 
-#include <QtCore/qglobal.h>
+#include <qglobal.h>
 
 #if defined(GUICORE_EXTENSION)
 #  define GUICORE_EXPORT Q_DECL_EXPORT

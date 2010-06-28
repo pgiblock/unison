@@ -1,5 +1,5 @@
 /*
- * Core_global.h
+ * SndFileExtension.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,15 +22,38 @@
  *
  */
 
-#ifndef CORE_GLOBAL_H
-#define CORE_GLOBAL_H
 
-#include <qglobal.h>
+#ifndef UNISON_SNDFILEEXTENSION_H
+#define UNISON_SNDFILEEXTENSION_H
 
-#if defined(CORE_EXTENSION)
-#  define CORE_EXPORT Q_DECL_EXPORT
-#else
-#  define CORE_EXPORT Q_DECL_IMPORT
+#include <extensionsystem/IExtension.h>
+
+namespace SndFile {
+namespace Internal {
+
+class SndFileBufferReader;
+
+class SndFileExtension : public ExtensionSystem::IExtension
+{
+  Q_OBJECT
+
+public:
+  SndFileExtension();
+  ~SndFileExtension();
+
+  bool initialize(const QStringList &arguments, QString *errorMessage = 0);
+  void extensionsInitialized();
+  void shutdown();
+  void remoteCommand(const QStringList &options, const QStringList &args);
+
+private:
+  SndFileBufferReader *m_bufferReader;
+  
+};
+
+} // namespace Internal
+} // namespace SndFile
+
 #endif
 
-#endif
+// vim: ts=8 sw=2 sts=2 et sta noai

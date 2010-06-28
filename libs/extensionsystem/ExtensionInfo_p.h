@@ -32,9 +32,9 @@
 
 #include "ExtensionInfo.h"
 
-#include <QtCore/QObject>
-#include <QtCore/QStringList>
-#include <QtCore/QXmlStreamReader>
+#include <QObject>
+#include <QStringList>
+#include <QXmlStreamReader>
 
 namespace ExtensionSystem {
 

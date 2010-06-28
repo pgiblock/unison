@@ -29,7 +29,7 @@
 
 #include "aggregate.h"
 
-#include <QtCore/QWriteLocker>
+#include <QWriteLocker>
 
 /*!
     \namespace Aggregation

@@ -1,5 +1,5 @@
 /*
- * Core_global.h
+ * SndFileExtension.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,15 +22,54 @@
  *
  */
 
-#ifndef CORE_GLOBAL_H
-#define CORE_GLOBAL_H
+#include "SndFileExtension.h"
+#include "SndFileBufferReader.h"
 
-#include <qglobal.h>
+#include <extensionsystem/ExtensionManager.h>
 
-#if defined(CORE_EXTENSION)
-#  define CORE_EXPORT Q_DECL_EXPORT
-#else
-#  define CORE_EXPORT Q_DECL_IMPORT
-#endif
+#include <QtPlugin>
 
-#endif
+using namespace SndFile;
+using namespace SndFile::Internal;
+
+SndFileExtension::SndFileExtension()
+{
+  m_bufferReader = new SndFileBufferReader();
+}
+
+
+SndFileExtension::~SndFileExtension()
+{
+  removeObject(m_bufferReader);
+  delete m_bufferReader;
+}
+
+
+bool SndFileExtension::initialize(const QStringList &arguments, QString *errorMessage)
+{
+  Q_UNUSED(errorMessage)
+  Q_UNUSED(arguments)
+  addObject(m_bufferReader);
+  return true;
+}
+
+
+void SndFileExtension::extensionsInitialized()
+{
+}
+
+
+void SndFileExtension::remoteCommand(const QStringList &options, const QStringList &args)
+{
+  Q_UNUSED(options)
+  Q_UNUSED(args)
+}
+
+
+void SndFileExtension::shutdown()
+{
+}
+
+EXPORT_EXTENSION(SndFileExtension)
+
+// vim: ts=8 sw=2 sts=2 et sta noai

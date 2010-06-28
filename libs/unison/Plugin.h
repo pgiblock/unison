@@ -26,8 +26,8 @@
 #ifndef UNISON_PLUGIN_H
 #define UNISON_PLUGIN_H
 
-#include <QtCore/QSharedPointer>
-#include <QtXml/QDomNode>
+#include <QSharedPointer>
+#include <QDomNode>
 
 #include "unison/types.h"
 #include "unison/Processor.h"

@@ -1,5 +1,5 @@
 /*
- * Core_global.h
+ * SndFile_global.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,15 +22,15 @@
  *
  */
 
-#ifndef CORE_GLOBAL_H
-#define CORE_GLOBAL_H
+#ifndef SNDFILE_GLOBAL_H
+#define SNDFILE_GLOBAL_H
 
 #include <qglobal.h>
 
-#if defined(CORE_EXTENSION)
-#  define CORE_EXPORT Q_DECL_EXPORT
+#if defined(SNDFILE_EXTENSION)
+#  define SNDFILE_EXPORT Q_DECL_EXPORT
 #else
-#  define CORE_EXPORT Q_DECL_IMPORT
+#  define SNDFILE_EXPORT Q_DECL_IMPORT
 #endif
 
 #endif

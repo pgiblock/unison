@@ -26,7 +26,7 @@
 
 #include <extensionsystem/ExtensionManager.h>
 
-#include <QtCore/QtPlugin>
+#include <QtPlugin>
 
 using namespace Jack::Internal;
 

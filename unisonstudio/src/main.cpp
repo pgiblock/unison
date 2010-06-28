@@ -22,13 +22,13 @@
  *
  */
 
-#include <QtCore/QDir>
-#include <QtCore/QDebug>
-#include <QtCore/QSettings>
+#include <QDir>
+#include <QDebug>
+#include <QSettings>
 
 #include <QtNetwork/QNetworkProxyFactory>
 
-#include <QtGui/QApplication>
+#include <QApplication>
 
 #include "extensionsystem/ExtensionManager.h"
 #include "extensionsystem/ExtensionInfo.h"
@@ -36,9 +36,11 @@
 
 //using namespace Unison;
 
-enum { OptionIndent = 4, DescriptionIndent = 24 };
+enum { OptionIndent = 2, DescriptionIndent = 24 };
 
 static const char *CORE_EXTENSION_NAME = "Core";
+static const char *HELP_OPTION         = "--help";
+static const char *VERSION_OPTION      = "--version";
 
 
 /** Draws an ascii UNISON logo */
@@ -60,13 +62,23 @@ void printDisclaimer()
       "Unison comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\n"
       "This is free software, and you are welcome to redistribute it\n"
       "under certain conditions; type `show c' for details.\n\n";
+} 
+
+static void printVersion (const ExtensionSystem::ExtensionManager &em)
+{
+  QTextStream str(stdout);
+  str << '\n' << "Unison Studio version 0, using Qt " << qVersion() << "\n\n";
+  em.formatExtensionVersions(str);
+  str << '\n' << "Unison Studio copyright goes here" << '\n';
 }
 
 
 static void printHelp(const QString &a0, const ExtensionSystem::ExtensionManager &em)
 {
   QTextStream str(stdout);
-  str << "Usage: " << a0  << "Some standard options";
+  str << "Usage: " << a0  << " <options...>\n";
+  str << "  --help                Display this help\n";
+  str << "  --version             Display the Unison Studio and extension versions\n";
   ExtensionSystem::ExtensionManager::formatOptions(str, OptionIndent, DescriptionIndent);
   em.formatExtensionOptions(str,  OptionIndent, DescriptionIndent);
 }
@@ -159,11 +171,8 @@ int main (int argc, char **argv)
   QMap<QString, QString> foundAppOptions;
   if (arguments.size() > 1) {
     QMap<QString, bool> appOptions;
-    //appOptions.insert(QLatin1String(HELP_OPTION1), false);
-    //appOptions.insert(QLatin1String(HELP_OPTION2), false);
-    //appOptions.insert(QLatin1String(HELP_OPTION3), false);
-    //appOptions.insert(QLatin1String(HELP_OPTION4), false);
-    //appOptions.insert(QLatin1String(VERSION_OPTION), false);
+    appOptions.insert(QLatin1String(HELP_OPTION), false);
+    appOptions.insert(QLatin1String(VERSION_OPTION), false);
     //appOptions.insert(QLatin1String(CLIENT_OPTION), false);
     QString errorMessage;
     bool parseOk = extensionManager.parseOptions(
@@ -186,27 +195,26 @@ int main (int argc, char **argv)
     }
   }
   if (!coreextension) {
-      QString nativePaths = QDir::toNativeSeparators(extensionPaths.join(QLatin1String(",")));
-      const QString reason = QCoreApplication::translate("Application",
-          "Could not find 'Core.extinfo' in %1").arg(nativePaths);
-      qWarning() << msgCoreLoadFailure(reason);
-      return 1;
+    QString nativePaths = QDir::toNativeSeparators(extensionPaths.join(QLatin1String(",")));
+    const QString reason = QCoreApplication::translate("Application",
+        "Could not find 'Core.extinfo' in %1").arg(nativePaths);
+    qWarning() << msgCoreLoadFailure(reason);
+    return 1;
   }
   if (coreextension->hasError()) {
-      qWarning() << msgCoreLoadFailure(coreextension->errorString());
-      return 1;
+    qWarning() << msgCoreLoadFailure(coreextension->errorString());
+    return 1;
   }
-  //if (foundAppOptions.contains(QLatin1String(VERSION_OPTION))) {
-  //    printVersion(coreplugin, pluginManager);
-  //    return 0;
-  //}
-  //if (foundAppOptions.contains(QLatin1String(HELP_OPTION1))
-  //        || foundAppOptions.contains(QLatin1String(HELP_OPTION2))
-  //        || foundAppOptions.contains(QLatin1String(HELP_OPTION3))
-  //        || foundAppOptions.contains(QLatin1String(HELP_OPTION4))) {
-  //    printHelp(QFileInfo(app.applicationFilePath()).baseName(), pluginManager);
-  //    return 0;
-  //}
+  
+  // Handle non-extension-based options
+  if (foundAppOptions.contains(QLatin1String(VERSION_OPTION))) {
+    printVersion(extensionManager);
+    return 0;
+  }
+  if (foundAppOptions.contains(QLatin1String(HELP_OPTION))) {
+    printHelp(QFileInfo(app->applicationFilePath()).baseName(), extensionManager);
+    return 0;
+  }
 
   // Single instance stuff
   //const bool isFirstInstance = !app.isRunning();

@@ -39,10 +39,10 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include <QtCore/QMap>
-#include <QtCore/QPair>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
+#include <QMap>
+#include <QPair>
+#include <QString>
+#include <QStringList>
 
 namespace Lv2 {
 namespace Internal {

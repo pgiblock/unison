@@ -34,12 +34,12 @@
 #include "IExtension_p.h"
 #include "ExtensionManager.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QFile>
-#include <QtCore/QFileInfo>
-#include <QtCore/QXmlStreamReader>
-#include <QtCore/QRegExp>
-#include <QtCore/QCoreApplication>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QXmlStreamReader>
+#include <QRegExp>
+#include <QCoreApplication>
 #include <QtDebug>
 
 #ifdef Q_OS_LINUX
@@ -51,7 +51,7 @@
 
 #if USE_UNPATCHED_QEXTENSIONLOADER
 
-#   include <QtCore/QPluginLoader>
+#   include <QPluginLoader>
     typedef QT_PREPEND_NAMESPACE(QPluginLoader) ExtensionLoader;
 
 #else

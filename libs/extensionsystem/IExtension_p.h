@@ -32,7 +32,7 @@
 
 #include "IExtension.h"
 
-#include <QtCore/QString>
+#include <QString>
 
 namespace ExtensionSystem {
 

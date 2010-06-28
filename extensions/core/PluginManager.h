@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include <QtCore/QString>
+#include <QString>
 
 #include "unison/Plugin.h"
 

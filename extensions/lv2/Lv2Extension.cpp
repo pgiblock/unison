@@ -27,8 +27,8 @@
 
 #include <extensionsystem/ExtensionManager.h>
 
-#include <QtCore/QtPlugin>
-#include <QtCore/QDebug>
+#include <QtPlugin>
+#include <QDebug>
 
 using namespace Lv2::Internal;
 
