@@ -49,6 +49,7 @@ target_link_libraries(Jack
     aggregation
     extensionsystem
     unison
+    Core
 )
 
 set_target_properties(Jack PROPERTIES

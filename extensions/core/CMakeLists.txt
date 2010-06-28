@@ -31,11 +31,14 @@ add_definitions(-DCORE_EXTENSION)
 
 set(CORE_SRCS
     CoreExtension.cpp
+    Engine.cpp
     PluginManager.cpp
 )
 
 set(CORE_MOC_HEADERS
     CoreExtension.h
+    Engine.h
+    IBackendProvider.h
     IPluginProvider.h
     ISampleBufferReader.h
 )

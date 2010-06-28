@@ -23,6 +23,8 @@
  */
 
 #include "CoreExtension.h"
+
+#include "IBackendProvider.h"
 /*
 #include "editmode.h"
 #include "editormanager.h"
@@ -32,13 +34,19 @@
 #include "designmode.h"
 */
 
+// For Engine
+#include <unison/Backend.h>
+#include <unison/BufferProvider.h>
+
 #include <extensionsystem/ExtensionManager.h>
 
 #include <QtPlugin>
-#include <QDebug>
+#include <QtDebug>
 
 using namespace Core;
 using namespace Core::Internal;
+using namespace ExtensionSystem;
+using namespace Unison;
 
 CoreExtension::CoreExtension()
 //  m_mainWindow(new MainWindow), m_editMode(0)
@@ -104,6 +112,15 @@ bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessa
 
 void CoreExtension::extensionsInitialized()
 {
+  ExtensionManager *extMgr = ExtensionManager::instance();
+  // Find backends, load the first one
+  QList<IBackendProvider *> backends = extMgr->getObjects<IBackendProvider>();
+  qDebug("Found Backends:");
+  foreach (IBackendProvider *bep, backends) {
+    qDebug() << bep->displayName();
+  }
+  Backend *backend = backends.at(0)->createBackend();
+
   //m_mainWindow->extensionsInitialized();
 }
 

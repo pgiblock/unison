@@ -1,5 +1,5 @@
 /*
- * JackExtension.cpp
+ * Engine.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,56 +22,25 @@
  *
  */
 
-#include "JackBackend.h"
-#include "JackExtension.h"
+#include <unison/Backend.h>
+#include <unison/BufferProvider.h>
+#include "Engine.h"
 
-#include <extensionsystem/ExtensionManager.h>
+using namespace Core;
 
-#include <QtPlugin>
+Unison::Backend *Engine::m_backend = 0;
+Unison::BufferProvider *Engine::m_bufferProvider = 0;
 
-using namespace Jack::Internal;
 
-JackExtension::JackExtension()
+void Engine::setBackend (Unison::Backend *backend)
 {
+  m_backend = backend;
 }
 
 
-JackExtension::~JackExtension()
+void Engine::setBufferProvider(Unison::BufferProvider *bufferProvider)
 {
+  m_bufferProvider = bufferProvider;
 }
-
-
-void JackExtension::parseArguments(const QStringList &arguments)
-{
-  Q_UNUSED(arguments)
-}
-
-
-bool JackExtension::initialize(const QStringList &arguments, QString *errorMessage)
-{
-  Q_UNUSED(errorMessage)
-  parseArguments(arguments);
-  addObject(new JackBackendProvider());
-  return true;
-}
-
-
-void JackExtension::extensionsInitialized()
-{
-}
-
-
-void JackExtension::remoteCommand(const QStringList &options, const QStringList &args)
-{
-  Q_UNUSED(options)
-  Q_UNUSED(args)
-}
-
-
-void JackExtension::shutdown()
-{
-}
-
-EXPORT_EXTENSION(JackExtension)
 
 // vim: ts=8 sw=2 sts=2 et sta noai

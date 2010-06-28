@@ -28,12 +28,34 @@
 #include "JackPort.h"
 
 #include <unison/Backend.h>
+#include <core/IBackendProvider.h>
 #include <jack/jack.h>
 #include <QObject>
 #include <QVarLengthArray>
 
 namespace Jack {
 namespace Internal {
+
+class JackBackendProvider : public Core::IBackendProvider
+{
+  Q_OBJECT
+  public:
+    JackBackendProvider (QObject *parent = 0) :
+      Core::IBackendProvider(parent)
+    {};
+
+    ~JackBackendProvider ()
+    {};
+
+    QString displayName ()
+    {
+      return "jack";
+    };
+
+    Unison::Backend * createBackend();
+};
+
+
 
 /**
  * JackBackend encapsulates JACK compatibility.  There could theoretically be
@@ -84,7 +106,7 @@ class JackBackend : public Unison::Backend
 
     int connect (const QString& source, const QString& dest);
     int disconnect (const QString& source, const QString& dest);
-    int disconnect (Unison::Port *);
+    int disconnect (Unison::BackendPort *);
 
   private:
     void initClient();

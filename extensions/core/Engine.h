@@ -1,5 +1,5 @@
 /*
- * JackExtension.cpp
+ * Engine.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,56 +22,54 @@
  *
  */
 
-#include "JackBackend.h"
-#include "JackExtension.h"
+#ifndef CORE_ENGINE_H
+#define CORE_ENGINE_H
 
-#include <extensionsystem/ExtensionManager.h>
+#include <QObject>
+#include <prg/Uncopyable.h>
+#include <unison/types.h>
+#include "Core_global.h"
 
-#include <QtPlugin>
-
-using namespace Jack::Internal;
-
-JackExtension::JackExtension()
-{
+namespace Unison {
+  class Backend;
+  class BufferProvider;
 }
 
+namespace Core {
 
-JackExtension::~JackExtension()
+CORE_EXPORT class Engine : public QObject, public PRG::Uncopyable
 {
-}
+  Q_OBJECT
 
+  public:
+    Engine () {};
+    virtual ~Engine () {};
 
-void JackExtension::parseArguments(const QStringList &arguments)
-{
-  Q_UNUSED(arguments)
-}
+    inline static Unison::Backend *backend ()
+    {
+      return m_backend;
+    }
 
+    inline static Unison::BufferProvider *bufferProvider ()
+    {
+      return m_bufferProvider;
+    }
 
-bool JackExtension::initialize(const QStringList &arguments, QString *errorMessage)
-{
-  Q_UNUSED(errorMessage)
-  parseArguments(arguments);
-  addObject(new JackBackendProvider());
-  return true;
-}
+    /**
+     * Not public API - do not call */
+    static void setBackend (Unison::Backend *backend);
 
+    /**
+     * Not public API - do not call */
+    static void setBufferProvider(Unison::BufferProvider *bufferProvider);
 
-void JackExtension::extensionsInitialized()
-{
-}
+  private:
+    static Unison::Backend *m_backend;
+    static Unison::BufferProvider *m_bufferProvider;
+};
 
+} // Core
 
-void JackExtension::remoteCommand(const QStringList &options, const QStringList &args)
-{
-  Q_UNUSED(options)
-  Q_UNUSED(args)
-}
-
-
-void JackExtension::shutdown()
-{
-}
-
-EXPORT_EXTENSION(JackExtension)
+#endif
 
 // vim: ts=8 sw=2 sts=2 et sta noai

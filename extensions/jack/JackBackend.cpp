@@ -31,6 +31,12 @@
 using namespace Jack::Internal;
 using namespace Unison;
 
+Backend * JackBackendProvider::createBackend()
+{
+  return new JackBackend();
+}
+
+
 JackBackend::JackBackend () :
   m_client(NULL),
   m_myPorts(),
@@ -188,7 +194,7 @@ int JackBackend::disconnect (const QString& source, const QString& dest)
 }
 
 
-int JackBackend::disconnect (Unison::Port *)
+int JackBackend::disconnect (Unison::BackendPort *)
 {
   return 0;
 }

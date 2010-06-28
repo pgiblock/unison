@@ -1,5 +1,5 @@
 /*
- * JackExtension.cpp
+ * IBackendProvider.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,56 +22,36 @@
  *
  */
 
-#include "JackBackend.h"
-#include "JackExtension.h"
+#ifndef UNISON_IBACKEND_PROVIDER_H
+#define UNISON_IBACKEND_PROVIDER_H
 
-#include <extensionsystem/ExtensionManager.h>
+#include <QObject>
 
-#include <QtPlugin>
+#include "Core_global.h"
 
-using namespace Jack::Internal;
-
-JackExtension::JackExtension()
-{
+namespace Unison {
+  class Backend;
 }
 
+namespace Core {
 
-JackExtension::~JackExtension()
+/**
+ * Enumerates and creates a backend.  Used to describe which backends are
+ * available, so that engine can pick the right one during startup. */
+CORE_EXPORT class IBackendProvider : public QObject
 {
-}
+  Q_OBJECT
+  public:
+    IBackendProvider(QObject *parent = 0) : QObject(parent) {};
+    virtual ~IBackendProvider() {};
+
+    virtual QString displayName() = 0;
+    virtual Unison::Backend * createBackend() = 0;
+};
+
+} // Core
 
 
-void JackExtension::parseArguments(const QStringList &arguments)
-{
-  Q_UNUSED(arguments)
-}
-
-
-bool JackExtension::initialize(const QStringList &arguments, QString *errorMessage)
-{
-  Q_UNUSED(errorMessage)
-  parseArguments(arguments);
-  addObject(new JackBackendProvider());
-  return true;
-}
-
-
-void JackExtension::extensionsInitialized()
-{
-}
-
-
-void JackExtension::remoteCommand(const QStringList &options, const QStringList &args)
-{
-  Q_UNUSED(options)
-  Q_UNUSED(args)
-}
-
-
-void JackExtension::shutdown()
-{
-}
-
-EXPORT_EXTENSION(JackExtension)
+#endif
 
 // vim: ts=8 sw=2 sts=2 et sta noai
