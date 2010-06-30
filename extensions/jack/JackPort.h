@@ -47,9 +47,14 @@ class JackPort : public Unison::BackendPort
     {
     }
 
-    Unison::Node* parent () const
+    Unison::Node *parent () const
     {
       return NULL;
+    }
+
+    JackBackend &backend () const
+    {
+      return m_backend;
     }
 
 

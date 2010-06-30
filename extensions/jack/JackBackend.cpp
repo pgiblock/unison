@@ -28,6 +28,10 @@
 #include <QDebug>
 #include <jack/jack.h>
 
+// For connect-and-copy hackfest in processCb
+#include <unison/AudioBuffer.h>
+#include "JackBufferProvider.h"
+
 using namespace Jack::Internal;
 using namespace Unison;
 
@@ -214,7 +218,6 @@ int JackBackend::bufferSizeCb (nframes_t nframes, void* a)
 {
   JackBackend* backend = static_cast<JackBackend*>(a);
   qDebug() << "JACK buffer size changed";
-  qCritical() << "Buffer size changes currently not supported";
   backend->m_bufferLength = nframes;
   // TODO-NOW: somehow update or inform ports/buffers of bufferSize change.
   return 0;
@@ -242,26 +245,47 @@ int JackBackend::graphOrderCb (void* a)
 int JackBackend::processCb (nframes_t nframes, void* a)
 {
   JackBackend* backend = static_cast<JackBackend*>(a);
-  // TODO: make session-agnostic
-  /*
-  if (backend->m_session) {
+  JackBufferProvider nullProvider;
+  int i;
 
-    // Aquire JACK buffers
-    for (int i=0; i<backend->portCount(); ++i) {
-      Port *port = backend->port(i);
-      port->connectToBuffer(backend->m_session->bufferProvider());
+  // Aquire JACK buffers
+  for (i=0; i<backend->portCount(); ++i) {
+    Port *port = backend->port(i);
+    port->connectToBuffer(nullProvider);
 
-      // Re-acquire buffers on ports connected to JACK
+    // Re-acquire buffers on ports connected to JACK
+    /*
+    foreach (Port *other, port->connectedPorts()) {
+      other->connectToBuffer(backend->m_session->bufferProvider());
+    }
+    */
+
+    // Copy data across directly connected jack buffers.
+    // XXX: TODO: This is a super-hack.  In retrospect, it would be better if JackPort
+    // simply didn't have any Buffer at all.  Just copy all the data to connected Ports
+    // before process()ing, Then Fill in outgoing ports on the way out.  This
+    // fixes both connections to regular Ports and to JackPorts.  It also let's
+    // us remove JackBufferProvider and silly calls to connectToBuffer()...
+  }
+
+  // FUN HACK:
+  for (i=0; i<backend->portCount(); ++i) {
+    Port *port = backend->port(i);
+    if (port->type() == AUDIO_PORT && port->direction() == OUTPUT) {
+      QSharedPointer<AudioBuffer> src = qSharedPointerCast<AudioBuffer>(port->buffer());
       foreach (Port *other, port->connectedPorts()) {
-        other->connectToBuffer(backend->m_session->bufferProvider());
+        QSharedPointer<AudioBuffer> dest = qSharedPointerCast<AudioBuffer>(other->buffer());
+        memcpy(dest->data(), src->data(), src->length()*sizeof(sample_t)); 
       }
     }
 
-    ProcessingContext context( nframes );
-    backend->m_session->process(context);
-
   }
+
+  /*
+  ProcessingContext context( nframes );
+  backend->m_session->process(context);
   */
+
   return 0;
 }
 

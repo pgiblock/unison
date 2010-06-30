@@ -64,7 +64,7 @@ void JackPort::connectToBuffer (BufferProvider &)
 {
   // TODO use a callback for buffer-size (more JACK CBs in general.)
   nframes_t size = UNISON_BUFFER_LENGTH; //jack_get_buffer_size(m_backend.jackClient());
-  m_buffer = m_jackBufferProvider->acquire(this, size);
+  m_buffer = m_jackBufferProvider->acquire(this, backend().bufferLength());
 }
 
 // vim: ts=8 sw=2 sts=2 et sta noai

@@ -35,8 +35,12 @@
 */
 
 // For Engine
+#include "Engine.h"
 #include <unison/Backend.h>
 #include <unison/BufferProvider.h>
+
+// For connection frenzy
+#include <unison/BackendPort.h>
 
 #include <extensionsystem/ExtensionManager.h>
 
@@ -120,6 +124,21 @@ void CoreExtension::extensionsInitialized()
     qDebug() << bep->displayName();
   }
   Backend *backend = backends.at(0)->createBackend();
+  Engine::setBackend(backend);
+
+  backend->activate();
+  qDebug("Making some ports");
+  Port * p1 = backend->registerPort("foo", Unison::INPUT);
+  Port * p2 = backend->registerPort("bar", Unison::OUTPUT);
+  p1->connect(p2);
+
+  p1 = backend->registerPort("baz", Unison::INPUT);
+  p2 = backend->registerPort("qux", Unison::OUTPUT);
+  p1->connect(p2);
+
+  // Let these ports leak all over the place. This is a stupid demo
+
+  //backend->deactivate();
 
   //m_mainWindow->extensionsInitialized();
 }

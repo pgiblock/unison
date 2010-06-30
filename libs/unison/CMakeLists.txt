@@ -55,7 +55,6 @@ qt4_wrap_cpp(UNISON_MOC_SRCS ${UNISON_MOC_HEADERS})
 
 include_directories(.. ${PRG_INCLUDE_DIR})
 
-add_definitions(-D'UNISON_BUFFER_LENGTH=${UNISON_BUFFER_LENGTH}')
 add_library(unison SHARED ${UNISON_MOC_SRCS} ${UNISON_SRCS})
 
 target_link_libraries(unison
