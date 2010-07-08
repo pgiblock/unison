@@ -37,7 +37,7 @@ namespace Unison {
 
 namespace Core {
 
-CORE_EXPORT class Engine : public QObject, public PRG::Uncopyable
+class CORE_EXPORT Engine : public QObject, public PRG::Uncopyable
 {
   Q_OBJECT
 

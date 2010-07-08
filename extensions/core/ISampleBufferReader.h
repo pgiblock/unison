@@ -42,7 +42,7 @@ namespace Core {
  * implemenation to ExtensionManager with addObject(), the implementation will
  * then be used by PluginManager.
  * All ISampleBufferReader implementations MUST be reentrant.*/
-CORE_EXPORT class ISampleBufferReader : public QObject
+class CORE_EXPORT ISampleBufferReader : public QObject
 {
   Q_OBJECT
   public:

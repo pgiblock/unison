@@ -38,7 +38,7 @@ namespace Core {
 /**
  * Enumerates and creates a backend.  Used to describe which backends are
  * available, so that engine can pick the right one during startup. */
-CORE_EXPORT class IBackendProvider : public QObject
+class CORE_EXPORT IBackendProvider : public QObject
 {
   Q_OBJECT
   public:
