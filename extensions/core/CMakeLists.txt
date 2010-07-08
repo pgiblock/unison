@@ -56,6 +56,7 @@ target_link_libraries(Core
     ${QT_LIBRARIES}
     aggregation
     extensionsystem
+    unison
 )
 
 set(INSTALL_DIR lib/unison/extensions)

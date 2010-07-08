@@ -67,6 +67,14 @@ void CompositeProcessor::deactivate ()
 }
 
 
+void CompositeProcessor::setBufferLength (BufferProvider &bp, PortType type, nframes_t len)
+{
+  foreach (Processor *p, m_processors) {
+    p->setBufferLength(bp, type, len);
+  }
+}
+
+
 void CompositeProcessor::process (const ProcessingContext & context)
 {
   foreach (CompiledProcessor cp, *m_compiled) {

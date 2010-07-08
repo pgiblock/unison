@@ -25,19 +25,12 @@
 #include "CoreExtension.h"
 
 #include "IBackendProvider.h"
-/*
-#include "editmode.h"
-#include "editormanager.h"
-#include "mainwindow.h"
-#include "modemanager.h"
-#include "fileiconprovider.h"
-#include "designmode.h"
-*/
 
 // For Engine
 #include "Engine.h"
 #include <unison/Backend.h>
 #include <unison/BufferProvider.h>
+#include <unison/CompositeProcessor.h>
 
 // For connection frenzy
 #include <unison/BackendPort.h>
@@ -123,7 +116,14 @@ void CoreExtension::extensionsInitialized()
   foreach (IBackendProvider *bep, backends) {
     qDebug() << bep->displayName();
   }
+
   Backend *backend = backends.at(0)->createBackend();
+  
+  CompositeProcessor *root = new CompositeProcessor();
+  root->hackCompile(*Engine::bufferProvider());
+  backend->setRootProcessor(root);
+
+  
   Engine::setBackend(backend);
 
   backend->activate();
@@ -136,8 +136,8 @@ void CoreExtension::extensionsInitialized()
   p2 = backend->registerPort("qux", Unison::OUTPUT);
   p1->connect(p2);
 
+  // TODO: cleanup
   // Let these ports leak all over the place. This is a stupid demo
-
   //backend->deactivate();
 
   //m_mainWindow->extensionsInitialized();

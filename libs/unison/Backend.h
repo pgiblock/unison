@@ -33,6 +33,7 @@
 namespace Unison {
 
 class BackendPort;
+class Processor;
 
 /**
  * Backend encapsulates Audio-Interface compatibility.  There could
@@ -46,7 +47,10 @@ class Backend : public QObject, PRG::Uncopyable
   Q_OBJECT
 
   public:
-    Backend () {};
+    Backend () :
+      m_rootProcessor(NULL)
+    {};
+
     virtual ~Backend () {};
 
     /**
@@ -83,6 +87,24 @@ class Backend : public QObject, PRG::Uncopyable
     virtual int connect (const QString& source, const QString& dest) = 0;
     virtual int disconnect (const QString& source, const QString& dest) = 0;
     virtual int disconnect (BackendPort *) = 0;
+
+    /**
+     * Set the root-processor used by this backend.  I think ideally, we would
+     * do this in the Engine. But, putting it in the Backend simplifies things
+     * for now */
+    void setRootProcessor (Processor *processor)
+    {
+      m_rootProcessor = processor;
+    }
+
+    Processor *rootProcessor () const
+    {
+      return m_rootProcessor;
+    }
+
+  private:
+    Processor *m_rootProcessor;
+
 };
 
 } // Unison

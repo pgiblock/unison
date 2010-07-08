@@ -30,6 +30,7 @@
 #include "unison/BufferProvider.h"
 
 namespace Jack {
+  /** @internal */
 namespace Internal {
 
 class JackPort;
@@ -37,7 +38,8 @@ class JackPort;
 /**
  * JackBufferProvider acquires buffers that backed by memory managed by Jack.
  * A new acquire() function is used to return these special Buffers.  Calling
- * the overloaded acquire() function is an error. */
+ * the overloaded acquire() function is an error.
+  */
 class JackBufferProvider : public Unison::BufferProvider
 {
   public:

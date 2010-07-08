@@ -54,6 +54,7 @@ class Processor : public Node
     virtual void deactivate () = 0;
 
     virtual void process (const ProcessingContext & context) = 0;
+    virtual void setBufferLength (BufferProvider &bp, PortType type, nframes_t len);
 
     //// Connection oriented Stuff ////
 

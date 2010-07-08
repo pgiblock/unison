@@ -63,6 +63,8 @@ class CompositeProcessor : public Processor
     virtual void activate ();
     virtual void deactivate ();
 
+    virtual void setBufferLength (BufferProvider &bp, PortType type, nframes_t len);
+
     virtual void process (const ProcessingContext& context);
 
     const QSet<Node* const> dependencies () const;

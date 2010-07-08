@@ -62,7 +62,8 @@ class Node {
 
     /**
      * @returns a name for this node, suitable for storing in projects. */
-    virtual QString name() const = 0;
+    virtual QString name () const = 0;
+
 };
 
 /** A Safe pointer to a Node. */

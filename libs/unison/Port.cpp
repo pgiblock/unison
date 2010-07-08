@@ -34,6 +34,12 @@ namespace Unison
   {}
 
 
+  void Port::setBufferLength (BufferProvider &bp, nframes_t len)
+  {
+    
+  }
+
+
   void Port::connect (Port* other)
   {
     // TODO: Check for existing connection and cycles!!!

@@ -89,8 +89,8 @@ class Lv2Port : public Unison::Port
 
 
   private:
-    void acquireInputBuffer (Unison::BufferProvider& provider);
-    void acquireOutputBuffer (Unison::BufferProvider& provider);
+    void acquireInputBuffer (Unison::BufferProvider& provider, Unison::nframes_t len);
+    void acquireOutputBuffer (Unison::BufferProvider& provider, Unison::nframes_t len);
     void updateBufferValue ();
 
     const Lv2World & m_world;

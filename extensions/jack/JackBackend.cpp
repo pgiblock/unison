@@ -25,6 +25,8 @@
 #include "JackBackend.h"
 #include "JackPort.h"
 
+#include <unison/Processor.h>
+
 #include <QDebug>
 #include <jack/jack.h>
 
@@ -281,10 +283,9 @@ int JackBackend::processCb (nframes_t nframes, void* a)
 
   }
 
-  /*
   ProcessingContext context( nframes );
-  backend->m_session->process(context);
-  */
+  Q_ASSERT(backend->rootProcessor());
+  backend->rootProcessor()->process(context);
 
   return 0;
 }

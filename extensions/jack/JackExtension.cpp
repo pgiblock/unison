@@ -29,6 +29,21 @@
 
 #include <QtPlugin>
 
+/*!
+    \namespace Jack
+    \brief Provides classes that implement and expose Jack functionality.
+
+    Primarily provides an implementation of Unison::Backend to be used by
+    Core::Engine.  Currently everything is internal, but, we may expose
+    Jack-Specific functionality into the public API at some point.
+*/
+
+/*!
+    \namespace Jack::Internal
+    \internal
+    \brief BLAH
+*/
+
 using namespace Jack::Internal;
 
 JackExtension::JackExtension()
