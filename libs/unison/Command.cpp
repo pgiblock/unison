@@ -1,5 +1,5 @@
 /*
- * Command.h
+ * Command.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,21 +22,62 @@
  *
  */
 
+#include "Command.h"
 
-#ifndef UNISON_COMMAND_H
-#define UNISON_COMMAND_H
+#include <QtCore/QtGlobal>
 
-#include <QUndoCommand>
+using namespace Unison;
 
-namespace Core {
 
-/** A Command, used for commanding the models and for providing undo and
- *  redo support.  Typedefing QUndoCommand incase we need to add extra fields
- *  in the future. */
-typedef QUndoCommand Command;
+Command::Command () :
+  m_blocking(true),
+  m_state(Invalid),
+  m_errorCode(0)
+{}
 
-} // Core
 
-#endif
+void Command::preExecute ()
+{
+  Q_ASSERT(m_state==Created);
+}
+
+
+void Command::execute (ProcessingContext &ctx)
+{
+  Q_UNUSED(ctx);
+  Q_ASSERT(m_state==PreExecuted);
+  m_state = Executed;
+}
+
+
+void Command::postExecute ()
+{
+  Q_ASSERT(m_state==Executed);
+  m_state = PostExecuted;
+}
+
+
+bool Command::isBlocking () const
+{
+  return m_blocking;
+}
+
+
+Command::State Command::state () const
+{
+  return m_state;
+}
+
+
+bool Command::hasError () const
+{
+  return m_errorCode != 0;
+}
+
+
+int Command::errorCode () const
+{
+  return m_errorCode;
+}
 
 // vim: ts=8 sw=2 sts=2 et sta noai
