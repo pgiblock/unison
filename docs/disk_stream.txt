@@ -1,71 +1,8 @@
 <pgib> torbenh4, I heard you've experiemented with boost::asio some for streaming audio to/from disk?
-* yermandu (~yermandu@unaffiliated/yermandu) has joined #lad
-* CarlFK has quit (Ping timeout: 276 seconds)
-* carloratm has quit (Quit: Lost terminal)
-* maligor has quit (Read error: Connection reset by peer)
-* agroschim (~agroschim@p5083F411.dip.t-dialin.net) has joined #lad
-* neXyon has quit (Quit: bye)
-* carloratm (~carloratm@host140-34-dynamic.46-79-r.retail.telecomitalia.it) has joined #lad
-* dharanamrs (~quassel@86.76.222.67) has joined #lad
-* CarlFK (~tristan@ma50736d0.tmodns.net) has joined #lad
-* agroschim has quit (Quit: Lost terminal)
-* MarcOChapeau has quit (Quit: Leaving.)
-* CarlFK has quit (Ping timeout: 276 seconds)
-* kampfschlaefer (~arnold@pool-48-87-196-89.dbd-ipconnect.net) has joined #lad
-* maligor (~maligor@a85-156-209-40.elisa-laajakaista.fi) has joined #lad
-* beowulf666 (~beowulf@i59F440B8.versanet.de) has joined #lad
-* swh has quit (Quit: swh)
-* ensonic (~ensonic@cs27102025.pp.htv.fi) has joined #lad
-* distrozapper (~robert@p4FD88E1F.dip0.t-ipconnect.de) has joined #lad
-* distrozapper has quit (Quit: Verlassend)
-* distrozapper (~robert@p4FD88E1F.dip0.t-ipconnect.de) has joined #lad
-* MarcOChapeau (~MarcOChap@home.marcochapeau.org) has joined #lad
-* sampo_v2 (~v2@cs78180100.pp.htv.fi) has joined #lad
-* swh (~swh@188-220-41-110.zone11.bethere.co.uk) has joined #lad
-* edogawa_ is now known as edogawa
-* neXyon (~xenon@k-26.vc-graz.ac.at) has joined #lad
-<Nils^> good evening
-<pgib> hi
-* swh has quit (Ping timeout: 265 seconds)
-* neXyon has quit (Read error: Connection reset by peer)
-* neXyon (~xenon@k-26.vc-graz.ac.at) has joined #lad
-* ensonic has quit (Quit: Leaving)
-* jack_ has quit (Remote host closed the connection)
-* kampfschlaefer has quit (Read error: Connection reset by peer)
-* kampfschlaefer (~arnold@pool-94-87-196-89.dbd-ipconnect.net) has joined #lad
-* peppo has quit (Quit: Lämnar)
-* thorwil has quit (Quit: Leaving)
-* faberman_ has quit (Quit: Leaving)
-* hollunder has quit (Quit: WeeChat 0.3.1.1)
-* seanbutnotheard has quit (Quit: Leaving.)
-* sampo_v2 has quit (Quit: Leaving)
 <torbenh4> pgib: i think your mixing up boost::asio and aio.
 <torbenh4> pgib: but aio can improve HD throughput. yes.
-* darkshining (~darkshini@82-170-209-99.ip.telfort.nl) has joined #lad
-<darkshining> I'm having a lot of xruns using this line: /usr/bin/jackd -R -P70 -r -dalsa -dhw:0 -r48000 -p512 -n2 -Xseq
-<darkshining> I have an intel-hda card
-<darkshining> can anyone help me get it working?
-* dharanamrs has quit (Remote host closed the connection)
-* beowulf666 has quit (Quit: Leaving.)
-<torbenh4> darkshining: /usr/bin/jackd -R -P70 -r -dalsa -dhw:0 -r48000 -p512 -n3 -Xseq
-<torbenh4> blackpenguin: i can reproduce it now.
-<torbenh4> libtool builds some .la file wrong.
-<darkshining> torbenh4: doesn't work, still getting the dropouts
-<petern_> -R and -r ?
-<torbenh4> oh.... right. remove -r
-<darkshining> oh
 <petern_> torbenh4, my fault in pgib's mix up :)
-<darkshining> no dropouts now
-* MarcOChapeau has quit (Ping timeout: 246 seconds)
-<torbenh4> blackpenguin: well... dunno, whats the problem with libtool :S
-* distrozapper has quit (Ping timeout: 264 seconds)
-<torbenh4> guess i am gonna switch the build system to waf
-<darkshining> that's funny, I have no audio in jack now, only midi
-<darkshining> ams can't find the PCM things
 <pgib> torbenh4, ah ok. I was talking with petern_ earlier today about recording audio.  The big thing is that audio needs to be read or written to disk, but obviously this is bad to do in the processing thread.
-<darkshining> Alsa_driver: Cannot open PCM device plughw:0,0 for playback.
-<darkshining> Alsa_driver: Cannot open PCM device plughw:0,0 for capture.
-<torbenh4> darkshining: dont use plughw
 <pgib> petern_, metioned your experiences with asio (and meant boost:aio).  
 <torbenh4> aio is not boost.
 <torbenh4> and it doesnt allow you to read audio from the RT thread.
@@ -73,21 +10,13 @@
 <pgib> I guess Jack's ringbuffer may be sufficient?
 <torbenh4> yeah. ringebuffers are the key. then either use semaphores or have some thread periodically wake up and manage filling up the buffers.
 <torbenh4> aio only helps you to increase the HD throughput, while reading 50 channels at once.
-* distrozapper (~robert@p4FD88E1F.dip0.t-ipconnect.de) has joined #lad
-<darkshining> torbenh4: how do I not use plughw?
-<torbenh4> darkshining: your line contains -dhw:0  i dont know. you seem to have some weird .asoundrc
-* neXyon_ (~xenon@k-26.vc-graz.ac.at) has joined #lad
-<darkshining> I just used the line here: http://wiki.archlinux.org/index.php/Pro_Audio#JACK
-* neXyon has quit (Ping timeout: 276 seconds)
 <pgib> ok, I guess semaphores will probably be the best to guard against starvation, but will generally be less efficient
 <torbenh4> less efficient ?
 <torbenh4> the problem is that you cant wait for multiple semaphores.
 <pgib> oh, I read "spinlock", nevermind.  but, I thought the semaphore would block and you can't have blocking in the processing..
 <torbenh4> the process thread only ups the semaphore. thats not blocking.
 <pgib> but it would block if streaming the other direction, right?  maybe I need to take a step back
-<darkshining> brb
 <torbenh4> pgib: the semphore would represent ringbuffer fill. and you need to do it in a way that it will block if the diskthread cant do anything.
-* darkshining has quit (Quit: Lost terminal)
 <torbenh4> so the disk thread will go to sleep.
 <torbenh4> that means for recording diskthread blocks if RB is empty. and for playback diskthread blocks when RB is full.
 <pgib> ahha. and the processing thread always posts/ups. ok I see
@@ -95,23 +24,12 @@
 <torbenh4> pgib: yeah. but be aware that this doesnt scale.
 <torbenh4> it only works if your channel track count never changes.
 <torbenh4> as soon as you dynamically add tracks somehow it will start to break.
-* darkshining (~darkshini@82-170-209-99.ip.telfort.nl) has joined #lad
-<darkshining> still having xruns
 <pgib> "tracks" = a user of a unique audio-file in this context?
 <torbenh4> well.. a "diskstream and jack port it feeds"
-<distrozapper> darkshining: You are running a laptop?
 <pgib> yeah ok, we are on the same page
 <torbenh4> pgib: you cant blocking wait on multiple semaphores.
-<darkshining> yup
-<torbenh4> darkshining: whats your kernel ?
 <pgib> but it won't be multiple semaphores right? one semaphore per diskstream
-* neXyon_ has quit (Quit: gn8)
-<darkshining> torbenh4: 2.6.33-ARCH
 <torbenh4> well.. the semaphore represents the fill level. so if you have different RBs with different filllevels. they cant be represented by a semaphore.
 <torbenh4> pgib: so you just need a thread that wakes up every second. and makes sure all RBs are filled (have space) with like 3 seconds.
-<darkshining> the weird thing is that my old line has worked until there were some updates
 <pgib> yeah, seems a bit cleaner from a design standpoint anyways (disregarding concurrency issues)
 <pgib> thanks for your expertise torbenh4!
-* petern_ ponders breaking it to niels that a delta 66 doesn't have balanced audio...
-<pgib> birthday party time
-* Disconnected (Invalid argument).
