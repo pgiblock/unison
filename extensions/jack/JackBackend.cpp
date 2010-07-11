@@ -284,8 +284,8 @@ int JackBackend::processCb (nframes_t nframes, void* a)
   }
 
   ProcessingContext context( nframes );
-  Q_ASSERT(backend->rootProcessor());
-  backend->rootProcessor()->process(context);
+  Q_ASSERT(backend->rootPatch());
+  backend->rootPatch()->process(context);
 
   return 0;
 }

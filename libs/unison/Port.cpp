@@ -42,6 +42,7 @@ namespace Unison
 
   void Port::connect (Port* other)
   {
+    Q_ASSERT(other->parentPatch() == this->parentPatch());
     // TODO: Check for existing connection and cycles!!!
     m_connectedPorts += other;
     other->m_connectedPorts += this;

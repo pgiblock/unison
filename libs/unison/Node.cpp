@@ -1,5 +1,5 @@
 /*
- * Processor.cpp
+ * Node.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -24,47 +24,30 @@
 
 #include <QDebug>
 
-#include "unison/Patch.h"
+#include "Node.h"
+#include "Patch.h"
 
-namespace Unison {
+using namespace Unison;
 
-Processor::Processor () :
-  m_parent(NULL)
-{}
-
-
-Processor::~Processor ()
+Patch *Node::parentPatch () const
 {
-  if (m_parent) {
-    m_parent->remove(this);
-  }
-}
+  Node *n = parent();
 
-
-void Processor::setBufferLength (BufferProvider &bp, PortType type, nframes_t len)
-{
-  for (int n = 0; n < portCount(); ++n) {
-    Port *p = port(n);
-    if (p->type() == type) {
-      p->setBufferLength(bp, len);
+  // While non-patch parents exist
+  forever {
+    // Graph isn't contained in a patch yet
+    if (n == NULL) {
+      break;
     }
+    // Is this a patch?
+    Patch *p = dynamic_cast<Patch*>(n);
+    if (p) {
+      return p;
+    }
+    n = n->parent();
   }
+
+  return NULL;
 }
-
-
-Node* Processor::parent () const
-{
-  return m_parent;
-}
-
-
-void Processor::setParent (Patch* parent)
-{
-  Q_ASSERT(parent != NULL);
-  // TODO-NOW: A bunch of assertions
-  m_parent = parent;
-}
-
-} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

@@ -1,5 +1,5 @@
 /*
- * CompositeProcessor.cpp
+ * Patch.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -25,33 +25,33 @@
 #include <QDebug>
 
 #include "unison/Node.h"
-#include "unison/CompositeProcessor.h"
+#include "unison/Patch.h"
 #include "unison/BufferProvider.h"
 
 namespace Unison
 {
 
-int CompositeProcessor::portCount () const
+int Patch::portCount () const
 {
   return 0;
 }
 
 
-Port* CompositeProcessor::port (int idx) const
+Port* Patch::port (int idx) const
 {
   // TODO: Implement registered-ports
   return NULL;
 }
 
 
-Port* CompositeProcessor::port (QString id) const
+Port* Patch::port (QString id) const
 {
   // TODO: Implement registered-ports
   return NULL;
 }
 
 
-void CompositeProcessor::activate ()
+void Patch::activate ()
 {
   foreach (Processor* p, m_processors) {
     p->activate();
@@ -59,7 +59,7 @@ void CompositeProcessor::activate ()
 }
 
 
-void CompositeProcessor::deactivate ()
+void Patch::deactivate ()
 {
   foreach (Processor* p, m_processors) {
     p->deactivate();
@@ -67,7 +67,7 @@ void CompositeProcessor::deactivate ()
 }
 
 
-void CompositeProcessor::setBufferLength (BufferProvider &bp, PortType type, nframes_t len)
+void Patch::setBufferLength (BufferProvider &bp, PortType type, nframes_t len)
 {
   foreach (Processor *p, m_processors) {
     p->setBufferLength(bp, type, len);
@@ -75,18 +75,18 @@ void CompositeProcessor::setBufferLength (BufferProvider &bp, PortType type, nfr
 }
 
 
-void CompositeProcessor::process (const ProcessingContext & context)
+void Patch::process (const ProcessingContext & context)
 {
   foreach (CompiledProcessor cp, *m_compiled) {
-    //qDebug() << "CompositeProcessor" << name() << " processing " << cp.processor->name();
+    //qDebug() << "Patch" << name() << " processing " << cp.processor->name();
     cp.processor->process(context);
   }
 }
 
 
-const QSet<Node* const> CompositeProcessor::dependencies () const
+const QSet<Node* const> Patch::dependencies () const
 {
-  QSet<Node* const> n(m_derivedDependencies);
+  QSet<Node* const> n;
   int count = portCount();
   for (int i=0; i<count; ++i) {
     Port* p  = port(i);
@@ -98,7 +98,7 @@ const QSet<Node* const> CompositeProcessor::dependencies () const
 }
 
 
-const QSet<Node* const> CompositeProcessor::dependents () const
+const QSet<Node* const> Patch::dependents () const
 {
   QSet<Node* const> n;
   int count = portCount();
@@ -112,13 +112,13 @@ const QSet<Node* const> CompositeProcessor::dependents () const
 }
 
 
-QString CompositeProcessor::name () const
+QString Patch::name () const
 {
-  return "CompositeProcessor";
+  return "Patch";
 }
 
 
-void CompositeProcessor::add (Processor * processor)
+void Patch::add (Processor * processor)
 {
   Q_ASSERT(processor != NULL);
   if (processor->parent() == this ) {
@@ -134,7 +134,7 @@ void CompositeProcessor::add (Processor * processor)
 }
 
 
-void CompositeProcessor::remove (Processor * processor)
+void Patch::remove (Processor * processor)
 {
   Q_ASSERT(processor != NULL);
   Q_ASSERT(processor->parent() == this);
@@ -146,7 +146,7 @@ void CompositeProcessor::remove (Processor * processor)
 /**
  * Walks @n's parents and returns the parent closest to @_this.  If node @n
  * is not contained in @_this, then NULL is returned.  */
-Processor* findOutermostProcessor (CompositeProcessor * _this, Node * n)
+Processor* findOutermostProcessor (Patch * _this, Node * n)
 {
   Processor* outer = NULL;
   while (n) {
@@ -165,31 +165,24 @@ Processor* findOutermostProcessor (CompositeProcessor * _this, Node * n)
 
 // 2 if child's dependency is sibling, nothing special - walk and visit
 // 3 if child's dependency is nested, then walk into the "nesting" sibling instead
-void CompositeProcessor::compileWalk (Node* n,
-    QList<CompiledProcessor>& output)
+void Patch::compileWalk (Node *n,
+    QList<CompiledProcessor> &output)
 {
-  // Find the processor directly contained in this composite, if any.
-  Processor* outer = findOutermostProcessor(this, n);
+  Processor *p;
   bool pendingAddition = false;
 
-  // n is outside - case1
-  if (outer == NULL) {
-    m_derivedDependencies.insert(n);
-    return;
-  }
-
-  if (!outer->isVisited()) {
-    outer->visit();
+  if ((p = dynamic_cast<Processor*>(n)) && !p->isVisited()) {
+    p->visit();
     pendingAddition = true;
   }
 
-  foreach (Node* dep, n->dependencies()) {
+  foreach (Node* dep, p->dependencies()) {
     compileWalk( dep, output );
   }
 
   if (pendingAddition) {
     CompiledProcessor cp;
-    cp.processor = outer;
+    cp.processor = p;
     output.append(cp);
   }
 }
@@ -201,11 +194,9 @@ void CompositeProcessor::compileWalk (Node* n,
 */
 
 
-void CompositeProcessor::compile (QList<Processor*> input,
+void Patch::compile (QList<Processor*> input,
     QList<CompiledProcessor>& output)
 {
-  m_derivedDependencies.clear();
-
   // Mark everything as unvisited
   QListIterator<Processor*> i( input );
   while (i.hasNext()) {
@@ -256,7 +247,7 @@ void CompositeProcessor::compile (QList<Processor*> input,
 }
 
 
-void CompositeProcessor::compile (BufferProvider & bufferProvider) {
+void Patch::compile (BufferProvider & bufferProvider) {
   Q_ASSERT(QAtomicPointer< QList<CompiledProcessor> >
                ::isFetchAndStoreNative());
 

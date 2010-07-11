@@ -32,7 +32,7 @@
 namespace Unison
 {
 
-class CompositeProcessor;
+class Patch;
 class ProcessingContext;
 
 /**
@@ -59,7 +59,7 @@ class Processor : public Node
     //// Connection oriented Stuff ////
 
     Node* parent () const;
-    void setParent(CompositeProcessor* parent);
+    void setParent(Patch* parent);
 
     /**
      * Has this node been visited (traversed)?  While compiling and perhaps
@@ -85,7 +85,7 @@ class Processor : public Node
     };
 
   private:
-    CompositeProcessor* m_parent;
+    Patch* m_parent;
     bool m_visited;
 };
 

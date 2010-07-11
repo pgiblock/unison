@@ -48,7 +48,7 @@ class Backend : public QObject, PRG::Uncopyable
 
   public:
     Backend () :
-      m_rootProcessor(NULL)
+      m_rootPatch(NULL)
     {};
 
     virtual ~Backend () {};
@@ -94,16 +94,16 @@ class Backend : public QObject, PRG::Uncopyable
      * for now */
     void setRootProcessor (Processor *processor)
     {
-      m_rootProcessor = processor;
+      m_rootPatch = processor;
     }
 
-    Processor *rootProcessor () const
+    Processor *rootPatch () const
     {
-      return m_rootProcessor;
+      return m_rootPatch;
     }
 
   private:
-    Processor *m_rootProcessor;
+    Processor *m_rootPatch;
 
 };
 

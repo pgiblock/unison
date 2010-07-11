@@ -30,7 +30,7 @@
 #include "Engine.h"
 #include <unison/Backend.h>
 #include <unison/BufferProvider.h>
-#include <unison/CompositeProcessor.h>
+#include <unison/Patch.h>
 
 // For connection frenzy
 #include <unison/BackendPort.h>
@@ -119,7 +119,7 @@ void CoreExtension::extensionsInitialized()
 
   Backend *backend = backends.at(0)->createBackend();
   
-  CompositeProcessor *root = new CompositeProcessor();
+  Patch *root = new Patch();
   root->hackCompile(*Engine::bufferProvider());
   backend->setRootProcessor(root);
 

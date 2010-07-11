@@ -25,7 +25,7 @@
 #include <QDebug>
 
 #include "unison/Node.h"
-#include "unison/CompositeProcessor.h"
+#include "unison/Patch.h"
 #include "unison/Session.h"
 #include "unison/PooledBufferProvider.h"
 #include "unison/JackEngine.h"
@@ -33,11 +33,11 @@
 namespace Core {
 
 Session::Session (JackEngine& engine) :
-  m_rootProcessor(NULL),
+  m_rootPatch(NULL),
   m_bufferProvider(),
   m_engine(&engine)
 {
-  m_rootProcessor = new CompositeProcessor();
+  m_rootPatch = new Patch();
 
   engine.setSession(this);
 }
@@ -50,24 +50,24 @@ Session::~Session ()
 
 void Session::process (const ProcessingContext& context)
 {
-  m_rootProcessor->process(context);
+  m_rootPatch->process(context);
 }
 
 
 void Session::hackCompile ()
 {
-  m_rootProcessor->hackCompile(bufferProvider());
+  m_rootPatch->hackCompile(bufferProvider());
 }
 
 void Session::add (Processor* processor)
 {
-  m_rootProcessor->add(processor);
+  m_rootPatch->add(processor);
 }
 
 
 void Session::remove (Processor* processor)
 {
-  m_rootProcessor->remove(processor);
+  m_rootPatch->remove(processor);
 }
 
 } // Core

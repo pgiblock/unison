@@ -23,7 +23,8 @@
 
 set(UNISON_SRCS
     Command.cpp
-    CompositeProcessor.cpp
+    Node.cpp
+    Patch.cpp
     PooledBufferProvider.cpp
     Port.cpp
     Processor.cpp
@@ -42,7 +43,7 @@ set(UNISON_INCLUDES
     Buffer.h
     BufferProvider.h
     Command.h
-    CompositeProcessor.h
+    Patch.h
     ControlBuffer.h
     Node.h
     Plugin.h

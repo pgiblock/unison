@@ -33,7 +33,7 @@
 
 namespace Core {
 
-class CompositeProcessor;
+class Patch;
 class PooledBufferProvider;
 class JackEngine;
 class Node;
@@ -68,7 +68,7 @@ CORE_EXPORT class Session : PRG::Uncopyable
     void remove (Processor* processor);
 
   private:
-    CompositeProcessor* m_rootProcessor;
+    Patch* m_rootPatch;
     PooledBufferProvider* m_bufferProvider;
     JackEngine* m_engine;
 };
