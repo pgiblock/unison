@@ -1,5 +1,5 @@
 /*
- * Command.cpp
+ * Commander.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,63 +22,54 @@
  *
  */
 
-#include "unison/Command.h"
+#include "Commander.h"
+#include "Command.h"
 
-#include <QtCore/QtGlobal>
+#include <QMutex>
+#include <QMutexLocker>
 
 using namespace Unison;
 
+Commander* Commander::m_instance = static_cast<Commander*>(NULL);
 
-Command::Command () :
-  m_blocking(true),
-  m_state(Invalid),
-  m_errorCode(0)
-{}
-
-
-void Command::preExecute ()
+void Commander::initialize ()
 {
-  Q_ASSERT(m_state==Created);
-  m_state = PreExecuted;
+  m_instance = new Commander();
 }
 
 
-void Command::execute (ProcessingContext &ctx)
+Commander::Commander () :
+  m_writeLock(),
+  m_blockWait(),
+  m_buffer(16)
 {
-  Q_UNUSED(ctx);
-  Q_ASSERT(m_state==PreExecuted);
-  m_state = Executed;
+  //
 }
 
 
-void Command::postExecute ()
+void Commander::push (Command *command)
 {
-  Q_ASSERT(m_state==Executed);
-  m_state = PostExecuted;
-}
+  bool block = command->isBlocking();
+  size_t size = sizeof(command);
+
+  QMutexLocker locker(&m_writeLock);
+  command->preExecute();
+  m_buffer.write(&command, 1);
+  if (block) {
+    m_blockWait.acquire();
+  }
+} 
 
 
-bool Command::isBlocking () const
+void Commander::process (ProcessingContext &context)
 {
-  return m_blocking;
-}
+  const int MAX_COMMANDS = 4;
+  Command* commands[MAX_COMMANDS];
+  int cnt = m_buffer.read(commands, MAX_COMMANDS);
 
-
-Command::State Command::state () const
-{
-  return m_state;
-}
-
-
-bool Command::hasError () const
-{
-  return m_errorCode != 0;
-}
-
-
-int Command::errorCode () const
-{
-  return m_errorCode;
+  for (int i=0; i<cnt; ++i) {
+    commands[i]->execute(context);
+  }
 }
 
 // vim: ts=8 sw=2 sts=2 et sta noai

@@ -23,6 +23,7 @@
 
 set(UNISON_SRCS
     Command.cpp
+    Commander.cpp
     Node.cpp
     Patch.cpp
     PooledBufferProvider.cpp
@@ -42,6 +43,7 @@ set(UNISON_INCLUDES
     Buffer.h
     BufferProvider.h
     Command.h
+    Commander.h
     ControlBuffer.h
     Node.h
     Patch.h
