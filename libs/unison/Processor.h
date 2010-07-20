@@ -50,7 +50,7 @@ class Processor : public Node
     virtual Port* port (int idx) const = 0;
     virtual Port* port (QString name) const = 0;
 
-    virtual void activate () = 0;
+    virtual void activate (BufferProvider &bp) = 0;
     virtual void deactivate () = 0;
 
     virtual void process (const ProcessingContext & context) = 0;

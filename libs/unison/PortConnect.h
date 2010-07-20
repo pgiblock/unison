@@ -1,5 +1,5 @@
 /*
- * Commander.cpp
+ * Port_Connect.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,55 +22,35 @@
  *
  */
 
-#include "Commander.h"
-#include "Command.h"
 
-#include <QMutex>
-#include <QMutexLocker>
+#ifndef UNISON_PORT_CONNECT_H
+#define UNISON_PORT_CONNECT_H
 
-using namespace Unison;
-using namespace Unison::Internal;
+#include "unison/Command.h"
+#include "unison/Port.h"
+#include "unison/Patch.h"
 
-Commander* Commander::m_instance = static_cast<Commander*>(NULL);
+namespace Unison {
+class ProcessingContext;
 
-void Commander::initialize ()
+namespace Internal {
+
+class PortConnect : public Command
 {
-  m_instance = new Commander();
-}
+  public:
+    PortConnect (Port *port1, Port *port2);
+    void preExecute ();
+    void execute (ProcessingContext &context);
+    void postExecute ();
+  private:
+    Port *m_port1, *m_port2;
+    Patch *m_patch;
+    QList<Patch::CompiledProcessor>* m_compiled;
+};
 
+} // Internal
+} // Unison
 
-Commander::Commander () :
-  m_writeLock(),
-  m_blockWait(),
-  m_buffer(16)
-{
-  //
-}
-
-
-void Commander::push (Command *command)
-{
-  bool block = command->isBlocking();
-  size_t size = sizeof(command);
-
-  QMutexLocker locker(&m_writeLock);
-  command->preExecute();
-  m_buffer.write(&command, 1);
-  if (block) {
-    m_blockWait.acquire();
-  }
-} 
-
-
-void Commander::process (ProcessingContext &context)
-{
-  const int MAX_COMMANDS = 4;
-  Command* commands[MAX_COMMANDS];
-  int cnt = m_buffer.read(commands, MAX_COMMANDS);
-
-  for (int i=0; i<cnt; ++i) {
-    commands[i]->execute(context);
-  }
-}
+#endif
 
 // vim: ts=8 sw=2 sts=2 et sta noai

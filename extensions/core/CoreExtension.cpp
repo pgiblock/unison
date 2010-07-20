@@ -30,10 +30,14 @@
 #include "Engine.h"
 #include <unison/Backend.h>
 #include <unison/BufferProvider.h>
+#include <unison/Commander.h>
 #include <unison/Patch.h>
+#include <unison/PooledBufferProvider.h>
 
 // For connection frenzy
+#include "PluginManager.h"
 #include <unison/BackendPort.h>
+#include <unison/Plugin.h>
 
 #include <extensionsystem/ExtensionManager.h>
 
@@ -91,6 +95,15 @@ bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessa
 {
   Q_UNUSED(errorMessage);
   parseArguments(arguments);
+
+  PooledBufferProvider *bufProvider = new PooledBufferProvider();
+  bufProvider->setBufferLength(1024);
+  Engine::setBufferProvider(bufProvider);
+
+  PluginManager::initializeInstance();
+
+  Unison::Internal::Commander::initialize();
+
   /*
   const bool success = m_mainWindow->init(errorMessage);
   if (success) {
@@ -110,6 +123,7 @@ bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessa
 void CoreExtension::extensionsInitialized()
 {
   ExtensionManager *extMgr = ExtensionManager::instance();
+  
   // Find backends, load the first one
   QList<IBackendProvider *> backends = extMgr->getObjects<IBackendProvider>();
   qDebug("Found Backends:");
@@ -120,21 +134,36 @@ void CoreExtension::extensionsInitialized()
   Backend *backend = backends.at(0)->createBackend();
   
   Patch *root = new Patch();
-  root->hackCompile(*Engine::bufferProvider());
   backend->setRootProcessor(root);
-
   
   Engine::setBackend(backend);
 
   backend->activate();
-  qDebug("Making some ports");
-  Port * p1 = backend->registerPort("foo", Unison::INPUT);
-  Port * p2 = backend->registerPort("bar", Unison::OUTPUT);
-  p1->connect(p2);
 
+  PluginDescriptorPtr desc = PluginManager::instance()->descriptor("http://plugin.org.uk/swh-plugins/vynil");
+  PluginPtr plugin = desc->createPlugin(48000);
+  plugin->activate(*Engine::bufferProvider());
+  root->add(plugin);
+
+  for (int i=0; i< plugin->portCount(); ++i) {
+    Port *p = plugin->port(i);
+    if (p->type() == CONTROL_PORT) {
+      p->setValue(p->maximum());
+    }
+  }
+  
+  qDebug("Making some ports");
+  Port * p1 = backend->registerPort("foo", Unison::OUTPUT);
+  Port * p2 = backend->registerPort("bar", Unison::OUTPUT);
+
+  plugin->port(5)->connect(p1);
+  plugin->port(6)->connect(p2);
+  
   p1 = backend->registerPort("baz", Unison::INPUT);
-  p2 = backend->registerPort("qux", Unison::OUTPUT);
-  p1->connect(p2);
+  p2 = backend->registerPort("qux", Unison::INPUT);
+
+  plugin->port(7)->connect(p1);
+  plugin->port(8)->connect(p2);
 
   // TODO: cleanup
   // Let these ports leak all over the place. This is a stupid demo

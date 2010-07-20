@@ -31,6 +31,12 @@
 namespace Unison
 {
 
+Patch::Patch () :
+  Processor()
+{
+  m_compiled = new QList<CompiledProcessor>();
+}
+
 int Patch::portCount () const
 {
   return 0;
@@ -51,10 +57,10 @@ Port* Patch::port (QString id) const
 }
 
 
-void Patch::activate ()
+void Patch::activate (BufferProvider &bp)
 {
   foreach (Processor* p, m_processors) {
-    p->activate();
+    p->activate(bp);
   }
 }
 
@@ -176,7 +182,7 @@ void Patch::compileWalk (Node *n,
     pendingAddition = true;
   }
 
-  foreach (Node* dep, p->dependencies()) {
+  foreach (Node* dep, n->dependencies()) {
     compileWalk( dep, output );
   }
 
@@ -194,11 +200,10 @@ void Patch::compileWalk (Node *n,
 */
 
 
-void Patch::compile (QList<Processor*> input,
-    QList<CompiledProcessor>& output)
+void Patch::compile (QList<CompiledProcessor>& output)
 {
   // Mark everything as unvisited
-  QListIterator<Processor*> i( input );
+  QListIterator<Processor*> i( m_processors );
   while (i.hasNext()) {
     i.next()->unvisit();
   }
@@ -240,13 +245,14 @@ void Patch::compile (QList<Processor*> input,
   }
 
   // Then compile everything else
-  QListIterator<Processor*> p( input );
+  QListIterator<Processor*> p( m_processors );
   while (p.hasNext()) {
     compileWalk( p.next(), output );
   }
 }
 
 
+/*
 void Patch::compile (BufferProvider & bufferProvider) {
   Q_ASSERT(QAtomicPointer< QList<CompiledProcessor> >
                ::isFetchAndStoreNative());
@@ -271,6 +277,7 @@ void Patch::compile (BufferProvider & bufferProvider) {
   compiledSwap = m_compiled.fetchAndStoreRelaxed( compiledSwap );
   delete compiledSwap;
 }
+*/
 
 } // Unison
 

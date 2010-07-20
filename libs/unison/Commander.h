@@ -36,6 +36,8 @@ namespace Unison {
 class Command;
 class ProcessingContext;
 
+namespace Internal {
+
 /**
  * Commander is a centralized place for components to queue commands
  * that require synchronization with the processing thread.
@@ -44,7 +46,7 @@ class ProcessingContext;
  * temporary location until we find a place for it. */
 class Commander
 {
-  Q_DISABLE_COPY
+  Q_DISABLE_COPY(Commander)
   public:
     /**
      * Initialize the static Commander instance */
@@ -99,6 +101,7 @@ class Commander
     RingBuffer<Command *> m_buffer; ///< Storage for queued Commands
 };
 
+} // Internal
 } // Unison
 
 #endif

@@ -114,7 +114,7 @@ class Lv2Plugin : public Unison::Plugin
       return m_instance;
     }
 
-    void activate ();
+    void activate (Unison::BufferProvider &bp);
     void deactivate ();
 
     void process(const Unison::ProcessingContext & context);

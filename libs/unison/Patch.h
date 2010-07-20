@@ -43,8 +43,7 @@ class ProcessingContext;
 class Patch : public Processor
 {
   public:
-    Patch () : Processor()
-    {}
+    Patch ();
 
     virtual ~Patch ()
     {};
@@ -60,7 +59,7 @@ class Patch : public Processor
     virtual Port* port (int idx) const;
     virtual Port* port (QString id) const;
 
-    virtual void activate ();
+    virtual void activate (BufferProvider &bp);
     virtual void deactivate ();
 
     virtual void setBufferLength (BufferProvider &bp, PortType type, nframes_t len);
@@ -70,32 +69,33 @@ class Patch : public Processor
     const QSet<Node* const> dependencies () const;
     const QSet<Node* const> dependents () const;
 
+    // Private API :: TODO: Move to D-ptr
+
+    struct CompiledProcessor {
+      Processor* processor;
+    };
+
     /**
-     * A hack to let subs force-compile for now.  Should be removed once
-     * CompiledProcessor actually manages connect()ing */
-    void hackCompile (BufferProvider& pool)
+     * Compiles the given list of processors into a proper traversal for
+     * rendering.  Not reentrant. */
+    void compile (QList<CompiledProcessor>& output);
+
+    void setCompiledProcessors(QList<CompiledProcessor>* processors)
     {
-      compile(pool);
+      m_compiled = processors;
     }
+
+    QList<CompiledProcessor>* compiledProcessors() const
+    {
+      return m_compiled;
+    }
+
 
   protected:
     virtual void registerPort()
     {};
 
   private:
-    struct CompiledProcessor {
-      Processor* processor;
-    };
-
-    /**
-     * Compiles graph of child processors */
-    void compile (BufferProvider& bufferProvider);
-
-    /**
-     * Compiles the given list of processors into a proper traversal for
-     * rendering.  Not reentrant. */
-    void compile (QList<Processor*> input,
-                         QList<CompiledProcessor>& output);
 
     /**
      * A recursive walk into the dependencies of the node.  Processors

@@ -31,7 +31,9 @@
 #include <jack/jack.h>
 
 // For connect-and-copy hackfest in processCb
+#include <core/Engine.h>
 #include <unison/AudioBuffer.h>
+#include <unison/Commander.h>
 #include "JackBufferProvider.h"
 
 using namespace Jack::Internal;
@@ -250,17 +252,20 @@ int JackBackend::processCb (nframes_t nframes, void* a)
   JackBufferProvider nullProvider;
   int i;
 
+  ProcessingContext context( nframes );
+
+  Unison::Internal::Commander::instance()->process(context);
+
+
   // Aquire JACK buffers
   for (i=0; i<backend->portCount(); ++i) {
     Port *port = backend->port(i);
     port->connectToBuffer(nullProvider);
 
     // Re-acquire buffers on ports connected to JACK
-    /*
     foreach (Port *other, port->connectedPorts()) {
-      other->connectToBuffer(backend->m_session->bufferProvider());
+      other->connectToBuffer(*Core::Engine::bufferProvider());
     }
-    */
 
     // Copy data across directly connected jack buffers.
     // XXX: TODO: This is a super-hack.  In retrospect, it would be better if JackPort
@@ -270,20 +275,6 @@ int JackBackend::processCb (nframes_t nframes, void* a)
     // us remove JackBufferProvider and silly calls to connectToBuffer()...
   }
 
-  // FUN HACK:
-  for (i=0; i<backend->portCount(); ++i) {
-    Port *port = backend->port(i);
-    if (port->type() == AUDIO_PORT && port->direction() == OUTPUT) {
-      QSharedPointer<AudioBuffer> src = qSharedPointerCast<AudioBuffer>(port->buffer());
-      foreach (Port *other, port->connectedPorts()) {
-        QSharedPointer<AudioBuffer> dest = qSharedPointerCast<AudioBuffer>(other->buffer());
-        memcpy(dest->data(), src->data(), src->length()*sizeof(sample_t)); 
-      }
-    }
-
-  }
-
-  ProcessingContext context( nframes );
   Q_ASSERT(backend->rootPatch());
   backend->rootPatch()->process(context);
 

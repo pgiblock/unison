@@ -28,6 +28,7 @@ set(UNISON_SRCS
     Patch.cpp
     PooledBufferProvider.cpp
     Port.cpp
+    PortConnect.cpp
     Processor.cpp
     SampleBuffer.cpp
 )

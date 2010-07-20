@@ -26,11 +26,11 @@
 #ifndef UNISON_PORT_H
 #define UNISON_PORT_H
 
+#include "unison/Command.h"
 #include "unison/Node.h"
 #include "unison/BufferProvider.h"
 
-namespace Unison
-{
+namespace Unison {
 
 class ProcessingContext;
 
@@ -115,6 +115,23 @@ class Port : public Node
     /** @returns Either the connected Nodes or the interfaced Nodes */
     const QSet<Node* const> dependents () const;
 
+    // Private API :: TODO: Move to D-ptr
+    QSet<Port* const>* _connectedPorts ()
+    {
+      return &m_connectedPorts;
+    }
+
+
+  protected:
+    // TODO: Move to some Port::Private class or something
+    class Disconnect : public Command 
+    {
+      public:
+        void preExecute ();
+        void execute (ProcessingContext &context);
+        void postExecute ();
+    };
+
   protected:
     /**
      * Used by subclasses to list the nodes directly "behind" this port.  For
@@ -125,6 +142,7 @@ class Port : public Node
 
   protected:
     SharedBufferPtr m_buffer;
+
   private:
     QSet<Port* const> m_connectedPorts;
 };
