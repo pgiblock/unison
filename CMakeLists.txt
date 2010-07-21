@@ -37,7 +37,7 @@ include(FindPkgConfig)
 include(FindJack)
 include(FindSlv2)
 
-set(DOXYFILE_LATEX_DIR "")
+set(DOXYFILE_LATEX "NO")
 include(UseDoxygen OPTIONAL)
 
 configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in

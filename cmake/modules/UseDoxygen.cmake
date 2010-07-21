@@ -24,6 +24,7 @@
 # Variables you may define are:
 #  DOXYFILE_OUTPUT_DIR - Path where the Doxygen output is stored. Defaults to "doc".
 #
+#  DOXYFILE_LATEX - Set to "NO" if you do not want the LaTeX documentation to be built.
 #  DOXYFILE_LATEX_DIR - Directory where the Doxygen LaTeX output is stored. Defaults to "latex".
 #
 #  DOXYFILE_HTML_DIR - Directory where the Doxygen html output is stored. Defaults to "html".
@@ -54,7 +55,8 @@ if(DOXYGEN_FOUND)
 endif()
 
 if(DOXYGEN_FOUND AND DOXYFILE_IN_FOUND)
-	add_custom_target(doxygen ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+	add_custom_target(doxygen
+		${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile > /dev/null)
 
 	usedoxygen_set_default(DOXYFILE_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/doc")
 	usedoxygen_set_default(DOXYFILE_HTML_DIR "html")
@@ -62,12 +64,14 @@ if(DOXYGEN_FOUND AND DOXYFILE_IN_FOUND)
 	set_property(DIRECTORY APPEND PROPERTY
 			ADDITIONAL_MAKE_CLEAN_FILES "${DOXYFILE_OUTPUT_DIR}/${DOXYFILE_HTML_DIR}")
 
-	set(DOXYFILE_LATEX "NO")
+	## LaTeX
 	set(DOXYFILE_PDFLATEX "NO")
 	set(DOXYFILE_DOT "NO")
 
 	find_package(LATEX)
-	if(LATEX_COMPILER AND MAKEINDEX_COMPILER AND NOT DOXYFILE_LATEX_DIR STREQUAL "")
+	find_program(MAKE_PROGRAM make)
+	if(LATEX_COMPILER AND MAKEINDEX_COMPILER AND MAKE_PROGRAM AND
+			(NOT DEFINED DOXYFILE_LATEX OR DOXYFILE_LATEX STREQUAL "YES"))
 		set(DOXYFILE_LATEX "YES")
 		usedoxygen_set_default(DOXYFILE_LATEX_DIR "latex")
 
@@ -84,8 +88,10 @@ if(DOXYGEN_FOUND AND DOXYFILE_IN_FOUND)
 
 		add_custom_command(TARGET doxygen
 			POST_BUILD
-			COMMAND ${CMAKE_MAKE_PROGRAM}
+			COMMAND ${MAKE_PROGRAM} > /dev/null
 			WORKING_DIRECTORY "${DOXYFILE_OUTPUT_DIR}/${DOXYFILE_LATEX_DIR}")
+	else()
+		set(DOXYGEN_LATEX "NO")
 	endif()
 
 
