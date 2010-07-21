@@ -1,5 +1,5 @@
 /*
- * PortConnect.h
+ * PortDisconnect.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -23,8 +23,8 @@
  */
 
 
-#ifndef UNISON_PORT_CONNECT_H
-#define UNISON_PORT_CONNECT_H
+#ifndef UNISON_PORT_DISCONNECT_H
+#define UNISON_PORT_DISCONNECT_H
 
 #include "unison/Command.h"
 #include "unison/Port.h"
@@ -34,10 +34,10 @@ namespace Unison {
   class ProcessingContext;
   namespace Internal {
 
-class PortConnect : public Command
+class PortDisconnect : public Command
 {
   public:
-    PortConnect (Port *port1, Port *port2);
+    PortDisconnect (Port *port1, Port *port2);
     void preExecute ();
     void execute (ProcessingContext &context);
     void postExecute ();

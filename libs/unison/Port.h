@@ -121,17 +121,6 @@ class Port : public Node
       return &m_connectedPorts;
     }
 
-
-  protected:
-    // TODO: Move to some Port::Private class or something
-    class Disconnect : public Command 
-    {
-      public:
-        void preExecute ();
-        void execute (ProcessingContext &context);
-        void postExecute ();
-    };
-
   protected:
     /**
      * Used by subclasses to list the nodes directly "behind" this port.  For

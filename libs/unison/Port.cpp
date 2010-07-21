@@ -24,6 +24,7 @@
 
 #include "unison/Port.h"
 #include "unison/PortConnect.h"
+#include "unison/PortDisconnect.h"
 
 #include "unison/Commander.h"
 
@@ -46,15 +47,15 @@ void Port::setBufferLength (BufferProvider &bp, nframes_t len)
 
 void Port::connect (Port* other)
 {
-  Internal::PortConnect *cmd = new Internal::PortConnect(this, other);
+  Command *cmd = new Internal::PortConnect(this, other);
   Internal::Commander::instance()->push(cmd);
 }
 
 
 void Port::disconnect (Port* other)
 {
-  m_connectedPorts -= other;
-  other->m_connectedPorts -= this;
+  Command *cmd = new Internal::PortDisconnect(this, other);
+  Internal::Commander::instance()->push(cmd);
 }
 
 

@@ -29,6 +29,7 @@ set(UNISON_SRCS
     PooledBufferProvider.cpp
     Port.cpp
     PortConnect.cpp
+    PortDisconnect.cpp
     Processor.cpp
     SampleBuffer.cpp
 )
@@ -44,7 +45,6 @@ set(UNISON_INCLUDES
     Buffer.h
     BufferProvider.h
     Command.h
-    Commander.h
     ControlBuffer.h
     Node.h
     Patch.h

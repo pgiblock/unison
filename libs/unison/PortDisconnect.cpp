@@ -1,5 +1,5 @@
 /*
- * PortConnect.cpp
+ * PortDisconnect.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -23,13 +23,13 @@
  */
 
 
-#include "unison/PortConnect.h"
+#include "unison/PortDisconnect.h"
 #include "unison/ProcessingContext.h"
 
 namespace Unison {
   namespace Internal {
 
-PortConnect::PortConnect (Port *port1, Port *port2) :
+PortDisconnect::PortDisconnect (Port *port1, Port *port2) :
   Command(),
   m_port1(port1),
   m_port2(port2),
@@ -41,39 +41,34 @@ PortConnect::PortConnect (Port *port1, Port *port2) :
 }
 
 
-void PortConnect::preExecute ()
+void PortDisconnect::preExecute ()
 {
-  printf("PRE EXECUTING\n");
-  // TODO: Check for existing connection and cycles!!!
   m_patch = m_port1->parentPatch();
   Q_ASSERT(m_patch);
   // TODO Bring back this assertion once BackendPorts have a parent node
   //Q_ASSERT(m_patch == m_port2->parentPatch());
-  Q_ASSERT(!m_port1->isConnected(m_port2));
-  Q_ASSERT(!m_port2->isConnected(m_port1));
+  Q_ASSERT(m_port1->isConnected(m_port2));
+  Q_ASSERT(m_port2->isConnected(m_port1));
 
-  *m_port1->_connectedPorts() += m_port2;
-  *m_port2->_connectedPorts() += m_port1;
+  *m_port1->_connectedPorts() -= m_port2;
+  *m_port2->_connectedPorts() -= m_port1;
   
   m_patch->compile(*m_compiled);
   
   Command::preExecute();
-  printf("PRE EXECUTED\n");
 }
 
 
-void PortConnect::execute (ProcessingContext &context)
+void PortDisconnect::execute (ProcessingContext &context)
 {
-  printf("EXECUTING\n");
   // FIXME: Leaking m_patch->compiledProcessors();
   m_patch->setCompiledProcessors(m_compiled);
   Command::execute(context);
 }
 
 
-void PortConnect::postExecute ()
+void PortDisconnect::postExecute ()
 {
-  printf("POST EXECUTING\n");
   Command::postExecute();
 }
 
