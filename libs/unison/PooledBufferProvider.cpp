@@ -28,8 +28,7 @@
 #include "unison/AudioBuffer.h"
 #include "unison/ControlBuffer.h"
 
-namespace Unison
-{
+namespace Unison {
 
 PooledBufferProvider::PooledBufferProvider () :
   m_audioBuffers(),

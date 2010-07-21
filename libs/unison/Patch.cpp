@@ -28,8 +28,7 @@
 #include "unison/Patch.h"
 #include "unison/BufferProvider.h"
 
-namespace Unison
-{
+namespace Unison {
 
 Patch::Patch () :
   Processor()

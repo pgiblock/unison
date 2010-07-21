@@ -29,8 +29,10 @@
 #include <QDebug>
 #include <QSet>
 
-using namespace Lv2::Internal;
 using namespace Unison;
+
+namespace Lv2 {
+  namespace Internal {
 
 #define UNISON_BUFFER_LENGTH 1024
 
@@ -222,5 +224,8 @@ void Lv2Port::acquireOutputBuffer (BufferProvider& provider, nframes_t len)
     m_buffer = provider.acquire(type(), len);
   }
 }
+
+  } // Internal
+} // Jack
 
 // vim: ts=8 sw=2 sts=2 et sta noai

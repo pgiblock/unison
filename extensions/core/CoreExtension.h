@@ -29,7 +29,7 @@
 #include <extensionsystem/IExtension.h>
 
 namespace Core {
-namespace Internal {
+  namespace Internal {
 
 class CoreExtension : public ExtensionSystem::IExtension
 {
@@ -55,7 +55,7 @@ private:
 //    DesignMode *m_designMode;
 };
 
-} // namespace Internal
+  } // namespace Internal
 } // namespace Core
 
 #endif

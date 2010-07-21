@@ -30,7 +30,7 @@
 #include <jack/jack.h>
 
 namespace Jack {
-namespace Internal {
+  namespace Internal {
 
 class JackBufferProvider;
 class JackBackend;
@@ -132,7 +132,7 @@ class JackPort : public Unison::BackendPort
     static JackBufferProvider * m_jackBufferProvider;
 };
 
-} // Internal
+  } // Internal
 } // Jack
 
 #endif

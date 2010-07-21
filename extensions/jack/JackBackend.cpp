@@ -36,8 +36,10 @@
 #include <unison/Commander.h>
 #include "JackBufferProvider.h"
 
-using namespace Jack::Internal;
 using namespace Unison;
+
+namespace Jack {
+  namespace Internal {
 
 Backend * JackBackendProvider::createBackend()
 {
@@ -312,6 +314,9 @@ int JackBackend::xrunCb (void* backend) {
   //qWarning() << "XRun occured";
   return 0;
 }
+
+  } // Internal
+} // Jack
 
 
 // vim: ts=8 sw=2 sts=2 et sta noai

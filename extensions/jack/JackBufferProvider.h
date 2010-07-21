@@ -30,8 +30,7 @@
 #include "unison/BufferProvider.h"
 
 namespace Jack {
-  /** @internal */
-namespace Internal {
+  namespace Internal {
 
 class JackPort;
 
@@ -72,7 +71,7 @@ class JackBufferProvider : public Unison::BufferProvider
     }
 };
 
-} // Internal
+  } // Internal
 } // Jack
 
 #endif

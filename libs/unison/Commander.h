@@ -32,11 +32,9 @@
 #include <QMutex>
 
 namespace Unison {
-
-class Command;
-class ProcessingContext;
-
-namespace Internal {
+  class Command;
+  class ProcessingContext;
+  namespace Internal {
 
 /**
  * Commander is a centralized place for components to queue commands
@@ -101,7 +99,7 @@ class Commander
     RingBuffer<Command *> m_buffer; ///< Storage for queued Commands
 };
 
-} // Internal
+  } // Internal
 } // Unison
 
 #endif

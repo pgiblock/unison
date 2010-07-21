@@ -30,7 +30,8 @@
 #include <QtPlugin>
 #include <QDebug>
 
-using namespace Lv2::Internal;
+namespace Lv2 {
+  namespace Internal {
 
 Lv2Extension::Lv2Extension()
 {
@@ -76,5 +77,8 @@ void Lv2Extension::shutdown()
 }
 
 EXPORT_EXTENSION(Lv2Extension)
+
+  } // Internal
+} // Jack
 
 // vim: ts=8 sw=2 sts=2 et sta noai

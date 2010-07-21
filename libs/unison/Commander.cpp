@@ -28,8 +28,8 @@
 #include <QMutex>
 #include <QMutexLocker>
 
-using namespace Unison;
-using namespace Unison::Internal;
+namespace Unison {
+  namespace Internal {
 
 Commander* Commander::m_instance = static_cast<Commander*>(NULL);
 
@@ -72,5 +72,8 @@ void Commander::process (ProcessingContext &context)
     commands[i]->execute(context);
   }
 }
+
+  } // Internal
+} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

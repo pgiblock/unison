@@ -27,8 +27,7 @@
 
 #include "unison/Commander.h"
 
-using namespace Unison;
-
+namespace Unison {
 
 Port::Port () :
   Node(),
@@ -103,5 +102,7 @@ const QSet<Node* const> Port::dependents () const {
     }
   }
 }
+
+} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

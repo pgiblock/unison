@@ -27,7 +27,7 @@
 #include <QtGlobal>
 #include <cstring>
 
-using namespace Unison;
+namespace Unison {
 
 const int SampleBuffer::DEFAULT_CHANNELS;
 const int SampleBuffer::LEFT_CHANNEL;
@@ -99,5 +99,7 @@ int SampleBuffer::write (sample_t *ptr, nframes_t frames)
   std::memcpy(m_pos, ptr, frames*m_channels*sizeof(sample_t));
   return frames;
 }
+
+} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

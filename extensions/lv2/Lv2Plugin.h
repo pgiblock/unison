@@ -32,8 +32,7 @@
 #include <slv2/slv2.h>
 
 namespace Lv2 {
-namespace Internal {
-
+  namespace Internal {
 
 /** The SLV2World, and various cached (as symbols, fast) URIs.
  *  This object represents everything Unison 'knows' about LV2
@@ -160,7 +159,7 @@ class Lv2PluginDescriptor : public Unison::PluginDescriptor
     SLV2Plugin m_plugin;
 };
 
-} // Internal
+  } // Internal
 } // Lv2
 
 #endif

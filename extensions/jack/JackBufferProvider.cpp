@@ -30,8 +30,10 @@
 #include <jack/jack.h>
 #include <QDebug>
 
-using namespace Jack::Internal;
 using namespace Unison;
+
+namespace Jack {
+  namespace Internal {
 
 SharedBufferPtr JackBufferProvider::acquire (
     const JackPort* port, nframes_t nframes)
@@ -53,5 +55,8 @@ SharedBufferPtr JackBufferProvider::zeroAudioBuffer () const
   qCritical() << "JackBufferProvider acquire called, programming error";
   return NULL;
 }
+
+  } // Internal
+} // Jack
 
 // vim: ts=8 sw=2 sts=2 et sta noai

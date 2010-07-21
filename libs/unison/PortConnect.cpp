@@ -26,8 +26,8 @@
 #include "unison/PortConnect.h"
 #include "unison/ProcessingContext.h"
 
-using namespace Unison;
-using namespace Unison::Internal;
+namespace Unison {
+  namespace Internal {
 
 PortConnect::PortConnect (Port *port1, Port *port2) :
   Command(),
@@ -74,5 +74,8 @@ void PortConnect::postExecute ()
   printf("POST EXECUTING\n");
   Command::postExecute();
 }
+
+  } // Internal
+} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

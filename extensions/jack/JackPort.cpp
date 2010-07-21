@@ -34,8 +34,10 @@
 
 const int UNISON_BUFFER_LENGTH = 1024;
 
-using namespace Jack::Internal;
 using namespace Unison;
+
+namespace Jack {
+  namespace Internal {
 
 JackBufferProvider* JackPort::m_jackBufferProvider =
     new JackBufferProvider();
@@ -66,5 +68,8 @@ void JackPort::connectToBuffer (BufferProvider &)
   nframes_t size = UNISON_BUFFER_LENGTH; //jack_get_buffer_size(m_backend.jackClient());
   m_buffer = m_jackBufferProvider->acquire(this, backend().bufferLength());
 }
+
+  } // Internal
+} // Jack
 
 // vim: ts=8 sw=2 sts=2 et sta noai

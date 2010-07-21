@@ -26,7 +26,7 @@
 #include <unison/BufferProvider.h>
 #include "Engine.h"
 
-using namespace Core;
+namespace Core {
 
 Unison::Backend *Engine::m_backend = 0;
 Unison::BufferProvider *Engine::m_bufferProvider = 0;
@@ -42,5 +42,7 @@ void Engine::setBufferProvider(Unison::BufferProvider *bufferProvider)
 {
   m_bufferProvider = bufferProvider;
 }
+
+} // Core
 
 // vim: ts=8 sw=2 sts=2 et sta noai

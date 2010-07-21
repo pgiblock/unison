@@ -44,10 +44,11 @@
 #include <QtPlugin>
 #include <QtDebug>
 
-using namespace Core;
-using namespace Core::Internal;
 using namespace ExtensionSystem;
 using namespace Unison;
+
+namespace Core {
+  namespace Internal {
 
 CoreExtension::CoreExtension()
 //  m_mainWindow(new MainWindow), m_editMode(0)
@@ -194,5 +195,8 @@ void CoreExtension::shutdown()
 }
 
 EXPORT_EXTENSION(CoreExtension)
+
+  } // Internal
+} // Core
 
 // vim: ts=8 sw=2 sts=2 et sta noai

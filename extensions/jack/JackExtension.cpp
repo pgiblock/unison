@@ -44,7 +44,8 @@
     \brief BLAH
 */
 
-using namespace Jack::Internal;
+namespace Jack {
+  namespace Internal {
 
 JackExtension::JackExtension()
 {
@@ -88,5 +89,8 @@ void JackExtension::shutdown()
 }
 
 EXPORT_EXTENSION(JackExtension)
+
+  } // Internal
+} // Jack
 
 // vim: ts=8 sw=2 sts=2 et sta noai

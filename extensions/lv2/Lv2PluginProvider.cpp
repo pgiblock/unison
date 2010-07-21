@@ -32,10 +32,11 @@
 #include <math.h>
 
 #include "Lv2PluginProvider.h"
-
   
 using namespace Unison;
-using namespace Lv2::Internal;
+
+namespace Lv2 {
+  namespace Internal {
 
 Lv2PluginProvider::Lv2PluginProvider() :
   m_lv2World(),
@@ -121,5 +122,8 @@ void Lv2PluginProvider::addLv2Plugin (SLV2Plugin plugin)
 
   //printf("  Type=%d\n", (int)descriptor->type());
 }
+
+  } // Internal
+} // Lv2
 
 // vim: ts=8 sw=2 sts=2 et sta noai

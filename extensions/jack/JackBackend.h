@@ -34,7 +34,7 @@
 #include <QVarLengthArray>
 
 namespace Jack {
-namespace Internal {
+  namespace Internal {
 
 class JackBackendProvider : public Core::IBackendProvider
 {
@@ -130,7 +130,7 @@ class JackBackend : public Unison::Backend
     bool m_running;
 };
 
-} // Internal
+  } // Internal
 } // Jack
 
 #endif

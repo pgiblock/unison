@@ -27,7 +27,7 @@
 #include "Node.h"
 #include "Patch.h"
 
-using namespace Unison;
+namespace Unison {
 
 Patch *Node::parentPatch () const
 {
@@ -49,5 +49,7 @@ Patch *Node::parentPatch () const
 
   return NULL;
 }
+
+} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

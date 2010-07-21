@@ -31,9 +31,8 @@
 #include "unison/Patch.h"
 
 namespace Unison {
-class ProcessingContext;
-
-namespace Internal {
+  class ProcessingContext;
+  namespace Internal {
 
 class PortConnect : public Command
 {
@@ -48,7 +47,7 @@ class PortConnect : public Command
     QList<Patch::CompiledProcessor>* m_compiled;
 };
 
-} // Internal
+  } // Internal
 } // Unison
 
 #endif

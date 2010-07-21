@@ -26,8 +26,7 @@
 
 #include <QtCore/QtGlobal>
 
-using namespace Unison;
-
+namespace Unison {
 
 Command::Command () :
   m_blocking(true),
@@ -80,5 +79,7 @@ int Command::errorCode () const
 {
   return m_errorCode;
 }
+
+} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

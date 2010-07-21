@@ -33,7 +33,7 @@
 #include <slv2/slv2.h>
 
 namespace Lv2 {
-namespace Internal {
+  namespace Internal {
 
 /** A Port on a plugin.  I wonder if we should be calling slv2 functions, or
  *  maybe we should just copy all the data into the class?  Another idea is a
@@ -105,7 +105,7 @@ class Lv2Port : public Unison::Port
     bool  m_isSampleRate;
 };
 
-} // Internal
+  } // Internal
 } // Lv2
 
 #endif

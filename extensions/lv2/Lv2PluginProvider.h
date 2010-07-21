@@ -45,14 +45,13 @@
 #include <QStringList>
 
 namespace Lv2 {
-namespace Internal {
+  namespace Internal {
 
 /** Provides a database of LV2 plug-ins.  Upon instantiation,
  *  it loads all of the plug-ins found in the LV2_PATH environmental variable
  *  and stores their access descriptors according in a dictionary keyed on
  *  the filename the plug-in was loaded from and the label of the plug-in.
  *  Can be retrieved by using lv2_key_t (which is really just the LV2 URI) */
-//class Lv2PluginProvider : public Core::IPluginProvider
 class Lv2PluginProvider : public Core::IPluginProvider
 {
   Q_OBJECT
@@ -81,7 +80,7 @@ class Lv2PluginProvider : public Core::IPluginProvider
     Lv2PluginDescriptorMap m_lv2DescriptorMap;
 };
 
-} // Internal
+  } // Internal
 } // Lv2
 
 #endif

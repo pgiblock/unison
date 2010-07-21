@@ -28,7 +28,8 @@
 
 using namespace Unison;
 using namespace ExtensionSystem;
-using namespace Core;
+
+namespace Core {
 
 // There is only one of these...
 PluginManager* PluginManager::m_instance = static_cast<PluginManager*>(NULL);
@@ -56,5 +57,7 @@ PluginDescriptorPtr PluginManager::descriptor (const QString uniqueId)
 
   return PluginDescriptorPtr(NULL);
 }
+
+} // Core
 
 // vim: ts=8 sw=2 sts=2 et sta noai
