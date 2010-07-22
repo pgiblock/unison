@@ -26,6 +26,7 @@ set(UNISON_SRCS
     Commander.cpp
     Node.cpp
     Patch.cpp
+    FxLine.cpp
     PooledBufferProvider.cpp
     Port.cpp
     PortConnect.cpp
@@ -46,6 +47,7 @@ set(UNISON_INCLUDES
     BufferProvider.h
     Command.h
     ControlBuffer.h
+    FxLine.h
     Node.h
     Patch.h
     Plugin.h
@@ -60,7 +62,7 @@ set(UNISON_INCLUDES
 
 qt4_wrap_cpp(UNISON_MOC_SRCS ${UNISON_MOC_HEADERS})
 
-include_directories(.. ${PRG_INCLUDE_DIR})
+include_directories(.. ${PRG_INCLUDE_DIR} ${PROJECT_SOURCE_DIR})
 
 add_library(unison SHARED ${UNISON_MOC_SRCS} ${UNISON_SRCS})
 
