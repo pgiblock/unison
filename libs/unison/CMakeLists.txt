@@ -26,7 +26,6 @@ set(UNISON_SRCS
     Commander.cpp
     Node.cpp
     Patch.cpp
-    FxLine.cpp
     PooledBufferProvider.cpp
     Port.cpp
     PortConnect.cpp
@@ -47,7 +46,6 @@ set(UNISON_INCLUDES
     BufferProvider.h
     Command.h
     ControlBuffer.h
-    FxLine.h
     Node.h
     Patch.h
     Plugin.h

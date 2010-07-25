@@ -42,7 +42,7 @@ void Commander::initialize ()
 Commander::Commander () :
   m_writeLock(),
   m_blockWait(),
-  m_buffer(16)
+  m_buffer(24)
 {
   //
 }
@@ -64,10 +64,11 @@ void Commander::push (Command *command)
 
 void Commander::process (ProcessingContext &context)
 {
-  const int MAX_COMMANDS = 4;
+  const int MAX_COMMANDS = 1;
   Command* commands[MAX_COMMANDS];
   int cnt = m_buffer.read(commands, MAX_COMMANDS);
 
+  printf("COMMANDER: Executing %d commands.\n", cnt);
   for (int i=0; i<cnt; ++i) {
     commands[i]->execute(context);
   }

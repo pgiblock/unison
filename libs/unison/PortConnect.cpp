@@ -43,11 +43,14 @@ PortConnect::PortConnect (Port *port1, Port *port2) :
 
 void PortConnect::preExecute ()
 {
-  printf("PRE EXECUTING\n");
   // TODO: Check for existing connection and cycles!!!
   m_patch = m_port1->parentPatch();
+  // Handle the case where port1 is a backend port, and has no parent patch
+  if (!m_patch) {
+    m_patch = m_port2->parentPatch();
+  }
   Q_ASSERT(m_patch);
-  // TODO Bring back this assertion once BackendPorts have a parent node
+  // TODO Bring back this assertion once BackendPorts have a parent patch
   //Q_ASSERT(m_patch == m_port2->parentPatch());
   Q_ASSERT(!m_port1->isConnected(m_port2));
   Q_ASSERT(!m_port2->isConnected(m_port1));
@@ -58,13 +61,11 @@ void PortConnect::preExecute ()
   m_patch->compile(*m_compiled);
   
   Command::preExecute();
-  printf("PRE EXECUTED\n");
 }
 
 
 void PortConnect::execute (ProcessingContext &context)
 {
-  printf("EXECUTING\n");
   // FIXME: Leaking m_patch->compiledProcessors();
   m_patch->setCompiledProcessors(m_compiled);
   Command::execute(context);
@@ -73,7 +74,6 @@ void PortConnect::execute (ProcessingContext &context)
 
 void PortConnect::postExecute ()
 {
-  printf("POST EXECUTING\n");
   Command::postExecute();
 }
 

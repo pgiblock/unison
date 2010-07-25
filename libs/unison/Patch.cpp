@@ -82,8 +82,9 @@ void Patch::setBufferLength (BufferProvider &bp, PortType type, nframes_t len)
 
 void Patch::process (const ProcessingContext & context)
 {
+  qDebug() << "Patch" << name() << ": ";
   foreach (CompiledProcessor cp, *m_compiled) {
-    //qDebug() << "Patch" << name() << " processing " << cp.processor->name();
+    qDebug() << "Patch" << name() << " processing " << cp.processor->name();
     cp.processor->process(context);
   }
 }

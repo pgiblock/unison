@@ -22,24 +22,20 @@
  *
  */
 
-#ifndef UNISON_FXLINE_H
-#define UNISON_FXLINE_H
+#ifndef CORE_FXLINE_H
+#define CORE_FXLINE_H
 
-#include "unison/Plugin.h"
-#include "extensions/jack/JackPort.h"
-#include "extensions/core/Session.h"
-#include "unison/CompositeProcessor.h"
+#include <QString>
 
-namespace Unison
-{
+#include <unison/Plugin.h>
 
-class PluginEntry {
-public:
-    PluginEntry(const PluginDescriptor& descriptor, Processor *proc);
-private:
-    const PluginDescriptor& descriptor;
-    Processor *proc;
-};
+namespace Unison {
+  class BackendPort;
+  class Patch;
+  class Port;
+}
+
+namespace Core {
 
 /** A plugin effects line.
  *
@@ -56,36 +52,46 @@ private:
  * from the first plugin, and they will be reconnected to new plugin's in 
  * ports; in addition, the new plugin's out ports will be connected to the 
  * other plugin's in ports.*/
-class FxLine : public CompositeProcessor {
+class FxLine {
+  protected:
+    struct Entry {
+      QList<Unison::Port*> inputPorts;
+      QList<Unison::Port*> outputPorts;
+      Unison::Plugin *plugin;
+    };
+
   public:
     /** Constructs an FxLine.
      *
      * When an FxLine object is first created, in1 is connected to out1 and 
      * in2 is connected to out2.*/
-    FxLine (Core::Session& session, QString name);
-    ~FxLine();
+    FxLine (Unison::Patch &parent, QString name);
+    ~FxLine ();
 
-    QString name() const;
-    void addEffect();
+    QString name () const;
+    void addEffect ();
 
     /** Insert a plugin into the effects line at the given position.
      *
      * @param descriptor PluginDescriptor of plugin
      * @param pos The index of where plugin will be added
      */
-    void addPlugin(const PluginDescriptor& descriptor, int pos = -1);
+    void addPlugin (const Unison::PluginDescriptorPtr descriptor, int pos = -1);
 
   private:
+    void collectPorts (Unison::Plugin *plugin, QList<Unison::Port*> *audioIn, QList<Unison::Port*> *audioOut) const;
+
     QString m_name;
-    Core::Session& m_session;
+    Unison::Patch& m_parent;
     /// The 2 JACK audio in ports.
-    JackPort* m_inPorts[2];
+    Unison::BackendPort* m_inPorts[2];
     /// The 2 JACK audio out ports.
-    JackPort* m_outPorts[2];
-    QList<PluginEntry> plugins;
+    Unison::BackendPort* m_outPorts[2];
+
+    QList<Entry> m_entries;
 };
 
-} // Unison
+} // Core
 
 #endif
 

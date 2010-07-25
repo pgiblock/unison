@@ -21,10 +21,6 @@
 # Boston, MA 02110-1301 USA.
 #
 
-#set(LFO_CONTROLLER_SRCS
-#    LfoController.c
-#)
-
 configure_file(Core.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 add_definitions(-DCORE_EXTENSION)
@@ -33,6 +29,8 @@ set(CORE_SRCS
     CoreExtension.cpp
     Engine.cpp
     PluginManager.cpp
+    # Belongs in new extension:
+    FxLine.cpp
 )
 
 set(CORE_MOC_HEADERS
@@ -41,6 +39,8 @@ set(CORE_MOC_HEADERS
     IBackendProvider.h
     IPluginProvider.h
     ISampleBufferReader.h
+    # Belongs in new extension:
+    FxLine.h
 )
 
 qt4_wrap_cpp(CORE_MOC_SRCS ${CORE_MOC_HEADERS})

@@ -35,8 +35,8 @@
 #include <unison/PooledBufferProvider.h>
 
 // For connection frenzy
+#include "FxLine.h"
 #include "PluginManager.h"
-#include <unison/BackendPort.h>
 #include <unison/Plugin.h>
 
 #include <extensionsystem/ExtensionManager.h>
@@ -141,30 +141,15 @@ void CoreExtension::extensionsInitialized()
 
   backend->activate();
 
-  PluginDescriptorPtr desc = PluginManager::instance()->descriptor("http://plugin.org.uk/swh-plugins/vynil");
-  PluginPtr plugin = desc->createPlugin(48000);
-  plugin->activate(*Engine::bufferProvider());
-  root->add(plugin);
+  FxLine *fxLine = new FxLine(*root, "Super Duper Fx-Line");
 
-  for (int i=0; i< plugin->portCount(); ++i) {
-    Port *p = plugin->port(i);
-    if (p->type() == CONTROL_PORT) {
-      p->setValue(p->maximum());
-    }
-  }
-  
-  qDebug("Making some ports");
-  Port * p1 = backend->registerPort("foo", Unison::OUTPUT);
-  Port * p2 = backend->registerPort("bar", Unison::OUTPUT);
-
-  plugin->port(5)->connect(p1);
-  plugin->port(6)->connect(p2);
-  
-  p1 = backend->registerPort("baz", Unison::INPUT);
-  p2 = backend->registerPort("qux", Unison::INPUT);
-
-  plugin->port(7)->connect(p1);
-  plugin->port(8)->connect(p2);
+  PluginDescriptorPtr desc;
+  desc = PluginManager::instance()->descriptor("http://plugin.org.uk/swh-plugins/vynil");
+  fxLine->addPlugin(desc, 0);
+  desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Reverb");
+  fxLine->addPlugin(desc, 0);
+  //desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Phaser");
+  //fxLine->addPlugin(desc, 0);
 
   // TODO: cleanup
   // Let these ports leak all over the place. This is a stupid demo

@@ -44,6 +44,10 @@ PortDisconnect::PortDisconnect (Port *port1, Port *port2) :
 void PortDisconnect::preExecute ()
 {
   m_patch = m_port1->parentPatch();
+  // Handle the case where port1 is a backend port, and has no parent patch
+  if (!m_patch) {
+    m_patch = m_port2->parentPatch();
+  }
   Q_ASSERT(m_patch);
   // TODO Bring back this assertion once BackendPorts have a parent node
   //Q_ASSERT(m_patch == m_port2->parentPatch());
