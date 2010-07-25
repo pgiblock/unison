@@ -37,7 +37,7 @@ Port::Port () :
 {}
 
 
-void Port::setBufferLength (BufferProvider &bp, nframes_t len)
+void Port::setBufferLength (nframes_t len)
 {
   // TODO: Forcefully resize the buffer we own. Who cares? changing
   // bufferlength won't happen in the middle of a song, realloc

@@ -85,7 +85,7 @@ class Lv2Port : public Unison::Port
     Node* parent () const;
     const QSet<Unison::Node* const> interfacedNodes () const;
 
-    void connectToBuffer (Unison::BufferProvider & provider);
+    void connectToBuffer ();
 
 
   private:

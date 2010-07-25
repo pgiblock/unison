@@ -42,7 +42,7 @@ class PortConnect : public Command
     void execute (ProcessingContext &context);
     void postExecute ();
   private:
-    Port *m_port1, *m_port2;
+    Port *m_producer, *m_consumer;
     Patch *m_patch;
     QList<Patch::CompiledProcessor>* m_compiled;
 };

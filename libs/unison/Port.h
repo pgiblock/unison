@@ -86,13 +86,13 @@ class Port : public Node
     /** @returns true if this port is toggled between on and off */
     virtual bool isToggled () const = 0;
 
-    virtual void setBufferLength (BufferProvider &bp, nframes_t len);
+    virtual void setBufferLength (nframes_t len);
 
     /**
      * Called in Process thread to assign the buffer used by this port
      * sub-classes may choose to assign a buffer from the BufferProvider or
      * from some other source. */
-    virtual void connectToBuffer (BufferProvider & provider) = 0;
+    virtual void connectToBuffer () = 0;
 
     /** Called in Process thread to retrieve the buffer for this Port */
     SharedBufferPtr buffer ()

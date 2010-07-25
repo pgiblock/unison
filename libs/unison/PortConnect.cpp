@@ -31,10 +31,25 @@ namespace Unison {
 
 PortConnect::PortConnect (Port *port1, Port *port2) :
   Command(),
-  m_port1(port1),
-  m_port2(port2),
+  m_producer(NULL),
+  m_consumer(NULL),
   m_patch(NULL)
 {
+  if (port1->direction() == OUTPUT) {
+    if (port2->direction() == OUTPUT) {
+      qFatal("Cannot connect two output ports");
+    }
+    m_producer = port1;
+    m_consumer = port2;
+  }
+  else {
+    if (port2->direction() == INPUT) {
+      qFatal("Cannot connect two input ports");
+    }
+    m_consumer = port1;
+    m_producer = port2;
+  }
+
   m_blocking = false;
   m_compiled = new QList<Patch::CompiledProcessor>();
   m_state = Command::Created;
@@ -44,19 +59,19 @@ PortConnect::PortConnect (Port *port1, Port *port2) :
 void PortConnect::preExecute ()
 {
   // TODO: Check for existing connection and cycles!!!
-  m_patch = m_port1->parentPatch();
+  m_patch = m_producer->parentPatch();
   // Handle the case where port1 is a backend port, and has no parent patch
   if (!m_patch) {
-    m_patch = m_port2->parentPatch();
+    m_patch = m_consumer->parentPatch();
   }
   Q_ASSERT(m_patch);
   // TODO Bring back this assertion once BackendPorts have a parent patch
   //Q_ASSERT(m_patch == m_port2->parentPatch());
-  Q_ASSERT(!m_port1->isConnected(m_port2));
-  Q_ASSERT(!m_port2->isConnected(m_port1));
+  Q_ASSERT(!m_producer->isConnected(m_consumer));
+  Q_ASSERT(!m_consumer->isConnected(m_producer));
 
-  *m_port1->_connectedPorts() += m_port2;
-  *m_port2->_connectedPorts() += m_port1;
+  *m_producer->_connectedPorts() += m_consumer;
+  *m_consumer->_connectedPorts() += m_producer;
   
   m_patch->compile(*m_compiled);
   
@@ -66,6 +81,9 @@ void PortConnect::preExecute ()
 
 void PortConnect::execute (ProcessingContext &context)
 {
+  // Connect Consumer first, to clear out any silence buffer
+  m_consumer->connectToBuffer();
+  m_producer->connectToBuffer();
   // FIXME: Leaking m_patch->compiledProcessors();
   m_patch->setCompiledProcessors(m_compiled);
   Command::execute(context);

@@ -126,7 +126,7 @@ void FxLine::addPlugin(const PluginDescriptorPtr descriptor, int pos)
   Plugin *plugin = descriptor->createPlugin(48000);
   Q_CHECK_PTR(plugin);
 
-  plugin->activate(*Engine::bufferProvider());
+  plugin->activate(Engine::bufferProvider());
   m_parent.add(plugin);
 
   // Set all control ports to default value for fun

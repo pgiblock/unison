@@ -59,10 +59,10 @@ class Patch : public Processor
     virtual Port* port (int idx) const;
     virtual Port* port (QString id) const;
 
-    virtual void activate (BufferProvider &bp);
+    virtual void activate (BufferProvider *bp);
     virtual void deactivate ();
 
-    virtual void setBufferLength (BufferProvider &bp, PortType type, nframes_t len);
+    virtual void setBufferLength (PortType type, nframes_t len);
 
     virtual void process (const ProcessingContext& context);
 
@@ -187,10 +187,10 @@ class PatchProxyPort : public Port
       return p;
     }
 
-    void connectToBuffer (BufferProvider& provider)
+    void connectToBuffer ()
     {
       // TODO: Might need more logic here
-      m_port->connectToBuffer(provider);
+      m_port->connectToBuffer();
     }
 
   private:

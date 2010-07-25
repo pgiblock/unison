@@ -65,6 +65,8 @@ void PortDisconnect::preExecute ()
 
 void PortDisconnect::execute (ProcessingContext &context)
 {
+  m_port1->connectToBuffer();
+  m_port2->connectToBuffer();
   // FIXME: Leaking m_patch->compiledProcessors();
   m_patch->setCompiledProcessors(m_compiled);
   Command::execute(context);

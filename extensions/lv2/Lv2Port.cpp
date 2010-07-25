@@ -161,15 +161,16 @@ const QSet<Node* const> Lv2Port::interfacedNodes () const
 }
 
 
-void Lv2Port::connectToBuffer(BufferProvider& provider)
+void Lv2Port::connectToBuffer ()
 {
+  BufferProvider *provider = m_plugin->bufferProvider();
   switch (direction()) {
     case INPUT:
-      acquireInputBuffer(provider, UNISON_BUFFER_LENGTH);
+      acquireInputBuffer(*provider, UNISON_BUFFER_LENGTH);
       break;
 
     case OUTPUT:
-      acquireOutputBuffer(provider, UNISON_BUFFER_LENGTH);
+      acquireOutputBuffer(*provider, UNISON_BUFFER_LENGTH);
       break;
   }
   slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buffer()->data());

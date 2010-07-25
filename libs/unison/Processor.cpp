@@ -41,12 +41,12 @@ Processor::~Processor ()
 }
 
 
-void Processor::setBufferLength (BufferProvider &bp, PortType type, nframes_t len)
+void Processor::setBufferLength (PortType type, nframes_t len)
 {
   for (int n = 0; n < portCount(); ++n) {
     Port *p = port(n);
     if (p->type() == type) {
-      p->setBufferLength(bp, len);
+      p->setBufferLength(len);
     }
   }
 }

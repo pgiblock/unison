@@ -56,7 +56,7 @@ Port* Patch::port (QString id) const
 }
 
 
-void Patch::activate (BufferProvider &bp)
+void Patch::activate (BufferProvider *bp)
 {
   foreach (Processor* p, m_processors) {
     p->activate(bp);
@@ -72,10 +72,10 @@ void Patch::deactivate ()
 }
 
 
-void Patch::setBufferLength (BufferProvider &bp, PortType type, nframes_t len)
+void Patch::setBufferLength (PortType type, nframes_t len)
 {
   foreach (Processor *p, m_processors) {
-    p->setBufferLength(bp, type, len);
+    p->setBufferLength(type, len);
   }
 }
 

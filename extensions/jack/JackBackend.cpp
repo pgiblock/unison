@@ -262,11 +262,12 @@ int JackBackend::processCb (nframes_t nframes, void* a)
   // Aquire JACK buffers
   for (i=0; i<backend->portCount(); ++i) {
     Port *port = backend->port(i);
-    port->connectToBuffer(nullProvider);
+    port->connectToBuffer();
 
     // Re-acquire buffers on ports connected to JACK
+    // Read note below:
     foreach (Port *other, port->connectedPorts()) {
-      other->connectToBuffer(*Core::Engine::bufferProvider());
+      other->connectToBuffer();
     }
 
     // Copy data across directly connected jack buffers.

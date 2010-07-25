@@ -123,7 +123,7 @@ class JackPort : public Unison::BackendPort
       return m_port;
     }
 
-    void connectToBuffer (Unison::BufferProvider &);
+    void connectToBuffer ();
 
   private:
     JackBackend& m_backend;
