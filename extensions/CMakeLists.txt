@@ -27,5 +27,3 @@ add_subdirectory(core)
 add_subdirectory(guicore)
 add_subdirectory(jack)
 add_subdirectory(lv2)
-add_subdirectory(sndfile)
-
