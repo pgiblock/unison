@@ -129,14 +129,6 @@ void FxLine::addPlugin(const PluginDescriptorPtr descriptor, int pos)
   plugin->activate(Engine::bufferProvider());
   m_parent.add(plugin);
 
-  // Set all control ports to default value for fun
-  for (int i=0; i< plugin->portCount(); ++i) {
-    Port *p = plugin->port(i);
-    if (p->type() == CONTROL_PORT) {
-      p->setValue(p->defaultValue());
-    }
-  }
-
   // Verify number of ports. TODO: Report error, not fatal
   Q_ASSERT(plugin->audioInputCount() == 2);
   Q_ASSERT(plugin->audioOutputCount() == 2);

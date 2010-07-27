@@ -44,6 +44,7 @@ int Patch::portCount () const
 
 Port* Patch::port (int idx) const
 {
+  Q_UNUSED(idx);
   // TODO: Implement registered-ports
   return NULL;
 }
@@ -51,6 +52,7 @@ Port* Patch::port (int idx) const
 
 Port* Patch::port (QString id) const
 {
+  Q_UNUSED(id);
   // TODO: Implement registered-ports
   return NULL;
 }
@@ -82,9 +84,7 @@ void Patch::setBufferLength (PortType type, nframes_t len)
 
 void Patch::process (const ProcessingContext & context)
 {
-  qDebug() << "Patch" << name() << ": ";
   foreach (CompiledProcessor cp, *m_compiled) {
-    qDebug() << "Patch" << name() << " processing " << cp.processor->name();
     cp.processor->process(context);
   }
 }
@@ -236,8 +236,6 @@ void Patch::compile (QList<CompiledProcessor>& output)
         }
       }
     }
-
-    qDebug() << "Node " << proc->name() << " is sink: " << isSink;
 
     if (isSink) {
       compileWalk( proc, output );

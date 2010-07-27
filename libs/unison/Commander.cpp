@@ -68,7 +68,6 @@ void Commander::process (ProcessingContext &context)
   Command* commands[MAX_COMMANDS];
   int cnt = m_buffer.read(commands, MAX_COMMANDS);
 
-  printf("COMMANDER: Executing %d commands.\n", cnt);
   for (int i=0; i<cnt; ++i) {
     commands[i]->execute(context);
   }

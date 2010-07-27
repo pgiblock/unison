@@ -39,8 +39,6 @@ set(CORE_MOC_HEADERS
     IBackendProvider.h
     IPluginProvider.h
     ISampleBufferReader.h
-    # Belongs in new extension:
-    FxLine.h
 )
 
 qt4_wrap_cpp(CORE_MOC_SRCS ${CORE_MOC_HEADERS})

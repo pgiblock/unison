@@ -103,7 +103,8 @@ PortDirection Lv2Port::direction () const
   if (slv2_port_is_a( plugin, m_port, m_world.outputClass )) {
     return OUTPUT;
   }
-  Q_ASSERT(false);
+  // TODO: Maybe have an UNDEFINED direction?
+  qFatal("Port `%s' is neither input or output", qPrintable(name()));
 }
 
 

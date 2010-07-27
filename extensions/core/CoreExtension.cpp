@@ -144,12 +144,12 @@ void CoreExtension::extensionsInitialized()
   FxLine *fxLine = new FxLine(*root, "Super Duper Fx-Line");
 
   PluginDescriptorPtr desc;
-  desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Phaser");
-  fxLine->addPlugin(desc, 0);
   desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Reverb");
   fxLine->addPlugin(desc, 0);
   desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/VintageDelay");
   fxLine->addPlugin(desc, 0);
+  desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Phaser");
+  fxLine->addPlugin(desc, 2);
 
   // TODO: cleanup
   // Let these ports leak all over the place. This is a stupid demo
