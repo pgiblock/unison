@@ -29,7 +29,7 @@
 #include <extensionsystem/IExtension.h>
 
 namespace Lv2 {
-namespace Internal {
+  namespace Internal {
 
 class Lv2PluginProvider;
 
@@ -55,7 +55,7 @@ private:
   Lv2PluginProvider *m_pluginProvider;
 };
 
-} // namespace Internal
+  } // namespace Internal
 } // namespace Lv2
 
 #endif

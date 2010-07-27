@@ -197,9 +197,6 @@ libs/unison/Port.cpp
 libs/unison/PooledBufferProvider.cpp
 libs/unison/silly-add-to-any-processor.patch
 libs/unison/Doxyfile.in
-libs/unison/.PluginManager.cpp.swp
-libs/unison/.Lv2Port.cpp.swp
-libs/unison/.Session.cpp.swo
 libs/unison/Session.cpp
 libs/unison/midi.lv2
 libs/unison/midi.lv2/midi.ttl
@@ -215,7 +212,6 @@ libs/unison/unison/types.h
 libs/unison/unison/PooledBufferProvider.h
 libs/unison/unison/Plugin.h
 libs/unison/unison/Session.h
-libs/unison/unison/.PluginManager.h.swp
 libs/unison/unison/EventBuffer.h
 libs/unison/unison/Processor.h
 libs/unison/unison/Port.h
@@ -226,8 +222,6 @@ libs/unison/unison/Node.h
 libs/unison/unison/Command.h
 libs/unison/unison/ControlBuffer.h
 libs/unison/unison/Lv2Plugin.h
-libs/unison/unison/.types.h.swp
 libs/unison/unison/CMakeLists.txt
 libs/unison/CMakeLists.txt
 libs/unison/EventBuffer.cpp
-libs/unison/.swp

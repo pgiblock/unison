@@ -1,5 +1,5 @@
 /*
- * Lv2Manager.cpp
+ * PortDisconnect.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,42 +22,34 @@
  *
  */
 
-#include "extensionsystem/ExtensionManager.h"
-#include "IPluginProvider.h"
-#include "PluginManager.h"
 
-using namespace Unison;
-using namespace ExtensionSystem;
+#ifndef UNISON_PORT_DISCONNECT_H
+#define UNISON_PORT_DISCONNECT_H
 
-namespace Core {
+#include "unison/Command.h"
+#include "unison/Port.h"
+#include "unison/Patch.h"
 
-// There is only one of these...
-PluginManager* PluginManager::m_instance = static_cast<PluginManager*>(NULL);
+namespace Unison {
+  class ProcessingContext;
+  namespace Internal {
 
-PluginManager::PluginManager()
+class PortDisconnect : public Command
 {
-  qDebug( "Initializing Plugin Manager" );
-}
+  public:
+    PortDisconnect (Port *port1, Port *port2);
+    void preExecute ();
+    void execute (ProcessingContext &context);
+    void postExecute ();
+  private:
+    Port *m_port1, *m_port2;
+    Patch *m_patch;
+    QList<Patch::CompiledProcessor>* m_compiled;
+};
 
+  } // Internal
+} // Unison
 
-PluginManager::~PluginManager ()
-{}
-
-
-PluginDescriptorPtr PluginManager::descriptor (const QString uniqueId)
-{
-  ExtensionManager * em = ExtensionManager::instance();
-  QList<IPluginProvider*> providers = em->getObjects<IPluginProvider>();
-
-  foreach(IPluginProvider* pp, providers) {
-    if (PluginDescriptorPtr desc = pp->descriptor(uniqueId)) {
-      return desc;
-    }
-  }
-
-  return PluginDescriptorPtr(NULL);
-}
-
-} // Core
+#endif
 
 // vim: ts=8 sw=2 sts=2 et sta noai

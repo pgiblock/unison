@@ -22,15 +22,18 @@
  *
  */
 
+#include "JackBufferProvider.h"
+#include "JackPort.h"
+
+#include <unison/AudioBuffer.h>
+
 #include <jack/jack.h>
 #include <QDebug>
 
-#include "unison/AudioBuffer.h"
-#include "unison/JackBufferProvider.h"
-#include "unison/JackPort.h"
+using namespace Unison;
 
-namespace Unison
-{
+namespace Jack {
+  namespace Internal {
 
 SharedBufferPtr JackBufferProvider::acquire (
     const JackPort* port, nframes_t nframes)
@@ -53,6 +56,7 @@ SharedBufferPtr JackBufferProvider::zeroAudioBuffer () const
   return NULL;
 }
 
-} // Unison
+  } // Internal
+} // Jack
 
 // vim: ts=8 sw=2 sts=2 et sta noai

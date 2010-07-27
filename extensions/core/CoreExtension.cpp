@@ -23,22 +23,32 @@
  */
 
 #include "CoreExtension.h"
-/*
-#include "editmode.h"
-#include "editormanager.h"
-#include "mainwindow.h"
-#include "modemanager.h"
-#include "fileiconprovider.h"
-#include "designmode.h"
-*/
+
+#include "IBackendProvider.h"
+
+// For Engine
+#include "Engine.h"
+#include <unison/Backend.h>
+#include <unison/BufferProvider.h>
+#include <unison/Commander.h>
+#include <unison/Patch.h>
+#include <unison/PooledBufferProvider.h>
+
+// For connection frenzy
+#include "FxLine.h"
+#include "PluginManager.h"
+#include <unison/Plugin.h>
 
 #include <extensionsystem/ExtensionManager.h>
 
 #include <QtPlugin>
-#include <QDebug>
+#include <QtDebug>
 
-using namespace Core;
-using namespace Core::Internal;
+using namespace ExtensionSystem;
+using namespace Unison;
+
+namespace Core {
+  namespace Internal {
 
 CoreExtension::CoreExtension()
 //  m_mainWindow(new MainWindow), m_editMode(0)
@@ -86,6 +96,15 @@ bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessa
 {
   Q_UNUSED(errorMessage);
   parseArguments(arguments);
+
+  PooledBufferProvider *bufProvider = new PooledBufferProvider();
+  bufProvider->setBufferLength(1024);
+  Engine::setBufferProvider(bufProvider);
+
+  PluginManager::initializeInstance();
+
+  Unison::Internal::Commander::initialize();
+
   /*
   const bool success = m_mainWindow->init(errorMessage);
   if (success) {
@@ -104,6 +123,38 @@ bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessa
 
 void CoreExtension::extensionsInitialized()
 {
+  ExtensionManager *extMgr = ExtensionManager::instance();
+  
+  // Find backends, load the first one
+  QList<IBackendProvider *> backends = extMgr->getObjects<IBackendProvider>();
+  qDebug("Found Backends:");
+  foreach (IBackendProvider *bep, backends) {
+    qDebug() << bep->displayName();
+  }
+
+  Backend *backend = backends.at(0)->createBackend();
+  
+  Patch *root = new Patch();
+  backend->setRootProcessor(root);
+  
+  Engine::setBackend(backend);
+
+  backend->activate();
+
+  FxLine *fxLine = new FxLine(*root, "Super Duper Fx-Line");
+
+  PluginDescriptorPtr desc;
+  desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Reverb");
+  fxLine->addPlugin(desc, 0);
+  desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/VintageDelay");
+  fxLine->addPlugin(desc, 0);
+  desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Phaser");
+  fxLine->addPlugin(desc, 2);
+
+  // TODO: cleanup
+  // Let these ports leak all over the place. This is a stupid demo
+  //backend->deactivate();
+
   //m_mainWindow->extensionsInitialized();
 }
 
@@ -129,5 +180,8 @@ void CoreExtension::shutdown()
 }
 
 EXPORT_EXTENSION(CoreExtension)
+
+  } // Internal
+} // Core
 
 // vim: ts=8 sw=2 sts=2 et sta noai

@@ -30,16 +30,20 @@
 #include <QSharedPointer>
 #include "unison/types.h"
 
-namespace Unison
-{
+namespace Unison {
+
+class Patch;
 
 /**
  * Interface for all things that participate in the processing graph. */
-class Node {
+class Node
+{
   public:
     virtual ~Node () {};
 
-    virtual Node* parent () const = 0;
+    virtual Node *parent () const = 0;
+
+    Patch *parentPatch () const;
 
     /**
      * Dependencies are nodes that are directly "connected", that must
@@ -49,7 +53,7 @@ class Node {
      * For example, a Processor's dependencies are that Processor's "input"
      * ports, but the dependencies of an input port is the set of connected
      * output ports. */
-    virtual const QSet<Node* const> dependencies () const = 0;
+    virtual const QSet<Node * const> dependencies () const = 0;
 
 
     /**
@@ -58,11 +62,11 @@ class Node {
      * that are attached to this node's "output".  For example, the output
      * Ports of a Processor, or the input Ports connected to an output
      * Port. */
-    virtual const QSet<Node* const> dependents () const = 0;
+    virtual const QSet<Node * const> dependents () const = 0;
 
     /**
      * @returns a name for this node, suitable for storing in projects. */
-    virtual QString name() const = 0;
+    virtual QString name () const = 0;
 };
 
 /** A Safe pointer to a Node. */

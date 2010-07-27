@@ -29,8 +29,10 @@
 #include <QDebug>
 #include <QSet>
 
-using namespace Lv2::Internal;
 using namespace Unison;
+
+namespace Lv2 {
+  namespace Internal {
 
 #define UNISON_BUFFER_LENGTH 1024
 
@@ -91,6 +93,7 @@ PortType Lv2Port::type () const
   }
 }
 
+
 PortDirection Lv2Port::direction () const
 {
   SLV2Plugin plugin = m_plugin->slv2Plugin();
@@ -100,7 +103,8 @@ PortDirection Lv2Port::direction () const
   if (slv2_port_is_a( plugin, m_port, m_world.outputClass )) {
     return OUTPUT;
   }
-  Q_ASSERT(false);
+  // TODO: Maybe have an UNDEFINED direction?
+  qFatal("Port `%s' is neither input or output", qPrintable(name()));
 }
 
 
@@ -158,22 +162,23 @@ const QSet<Node* const> Lv2Port::interfacedNodes () const
 }
 
 
-void Lv2Port::connectToBuffer(BufferProvider& provider)
+void Lv2Port::connectToBuffer ()
 {
+  BufferProvider *provider = m_plugin->bufferProvider();
   switch (direction()) {
     case INPUT:
-      acquireInputBuffer(provider);
+      acquireInputBuffer(*provider, UNISON_BUFFER_LENGTH);
       break;
 
     case OUTPUT:
-      acquireOutputBuffer(provider);
+      acquireOutputBuffer(*provider, UNISON_BUFFER_LENGTH);
       break;
   }
   slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buffer()->data());
 }
 
 
-void Lv2Port::acquireInputBuffer (BufferProvider& provider)
+void Lv2Port::acquireInputBuffer (BufferProvider& provider, nframes_t len)
 {
   int numConnections = dependencies().count();
   switch (numConnections) {
@@ -199,13 +204,13 @@ void Lv2Port::acquireInputBuffer (BufferProvider& provider)
 
   if (!m_buffer) {
     // Return internal port
-    m_buffer = provider.acquire(type(), UNISON_BUFFER_LENGTH);
+    m_buffer = provider.acquire(type(), len);
     updateBufferValue();
   }
 }
 
 
-void Lv2Port::acquireOutputBuffer (BufferProvider& provider)
+void Lv2Port::acquireOutputBuffer (BufferProvider& provider, nframes_t len)
 {
   int numConnections = dependents().count();
   if (numConnections == 1) {
@@ -218,8 +223,11 @@ void Lv2Port::acquireOutputBuffer (BufferProvider& provider)
   }
 
   if (!m_buffer) {
-    m_buffer = provider.acquire(type(), UNISON_BUFFER_LENGTH);
+    m_buffer = provider.acquire(type(), len);
   }
 }
+
+  } // Internal
+} // Jack
 
 // vim: ts=8 sw=2 sts=2 et sta noai

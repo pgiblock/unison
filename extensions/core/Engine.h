@@ -1,5 +1,5 @@
 /*
- * Lv2Manager.cpp
+ * Engine.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,42 +22,54 @@
  *
  */
 
-#include "extensionsystem/ExtensionManager.h"
-#include "IPluginProvider.h"
-#include "PluginManager.h"
+#ifndef CORE_ENGINE_H
+#define CORE_ENGINE_H
 
-using namespace Unison;
-using namespace ExtensionSystem;
+#include <QObject>
+#include <prg/Uncopyable.h>
+#include <unison/types.h>
+#include "Core_global.h"
+
+namespace Unison {
+  class Backend;
+  class BufferProvider;
+}
 
 namespace Core {
 
-// There is only one of these...
-PluginManager* PluginManager::m_instance = static_cast<PluginManager*>(NULL);
-
-PluginManager::PluginManager()
+class CORE_EXPORT Engine : public QObject, public PRG::Uncopyable
 {
-  qDebug( "Initializing Plugin Manager" );
-}
+  Q_OBJECT
 
+  public:
+    Engine () {};
+    virtual ~Engine () {};
 
-PluginManager::~PluginManager ()
-{}
-
-
-PluginDescriptorPtr PluginManager::descriptor (const QString uniqueId)
-{
-  ExtensionManager * em = ExtensionManager::instance();
-  QList<IPluginProvider*> providers = em->getObjects<IPluginProvider>();
-
-  foreach(IPluginProvider* pp, providers) {
-    if (PluginDescriptorPtr desc = pp->descriptor(uniqueId)) {
-      return desc;
+    inline static Unison::Backend *backend ()
+    {
+      return m_backend;
     }
-  }
 
-  return PluginDescriptorPtr(NULL);
-}
+    inline static Unison::BufferProvider *bufferProvider ()
+    {
+      return m_bufferProvider;
+    }
+
+    /**
+     * Not public API - do not call */
+    static void setBackend (Unison::Backend *backend);
+
+    /**
+     * Not public API - do not call */
+    static void setBufferProvider(Unison::BufferProvider *bufferProvider);
+
+  private:
+    static Unison::Backend *m_backend;
+    static Unison::BufferProvider *m_bufferProvider;
+};
 
 } // Core
+
+#endif
 
 // vim: ts=8 sw=2 sts=2 et sta noai

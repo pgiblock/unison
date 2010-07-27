@@ -29,7 +29,7 @@
 #include <extensionsystem/IExtension.h>
 
 namespace Jack {
-namespace Internal {
+  namespace Internal {
 
 class JackExtension : public ExtensionSystem::IExtension
 {
@@ -48,7 +48,7 @@ private:
   void parseArguments(const QStringList &arguments);
 };
 
-} // namespace Internal
+  } // namespace Internal
 } // namespace Jack
 
 #endif

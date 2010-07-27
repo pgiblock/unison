@@ -32,7 +32,7 @@
 namespace Unison
 {
 
-class CompositeProcessor;
+class Patch;
 class ProcessingContext;
 
 /**
@@ -50,15 +50,16 @@ class Processor : public Node
     virtual Port* port (int idx) const = 0;
     virtual Port* port (QString name) const = 0;
 
-    virtual void activate () = 0;
+    virtual void activate (BufferProvider *bp) = 0;
     virtual void deactivate () = 0;
 
     virtual void process (const ProcessingContext & context) = 0;
+    virtual void setBufferLength (PortType type, nframes_t len);
 
     //// Connection oriented Stuff ////
 
     Node* parent () const;
-    void setParent(CompositeProcessor* parent);
+    void setParent(Patch* parent);
 
     /**
      * Has this node been visited (traversed)?  While compiling and perhaps
@@ -84,7 +85,7 @@ class Processor : public Node
     };
 
   private:
-    CompositeProcessor* m_parent;
+    Patch* m_parent;
     bool m_visited;
 };
 

@@ -35,7 +35,7 @@
 namespace Unison
 {
 
-class CompositeProcessor;
+class Patch;
 
 /**
  * The type of plugin, regarding I/O.

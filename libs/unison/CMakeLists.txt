@@ -22,34 +22,46 @@
 #
 
 set(UNISON_SRCS
-    CompositeProcessor.cpp
+    Command.cpp
+    Commander.cpp
+    Node.cpp
+    Patch.cpp
     PooledBufferProvider.cpp
     Port.cpp
+    PortConnect.cpp
+    PortDisconnect.cpp
     Processor.cpp
     SampleBuffer.cpp
 )
 
+set(UNISON_MOC_HEADERS
+    Backend.h
+)
+
 set(UNISON_INCLUDES
     AudioBuffer.h
+    Backend.h
+    BackendPort.h
     Buffer.h
     BufferProvider.h
-    CompositeProcessor.h
+    Command.h
     ControlBuffer.h
     Node.h
+    Patch.h
     Plugin.h
     PooledBufferProvider.h
     Port.h
     ProcessingContext.h
     Processor.h
+    RingBuffer.h
     SampleBuffer.h
     types.h
 )
 
 qt4_wrap_cpp(UNISON_MOC_SRCS ${UNISON_MOC_HEADERS})
 
-include_directories(.. ${PRG_INCLUDE_DIR})
+include_directories(.. ${PRG_INCLUDE_DIR} ${PROJECT_SOURCE_DIR})
 
-add_definitions(-D'UNISON_BUFFER_LENGTH=${UNISON_BUFFER_LENGTH}')
 add_library(unison SHARED ${UNISON_MOC_SRCS} ${UNISON_SRCS})
 
 target_link_libraries(unison

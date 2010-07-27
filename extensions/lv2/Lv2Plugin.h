@@ -32,8 +32,7 @@
 #include <slv2/slv2.h>
 
 namespace Lv2 {
-namespace Internal {
-
+  namespace Internal {
 
 /** The SLV2World, and various cached (as symbols, fast) URIs.
  *  This object represents everything Unison 'knows' about LV2
@@ -114,15 +113,17 @@ class Lv2Plugin : public Unison::Plugin
       return m_instance;
     }
 
-    void activate ();
+    void activate (Unison::BufferProvider *bp);
     void deactivate ();
 
-    void process(const Unison::ProcessingContext & context);
+    void process(const Unison::ProcessingContext &context);
 
     const QSet<Unison::Node* const> dependencies () const;
     const QSet<Unison::Node* const> dependents () const;
 
     // TODO: loadState and saveState
+
+    Unison::BufferProvider *bufferProvider ();
 
   private:
     Lv2World&         m_world;
@@ -138,6 +139,7 @@ class Lv2Plugin : public Unison::Plugin
     bool              m_activated;
     Unison::nframes_t m_sampleRate;
     QVarLengthArray<Unison::Port*, 16> m_ports;
+    Unison::BufferProvider *m_bufferProvider;
 
     void init ();
 };
@@ -160,7 +162,7 @@ class Lv2PluginDescriptor : public Unison::PluginDescriptor
     SLV2Plugin m_plugin;
 };
 
-} // Internal
+  } // Internal
 } // Lv2
 
 #endif

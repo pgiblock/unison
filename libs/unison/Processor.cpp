@@ -24,34 +24,46 @@
 
 #include <QDebug>
 
-#include "unison/CompositeProcessor.h"
+#include "unison/Patch.h"
 
-namespace Unison
+namespace Unison {
+
+Processor::Processor () :
+  m_parent(NULL)
+{}
+
+
+Processor::~Processor ()
 {
-  Processor::Processor () :
-    m_parent(NULL)
-  {}
+  if (m_parent) {
+    m_parent->remove(this);
+  }
+}
 
 
-  Processor::~Processor ()
-  {
-    if (m_parent) {
-      m_parent->remove(this);
+void Processor::setBufferLength (PortType type, nframes_t len)
+{
+  for (int n = 0; n < portCount(); ++n) {
+    Port *p = port(n);
+    if (p->type() == type) {
+      p->setBufferLength(len);
     }
   }
+}
 
 
-  Node* Processor::parent () const
-  {
-    return m_parent;
-  }
+Node* Processor::parent () const
+{
+  return m_parent;
+}
 
-  void Processor::setParent (CompositeProcessor* parent)
-  {
-    Q_ASSERT(parent != NULL);
-    // TODO-NOW: A bunch of assertions
-    m_parent = parent;
-  }
+
+void Processor::setParent (Patch* parent)
+{
+  Q_ASSERT(parent != NULL);
+  // TODO-NOW: A bunch of assertions
+  m_parent = parent;
+}
 
 } // Unison
 

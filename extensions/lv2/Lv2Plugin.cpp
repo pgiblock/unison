@@ -30,8 +30,10 @@
 #include <QDebug>
 #include <QSet>
 
-using namespace Lv2::Internal;
 using namespace Unison;
+
+namespace Lv2 {
+  namespace Internal {
 
 Lv2World::Lv2World ()
 {
@@ -157,10 +159,23 @@ Port* Lv2Plugin::port (QString id) const
 }
 
 
-void Lv2Plugin::activate ()
+BufferProvider *Lv2Plugin::bufferProvider ()
+{
+  return m_bufferProvider;
+}
+
+
+void Lv2Plugin::activate (BufferProvider *bp)
 {
   if (!m_activated) {
     qDebug() << "Activating plugin" << name();
+    m_bufferProvider = bp;
+
+    // Connect all ports first
+    for (int i=0; i<m_ports.count(); ++i) {
+      m_ports[i]->connectToBuffer();
+    }
+
     slv2_instance_activate( m_instance );
     m_activated = true;
   }
@@ -309,5 +324,8 @@ PluginPtr Lv2PluginDescriptor::createPlugin (nframes_t sampleRate) const
 {
   return PluginPtr( new Lv2Plugin( m_world, m_plugin, sampleRate ) );
 }
+
+  } // Internal
+} // Lv2
 
 // vim: ts=8 sw=2 sts=2 et sta noai

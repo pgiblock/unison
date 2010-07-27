@@ -1,5 +1,5 @@
 /*
- * Lv2Manager.cpp
+ * Commander.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,42 +22,58 @@
  *
  */
 
-#include "extensionsystem/ExtensionManager.h"
-#include "IPluginProvider.h"
-#include "PluginManager.h"
+#include "Commander.h"
+#include "Command.h"
 
-using namespace Unison;
-using namespace ExtensionSystem;
+#include <QMutex>
+#include <QMutexLocker>
 
-namespace Core {
+namespace Unison {
+  namespace Internal {
 
-// There is only one of these...
-PluginManager* PluginManager::m_instance = static_cast<PluginManager*>(NULL);
+Commander* Commander::m_instance = static_cast<Commander*>(NULL);
 
-PluginManager::PluginManager()
+void Commander::initialize ()
 {
-  qDebug( "Initializing Plugin Manager" );
+  m_instance = new Commander();
 }
 
 
-PluginManager::~PluginManager ()
-{}
-
-
-PluginDescriptorPtr PluginManager::descriptor (const QString uniqueId)
+Commander::Commander () :
+  m_writeLock(),
+  m_blockWait(),
+  m_buffer(24)
 {
-  ExtensionManager * em = ExtensionManager::instance();
-  QList<IPluginProvider*> providers = em->getObjects<IPluginProvider>();
+  //
+}
 
-  foreach(IPluginProvider* pp, providers) {
-    if (PluginDescriptorPtr desc = pp->descriptor(uniqueId)) {
-      return desc;
-    }
+
+void Commander::push (Command *command)
+{
+  bool block = command->isBlocking();
+  size_t size = sizeof(command);
+
+  QMutexLocker locker(&m_writeLock);
+  command->preExecute();
+  m_buffer.write(&command, 1);
+  if (block) {
+    m_blockWait.acquire();
   }
+} 
 
-  return PluginDescriptorPtr(NULL);
+
+void Commander::process (ProcessingContext &context)
+{
+  const int MAX_COMMANDS = 1;
+  Command* commands[MAX_COMMANDS];
+  int cnt = m_buffer.read(commands, MAX_COMMANDS);
+
+  for (int i=0; i<cnt; ++i) {
+    commands[i]->execute(context);
+  }
 }
 
-} // Core
+  } // Internal
+} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

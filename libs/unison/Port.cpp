@@ -23,75 +23,85 @@
  */
 
 #include "unison/Port.h"
+#include "unison/PortConnect.h"
+#include "unison/PortDisconnect.h"
 
-namespace Unison
+#include "unison/Commander.h"
+
+namespace Unison {
+
+Port::Port () :
+  Node(),
+  m_buffer(NULL),
+  m_connectedPorts()
+{}
+
+
+void Port::setBufferLength (nframes_t len)
 {
-
-  Port::Port () :
-    Node(),
-    m_buffer(NULL),
-    m_connectedPorts()
-  {}
+  // TODO: Forcefully resize the buffer we own. Who cares? changing
+  // bufferlength won't happen in the middle of a song, realloc
+  // should be safe.
+}
 
 
-  void Port::connect (Port* other)
-  {
-    // TODO: Check for existing connection and cycles!!!
-    m_connectedPorts += other;
-    other->m_connectedPorts += this;
-  }
+void Port::connect (Port* other)
+{
+  Command *cmd = new Internal::PortConnect(this, other);
+  Internal::Commander::instance()->push(cmd);
+}
 
 
-  void Port::disconnect (Port* other)
-  {
-    m_connectedPorts -= other;
-    other->m_connectedPorts -= this;
-  }
+void Port::disconnect (Port* other)
+{
+  Command *cmd = new Internal::PortDisconnect(this, other);
+  Internal::Commander::instance()->push(cmd);
+}
 
 
-  bool Port::isConnected (Port* other) const
-  {
-    return m_connectedPorts.contains(other);
-  }
+bool Port::isConnected (Port* other) const
+{
+  return m_connectedPorts.contains(other);
+}
 
 
-  const QSet<Node* const> Port::dependencies () const
-  {
-    switch (direction()) {
-      case INPUT:
-      {
-        QSet<Node* const> p;
-        for (QSet<Port* const>::const_iterator i = m_connectedPorts.begin();
-            i != m_connectedPorts.end(); ++i) {
-          p.insert(*i);
-        }
-        return p;
+const QSet<Node* const> Port::dependencies () const
+{
+  switch (direction()) {
+    case INPUT:
+    {
+      QSet<Node* const> p;
+      for (QSet<Port* const>::const_iterator i = m_connectedPorts.begin();
+          i != m_connectedPorts.end(); ++i) {
+        p.insert(*i);
       }
-
-      case OUTPUT:
-        return interfacedNodes();
+      return p;
     }
+
+    case OUTPUT:
+      return interfacedNodes();
   }
+}
 
 
 
 const QSet<Node* const> Port::dependents () const {
-    switch (direction()) {
-      case INPUT:
-      {
-        return interfacedNodes();
-      }
-
-      case OUTPUT:
-      {
-        QSet<Node* const> p;
-        for (QSet<Port* const>::const_iterator i = m_connectedPorts.begin();
-            i != m_connectedPorts.end(); ++i) {
-          p.insert(*i);
-        }
-        return p;
-      }
+  switch (direction()) {
+    case INPUT:
+    {
+      return interfacedNodes();
     }
+
+    case OUTPUT:
+    {
+      QSet<Node* const> p;
+      for (QSet<Port* const>::const_iterator i = m_connectedPorts.begin();
+          i != m_connectedPorts.end(); ++i) {
+        p.insert(*i);
+      }
+      return p;
+    }
+  }
 }
 
 } // Unison

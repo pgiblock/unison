@@ -1,5 +1,5 @@
 /*
- * CompositeProcessor.h
+ * Patch.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -23,8 +23,8 @@
  */
 
 
-#ifndef UNISON_COMPOSITE_PROCESSOR_H
-#define UNISON_COMPOSITE_PROCESSOR_H
+#ifndef UNISON_PATCH_H
+#define UNISON_PATCH_H
 
 #include "unison/Processor.h"
 
@@ -40,13 +40,12 @@ class ProcessingContext;
  * class allows for a processor which manages other processors.  This is used
  * as a base class for Unison's higher-level constructs such as FxLines and
  * Synths, etc. */
-class CompositeProcessor : public Processor
+class Patch : public Processor
 {
   public:
-    CompositeProcessor () : Processor()
-    {}
+    Patch ();
 
-    virtual ~CompositeProcessor ()
+    virtual ~Patch ()
     {};
 
     virtual QString name () const;
@@ -60,40 +59,43 @@ class CompositeProcessor : public Processor
     virtual Port* port (int idx) const;
     virtual Port* port (QString id) const;
 
-    virtual void activate ();
+    virtual void activate (BufferProvider *bp);
     virtual void deactivate ();
+
+    virtual void setBufferLength (PortType type, nframes_t len);
 
     virtual void process (const ProcessingContext& context);
 
     const QSet<Node* const> dependencies () const;
     const QSet<Node* const> dependents () const;
 
+    // Private API :: TODO: Move to D-ptr
+
+    struct CompiledProcessor {
+      Processor* processor;
+    };
+
     /**
-     * A hack to let subs force-compile for now.  Should be removed once
-     * CompiledProcessor actually manages connect()ing */
-    void hackCompile (BufferProvider& pool)
+     * Compiles the given list of processors into a proper traversal for
+     * rendering.  Not reentrant. */
+    void compile (QList<CompiledProcessor>& output);
+
+    void setCompiledProcessors(QList<CompiledProcessor>* processors)
     {
-      compile(pool);
+      m_compiled = processors;
     }
+
+    QList<CompiledProcessor>* compiledProcessors() const
+    {
+      return m_compiled;
+    }
+
 
   protected:
     virtual void registerPort()
     {};
 
   private:
-    struct CompiledProcessor {
-      Processor* processor;
-    };
-
-    /**
-     * Compiles graph of child processors */
-    void compile (BufferProvider& bufferProvider);
-
-    /**
-     * Compiles the given list of processors into a proper traversal for
-     * rendering.  Not reentrant. */
-    void compile (QList<Processor*> input,
-                         QList<CompiledProcessor>& output);
 
     /**
      * A recursive walk into the dependencies of the node.  Processors
@@ -102,31 +104,30 @@ class CompositeProcessor : public Processor
     void compileWalk (Node* n, QList<CompiledProcessor>& output);
 
     QAtomicPointer< QList<CompiledProcessor> > m_compiled;
-    QSet<Node* const> m_derivedDependencies;
     QList<Processor*> m_processors;
 };
 
 
 
 /**
- * Provides a proxy to a port internal to a CompositeProcessor. The
- * CompositeProcessor allows for implementations to registerPorts.  This
- * exposes an internal port as if it is a port of the CompositeProcessor. */
-class CompositeProcessorProxyPort : public Port
+ * Provides a proxy to a port internal to a Patch. The
+ * Patch allows for implementations to registerPorts.  This
+ * exposes an internal port as if it is a port of the Patch. */
+class PatchProxyPort : public Port
 {
   protected:
     /**
-     * Constructs a Port for a CompositeProcessor.  Called by
-     * CompositeProcessor itself.
+     * Constructs a Port for a Patch.  Called by
+     * Patch itself.
      * @param processor The parent processor
      * @param port      The port to proxy */
-    CompositeProcessorProxyPort (CompositeProcessor* processor,
+    PatchProxyPort (Patch* processor,
                                  Port* port) :
       m_port(port),
       m_processor(processor)
     {}
 
-    ~CompositeProcessorProxyPort ()
+    ~PatchProxyPort ()
     {}
 
     QString name () const
@@ -186,17 +187,17 @@ class CompositeProcessorProxyPort : public Port
       return p;
     }
 
-    void connectToBuffer (BufferProvider& provider)
+    void connectToBuffer ()
     {
       // TODO: Might need more logic here
-      m_port->connectToBuffer(provider);
+      m_port->connectToBuffer();
     }
 
   private:
     Port* m_port;                    ///< The proxied port
-    CompositeProcessor* m_processor; ///< The processor owning this port
+    Patch* m_processor; ///< The processor owning this port
 
-    friend class CompositeProcessor;
+    friend class Patch;
 };
 
 } // Unison

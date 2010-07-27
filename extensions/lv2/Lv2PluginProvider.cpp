@@ -27,14 +27,16 @@
 #include <QLibrary>
 #include <QFile>
 #include <QTextStream>
+#include <QtDebug>
 
 #include <math.h>
 
 #include "Lv2PluginProvider.h"
-
   
 using namespace Unison;
-using namespace Lv2::Internal;
+
+namespace Lv2 {
+  namespace Internal {
 
 Lv2PluginProvider::Lv2PluginProvider() :
   m_lv2World(),
@@ -57,6 +59,8 @@ Lv2PluginProvider::Lv2PluginProvider() :
     SLV2Plugin p = slv2_plugins_get_at( lv2PluginList, i );
     addLv2Plugin( p );
   }
+
+  qDebug() << "Found" << lv2PluginListSize << "Lv2 plugins.";
 
   slv2_plugins_free( m_lv2World.world, lv2PluginList );
   qDebug( "Done initializing Lv2 Plugin Provider" );
@@ -99,10 +103,8 @@ void Lv2Manager::ensureLV2DataExists (Lv2PluginDescriptor* desc) {
 void Lv2PluginProvider::addLv2Plugin (SLV2Plugin plugin)
 {
   QString key = slv2_value_as_uri( slv2_plugin_get_uri( plugin ) );
-  printf("Found LV2 plugin URI : '%s'\n", qPrintable(key));
 
   if (m_lv2DescriptorMap.contains( key )) {
-    printf("  Already in Cache.\n");
     return;
   }
 
@@ -113,12 +115,15 @@ void Lv2PluginProvider::addLv2Plugin (SLV2Plugin plugin)
   //	SLV2Value label = slv2_plugin_class_get_label( pclass );
   //	printf( "Plugin Class is : '%s'\n", slv2_value_as_string( label ) );
 
-  printf("  Audio (input, output)=(%d,%d)\n",
-          descriptor->audioInputCount(), descriptor->audioOutputCount());
+  //printf("  Audio (input, output)=(%d,%d)\n",
+  //        descriptor->audioInputCount(), descriptor->audioOutputCount());
 
   m_lv2DescriptorMap.insert(key, descriptor);
 
-  printf("  Type=%d\n", (int)descriptor->type());
+  //printf("  Type=%d\n", (int)descriptor->type());
 }
+
+  } // Internal
+} // Lv2
 
 // vim: ts=8 sw=2 sts=2 et sta noai

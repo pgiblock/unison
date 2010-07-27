@@ -22,14 +22,30 @@
  *
  */
 
+#include "JackBackend.h"
 #include "JackExtension.h"
 
 #include <extensionsystem/ExtensionManager.h>
 
 #include <QtPlugin>
 
-using namespace Jack;
-using namespace Jack::Internal;
+/*!
+    \namespace Jack
+    \brief Provides classes that implement and expose Jack functionality.
+
+    Primarily provides an implementation of Unison::Backend to be used by
+    Core::Engine.  Currently everything is internal, but, we may expose
+    Jack-Specific functionality into the public API at some point.
+*/
+
+/*!
+    \namespace Jack::Internal
+    \internal
+    \brief BLAH
+*/
+
+namespace Jack {
+  namespace Internal {
 
 JackExtension::JackExtension()
 {
@@ -51,6 +67,7 @@ bool JackExtension::initialize(const QStringList &arguments, QString *errorMessa
 {
   Q_UNUSED(errorMessage)
   parseArguments(arguments);
+  addObject(new JackBackendProvider());
   return true;
 }
 
@@ -72,5 +89,8 @@ void JackExtension::shutdown()
 }
 
 EXPORT_EXTENSION(JackExtension)
+
+  } // Internal
+} // Jack
 
 // vim: ts=8 sw=2 sts=2 et sta noai

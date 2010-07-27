@@ -39,7 +39,7 @@ namespace Core {
  * their implemenation to ExtensionManager with addObject(), the implementation
  * will then be used by PluginManager.
  */
-CORE_EXPORT class IPluginProvider : public QObject
+class CORE_EXPORT IPluginProvider : public QObject
 {
   Q_OBJECT
   public:

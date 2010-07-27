@@ -29,17 +29,17 @@
 
 #include "unison/BufferProvider.h"
 
-namespace Unison
-{
+namespace Jack {
+  namespace Internal {
 
 class JackPort;
-
 
 /**
  * JackBufferProvider acquires buffers that backed by memory managed by Jack.
  * A new acquire() function is used to return these special Buffers.  Calling
- * the overloaded acquire() function is an error. */
-class JackBufferProvider : public BufferProvider
+ * the overloaded acquire() function is an error.
+  */
+class JackBufferProvider : public Unison::BufferProvider
 {
   public:
     JackBufferProvider ()
@@ -52,26 +52,27 @@ class JackBufferProvider : public BufferProvider
      * Called by Jack's process callback to connect JackPorts to the
      * appropriate buffer.  This must be called in the processing thread.
      * @returns wrapped buffer provided by Jack for the given port */
-    SharedBufferPtr acquire (const JackPort * port, nframes_t nframes);
+    Unison::SharedBufferPtr acquire (const JackPort * port, Unison::nframes_t nframes);
 
     /**
      * Results in an error as JackBufferProvider must not be used by Ports
      * other than JackPort */
-    SharedBufferPtr acquire (PortType, nframes_t);
+    Unison::SharedBufferPtr acquire (Unison::PortType, Unison::nframes_t);
 
     /**
      * Results in an error as JackBufferProvider must not be used by Ports
      * other than JackPort */
-    SharedBufferPtr zeroAudioBuffer () const;
+    Unison::SharedBufferPtr zeroAudioBuffer () const;
 
   protected:
-    void release (Buffer * buf)
+    void release (Unison::Buffer * buf)
     {
       delete buf;
     }
 };
 
-} // Unison
+  } // Internal
+} // Jack
 
 #endif
 

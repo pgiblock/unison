@@ -26,11 +26,11 @@
 #ifndef UNISON_PORT_H
 #define UNISON_PORT_H
 
+#include "unison/Command.h"
 #include "unison/Node.h"
 #include "unison/BufferProvider.h"
 
-namespace Unison
-{
+namespace Unison {
 
 class ProcessingContext;
 
@@ -86,11 +86,13 @@ class Port : public Node
     /** @returns true if this port is toggled between on and off */
     virtual bool isToggled () const = 0;
 
+    virtual void setBufferLength (nframes_t len);
+
     /**
      * Called in Process thread to assign the buffer used by this port
      * sub-classes may choose to assign a buffer from the BufferProvider or
      * from some other source. */
-    virtual void connectToBuffer (BufferProvider & provider) = 0;
+    virtual void connectToBuffer () = 0;
 
     /** Called in Process thread to retrieve the buffer for this Port */
     SharedBufferPtr buffer ()
@@ -113,6 +115,12 @@ class Port : public Node
     /** @returns Either the connected Nodes or the interfaced Nodes */
     const QSet<Node* const> dependents () const;
 
+    // Private API :: TODO: Move to D-ptr
+    QSet<Port* const>* _connectedPorts ()
+    {
+      return &m_connectedPorts;
+    }
+
   protected:
     /**
      * Used by subclasses to list the nodes directly "behind" this port.  For
@@ -123,6 +131,7 @@ class Port : public Node
 
   protected:
     SharedBufferPtr m_buffer;
+
   private:
     QSet<Port* const> m_connectedPorts;
 };

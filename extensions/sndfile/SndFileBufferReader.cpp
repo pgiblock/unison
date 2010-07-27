@@ -46,10 +46,6 @@ Unison::SampleBuffer *SndFileBufferReader::read (const QString &filename)
     if( sf_read_short( snd_file, _buf, sf_info.channels * frames )
         < sf_info.channels * frames )
     {
-#ifdef DEBUG_LMMS
-      printf( "sampleBuffer::decodeSampleSF(): could not read"
-          " sample %s: %s\n", _f, sf_strerror( NULL ) );
-#endif
     }
     _channels = sf_info.channels;
     _samplerate = sf_info.samplerate;
@@ -58,10 +54,6 @@ Unison::SampleBuffer *SndFileBufferReader::read (const QString &filename)
   }
   else
   {
-#ifdef DEBUG_LMMS
-    printf( "sampleBuffer::decodeSampleSF(): could not load "
-        "sample %s: %s\n", _f, sf_strerror( NULL ) );
-#endif
   }*/
 
   // Open file.

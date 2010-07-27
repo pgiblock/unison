@@ -1,5 +1,5 @@
 /*
- * Lv2Manager.cpp
+ * Node.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,42 +22,34 @@
  *
  */
 
-#include "extensionsystem/ExtensionManager.h"
-#include "IPluginProvider.h"
-#include "PluginManager.h"
+#include <QDebug>
 
-using namespace Unison;
-using namespace ExtensionSystem;
+#include "Node.h"
+#include "Patch.h"
 
-namespace Core {
+namespace Unison {
 
-// There is only one of these...
-PluginManager* PluginManager::m_instance = static_cast<PluginManager*>(NULL);
-
-PluginManager::PluginManager()
+Patch *Node::parentPatch () const
 {
-  qDebug( "Initializing Plugin Manager" );
-}
+  Node *n = parent();
 
-
-PluginManager::~PluginManager ()
-{}
-
-
-PluginDescriptorPtr PluginManager::descriptor (const QString uniqueId)
-{
-  ExtensionManager * em = ExtensionManager::instance();
-  QList<IPluginProvider*> providers = em->getObjects<IPluginProvider>();
-
-  foreach(IPluginProvider* pp, providers) {
-    if (PluginDescriptorPtr desc = pp->descriptor(uniqueId)) {
-      return desc;
+  // While non-patch parents exist
+  forever {
+    // Graph isn't contained in a patch yet
+    if (n == NULL) {
+      break;
     }
+    // Is this a patch?
+    Patch *p = dynamic_cast<Patch*>(n);
+    if (p) {
+      return p;
+    }
+    n = n->parent();
   }
 
-  return PluginDescriptorPtr(NULL);
+  return NULL;
 }
 
-} // Core
+} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

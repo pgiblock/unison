@@ -57,7 +57,8 @@ void printLogo()
 /** Draws the GPL mandated disclaimer */
 void printDisclaimer()
 {
-  QTextStream str(stdout);  str <<
+  QTextStream str(stdout);
+  str <<
       "Unison version 0, Copyright (C) 2010 Paul R Giblock\n"
       "Unison comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\n"
       "This is free software, and you are welcome to redistribute it\n"
@@ -155,18 +156,17 @@ int main (int argc, char **argv)
                                QLatin1String("Unison"), QLatin1String("UnisonStudio"));
   locale = settings.value("General/OverrideLanguage", locale).toString();
 
-  // TODO: Translations!
-
   // Make sure we honor the system's proxy settings
   QNetworkProxyFactory::setUseSystemConfiguration(true);
 
-  // Load
+  // Init extension system
   ExtensionSystem::ExtensionManager extensionManager;
   extensionManager.setFileExtension(QLatin1String("extinfo"));
 
   const QStringList extensionPaths = getExtensionPaths();
   extensionManager.setExtensionPaths(extensionPaths);
 
+  // Parse arguments
   const QStringList arguments = QCoreApplication::arguments();
   QMap<QString, QString> foundAppOptions;
   if (arguments.size() > 1) {
@@ -186,6 +186,17 @@ int main (int argc, char **argv)
     }
   }
 
+  // Handle non-extension-based options
+  if (foundAppOptions.contains(QLatin1String(VERSION_OPTION))) {
+    printVersion(extensionManager);
+    return 0;
+  }
+  if (foundAppOptions.contains(QLatin1String(HELP_OPTION))) {
+    printHelp(QFileInfo(app->applicationFilePath()).baseName(), extensionManager);
+    return 0;
+  }
+
+  // Loop through discovered extensions, find core extension
   const QList<ExtensionSystem::ExtensionInfo *> extensions = extensionManager.extensions();
   ExtensionSystem::ExtensionInfo *coreextension = 0;
   foreach (ExtensionSystem::ExtensionInfo *info, extensions) {
@@ -206,16 +217,6 @@ int main (int argc, char **argv)
     return 1;
   }
   
-  // Handle non-extension-based options
-  if (foundAppOptions.contains(QLatin1String(VERSION_OPTION))) {
-    printVersion(extensionManager);
-    return 0;
-  }
-  if (foundAppOptions.contains(QLatin1String(HELP_OPTION))) {
-    printHelp(QFileInfo(app->applicationFilePath()).baseName(), extensionManager);
-    return 0;
-  }
-
   // Single instance stuff
   //const bool isFirstInstance = !app.isRunning();
   //if (!isFirstInstance && foundAppOptions.contains(QLatin1String(CLIENT_OPTION))) {
@@ -226,6 +227,7 @@ int main (int argc, char **argv)
   //    return 0;
   //}
 
+  // Load extensions, displaying any errors that occur
   extensionManager.loadExtensions();
   if (coreextension->hasError()) {
     qWarning() << msgCoreLoadFailure(coreextension->errorString());
@@ -245,6 +247,7 @@ int main (int argc, char **argv)
     }
   }
 
+  // Single instance stuff
   //if (isFirstInstance) {
       // Set up lock and remote arguments for the first instance only.
       // Silently fallback to unconnected instances for any subsequent

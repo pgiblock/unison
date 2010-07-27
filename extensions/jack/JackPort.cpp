@@ -22,47 +22,52 @@
  *
  */
 
+#include "JackPort.h"
+#include "JackBufferProvider.h"
+#include "JackBackend.h"
+
+#include <unison/AudioBuffer.h>
+
 #include <jack/jack.h>
 #include <QDebug>
 
-#include "unison/AudioBuffer.h"
-#include "unison/JackBufferProvider.h"
-#include "unison/JackEngine.h"
-#include "unison/JackPort.h"
 
-namespace Unison
+const int UNISON_BUFFER_LENGTH = 1024;
+
+using namespace Unison;
+
+namespace Jack {
+  namespace Internal {
+
+JackBufferProvider* JackPort::m_jackBufferProvider =
+    new JackBufferProvider();
+
+const QSet<Node* const> JackPort::interfacedNodes() const
 {
+  const char** name = jack_port_get_connections( m_port );
+  uint32_t count = m_backend.portCount();
 
-  JackBufferProvider* JackPort::m_jackBufferProvider =
-      new JackBufferProvider();
-
-  const QSet<Node* const> JackPort::interfacedNodes () const
-  {
-    const char** name = jack_port_get_connections( m_port );
-    uint32_t count = m_engine.portCount();
-
-    QSet<Node* const> dependencies;
-    // Within all connected ports
-    while (name != NULL) {
-      // See if we own the port
-      for (uint32_t i = 0; i < count; ++i) {
-        JackPort* port = m_engine.port( i );
-        if (port->name() == *name) {
-          dependencies += port;
-        }
+  QSet<Node* const> dependencies;
+  // Within all connected ports
+  while (name != NULL) {
+    // See if we own the port
+    for (uint32_t i = 0; i < count; ++i) {
+      JackPort* port = m_backend.port(i);
+      if (port->name() == *name) {
+        dependencies += port;
       }
     }
-    return dependencies;
   }
+  return dependencies;
+}
 
 
-  void JackPort::connectToBuffer (BufferProvider &)
-  {
-    // TODO use a callback for buffer-size (more JACK CBs in general.)
-    nframes_t size = UNISON_BUFFER_LENGTH; //jack_get_buffer_size(m_engine.jackClient());
-    m_buffer = m_jackBufferProvider->acquire(this, size);
-  }
+void JackPort::connectToBuffer ()
+{
+  m_buffer = m_jackBufferProvider->acquire(this, backend().bufferLength());
+}
 
-} // Unison
+  } // Internal
+} // Jack
 
 // vim: ts=8 sw=2 sts=2 et sta noai

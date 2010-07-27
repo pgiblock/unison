@@ -1,5 +1,5 @@
 /*
- * Command.h
+ * Engine.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,21 +22,27 @@
  *
  */
 
-
-#ifndef UNISON_COMMAND_H
-#define UNISON_COMMAND_H
-
-#include <QUndoCommand>
+#include <unison/Backend.h>
+#include <unison/BufferProvider.h>
+#include "Engine.h"
 
 namespace Core {
 
-/** A Command, used for commanding the models and for providing undo and
- *  redo support.  Typedefing QUndoCommand incase we need to add extra fields
- *  in the future. */
-typedef QUndoCommand Command;
+Unison::Backend *Engine::m_backend = 0;
+Unison::BufferProvider *Engine::m_bufferProvider = 0;
+
+
+void Engine::setBackend (Unison::Backend *backend)
+{
+  m_backend = backend;
+}
+
+
+void Engine::setBufferProvider(Unison::BufferProvider *bufferProvider)
+{
+  m_bufferProvider = bufferProvider;
+}
 
 } // Core
-
-#endif
 
 // vim: ts=8 sw=2 sts=2 et sta noai

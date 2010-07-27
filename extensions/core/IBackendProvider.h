@@ -1,5 +1,5 @@
 /*
- * Lv2Manager.cpp
+ * IBackendProvider.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,42 +22,36 @@
  *
  */
 
-#include "extensionsystem/ExtensionManager.h"
-#include "IPluginProvider.h"
-#include "PluginManager.h"
+#ifndef UNISON_IBACKEND_PROVIDER_H
+#define UNISON_IBACKEND_PROVIDER_H
 
-using namespace Unison;
-using namespace ExtensionSystem;
+#include <QObject>
+
+#include "Core_global.h"
+
+namespace Unison {
+  class Backend;
+}
 
 namespace Core {
 
-// There is only one of these...
-PluginManager* PluginManager::m_instance = static_cast<PluginManager*>(NULL);
-
-PluginManager::PluginManager()
+/**
+ * Enumerates and creates a backend.  Used to describe which backends are
+ * available, so that engine can pick the right one during startup. */
+class CORE_EXPORT IBackendProvider : public QObject
 {
-  qDebug( "Initializing Plugin Manager" );
-}
+  Q_OBJECT
+  public:
+    IBackendProvider(QObject *parent = 0) : QObject(parent) {};
+    virtual ~IBackendProvider() {};
 
-
-PluginManager::~PluginManager ()
-{}
-
-
-PluginDescriptorPtr PluginManager::descriptor (const QString uniqueId)
-{
-  ExtensionManager * em = ExtensionManager::instance();
-  QList<IPluginProvider*> providers = em->getObjects<IPluginProvider>();
-
-  foreach(IPluginProvider* pp, providers) {
-    if (PluginDescriptorPtr desc = pp->descriptor(uniqueId)) {
-      return desc;
-    }
-  }
-
-  return PluginDescriptorPtr(NULL);
-}
+    virtual QString displayName() = 0;
+    virtual Unison::Backend * createBackend() = 0;
+};
 
 } // Core
+
+
+#endif
 
 // vim: ts=8 sw=2 sts=2 et sta noai

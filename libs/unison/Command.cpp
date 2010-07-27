@@ -1,5 +1,5 @@
 /*
- * Lv2Manager.cpp
+ * Command.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,42 +22,64 @@
  *
  */
 
-#include "extensionsystem/ExtensionManager.h"
-#include "IPluginProvider.h"
-#include "PluginManager.h"
+#include "unison/Command.h"
 
-using namespace Unison;
-using namespace ExtensionSystem;
+#include <QtCore/QtGlobal>
 
-namespace Core {
+namespace Unison {
 
-// There is only one of these...
-PluginManager* PluginManager::m_instance = static_cast<PluginManager*>(NULL);
-
-PluginManager::PluginManager()
-{
-  qDebug( "Initializing Plugin Manager" );
-}
-
-
-PluginManager::~PluginManager ()
+Command::Command () :
+  m_blocking(true),
+  m_state(Invalid),
+  m_errorCode(0)
 {}
 
 
-PluginDescriptorPtr PluginManager::descriptor (const QString uniqueId)
+void Command::preExecute ()
 {
-  ExtensionManager * em = ExtensionManager::instance();
-  QList<IPluginProvider*> providers = em->getObjects<IPluginProvider>();
-
-  foreach(IPluginProvider* pp, providers) {
-    if (PluginDescriptorPtr desc = pp->descriptor(uniqueId)) {
-      return desc;
-    }
-  }
-
-  return PluginDescriptorPtr(NULL);
+  Q_ASSERT(m_state==Created);
+  m_state = PreExecuted;
 }
 
-} // Core
+
+void Command::execute (ProcessingContext &ctx)
+{
+  Q_UNUSED(ctx);
+  Q_ASSERT(m_state==PreExecuted);
+  m_state = Executed;
+}
+
+
+void Command::postExecute ()
+{
+  Q_ASSERT(m_state==Executed);
+  m_state = PostExecuted;
+}
+
+
+bool Command::isBlocking () const
+{
+  return m_blocking;
+}
+
+
+Command::State Command::state () const
+{
+  return m_state;
+}
+
+
+bool Command::hasError () const
+{
+  return m_errorCode != 0;
+}
+
+
+int Command::errorCode () const
+{
+  return m_errorCode;
+}
+
+} // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai
