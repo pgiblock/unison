@@ -24,9 +24,26 @@
 set(EXTENSIONS_RPATH ${CMAKE_INSTALL_PREFIX}/lib/unison/extensions)
 
 add_subdirectory(core)
-add_subdirectory(flac)
 add_subdirectory(guicore)
-add_subdirectory(jack)
-add_subdirectory(lv2)
-add_subdirectory(oggvorbis)
-add_subdirectory(sndfile)
+
+if(BUILD_FLAC_EXTENSION)
+  add_subdirectory(flac)
+endif(BUILD_FLAC_EXTENSION)
+
+if(BUILD_JACK_EXTENSION)
+  add_subdirectory(jack)
+endif(BUILD_JACK_EXTENSION)
+
+if(BUILD_LV2_EXTENSION)
+  add_subdirectory(lv2)
+endif(BUILD_LV2_EXTENSION)
+
+if(BUILD_OGGVORBIS_EXTENSION)
+  add_subdirectory(oggvorbis)
+endif(BUILD_OGGVORBIS_EXTENSION)
+
+if(BUILD_SNDFILE_EXTENSION)
+  add_subdirectory(sndfile)
+endif(BUILD_SNDFILE_EXTENSION)
+
+# vim: ts=8 sw=2 sts=2 et sta noai
