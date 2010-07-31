@@ -25,5 +25,13 @@ set(EXTENSIONS_RPATH ${CMAKE_INSTALL_PREFIX}/lib/unison/extensions)
 
 add_subdirectory(core)
 add_subdirectory(guicore)
-add_subdirectory(jack)
-add_subdirectory(lv2)
+
+if(BUILD_JACK_EXTENSION)
+  add_subdirectory(jack)
+endif(BUILD_JACK_EXTENSION)
+
+if(BUILD_LV2_EXTENSION)
+  add_subdirectory(lv2)
+endif(BUILD_LV2_EXTENSION)
+
+# vim: ts=8 sw=2 sts=2 et sta noai

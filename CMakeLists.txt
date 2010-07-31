@@ -21,7 +21,6 @@
 # Boston, MA 02110-1301 USA.
 #
 
-
 cmake_minimum_required(VERSION 2.6)
 
 project(unison)
@@ -30,20 +29,70 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
 include(DefineCMakeDefaults)
 include(DefineCompilerFlags)
+include(MacroLogFeature)
 
-#include(CheckIncludeFiles)
-#include(CheckLibraryExists)
-include(FindPkgConfig)
-include(FindJack)
-include(FindSlv2)
+find_package(PkgConfig)
+find_package(Jack)
+find_package(Slv2)
+
+# TODO: use these to ensure the user has at least one backend supported.
+# Since JACK is the only backend right now, we simply require JACK
+set(BACKENDS_AVAILABLE "")
+set(BACKENDS_ENABLED "")
+
+## Options ########
+
+option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" ON)
+option(WANT_LV2_EXTENSION "Include LV2 plugin support extension" ON)
+
+## Find required dependencies ########
+
+find_package(Qt4 4.6.0 COMPONENTS QtCore QtGui QtXml QtNetwork) # REQUIRED)
+macro_log_feature(QT4_FOUND "Qt4"
+  "Needed for cross-platform data, UI, XML, and Network support"
+  "http://qt.nokia.com/"
+  TRUE "" "")
+
+## Find dependencies based on features selected ########
+
+if(WANT_JACK_EXTENSION)
+  find_package(Jack)
+  # JACK is technically optional, but it is required since it is the only
+  # backend implementation at the current time
+  macro_log_feature(JACK_FOUND "Jack"
+    "Needed for the Jack (Jack Audio Connection Kit) backend extension."
+    "http://jackaudio.org/"
+    TRUE "" "")
+endif(WANT_JACK_EXTENSION)
+
+if(WANT_LV2_EXTENSION)
+  find_package(Slv2)
+  macro_log_feature(SLV2_FOUND "SLV2"
+    "Needed to discover, load, and use LV2 plugins."
+    "http://drobilla.net/docs/slv2/"
+    FALSE "" "")
+endif(WANT_LV2_EXTENSION)
+
+## Now, enable features based on which deps are found ########
+
+if(WANT_JACK_EXTENSION AND JACK_FOUND)
+  set(BUILD_JACK_EXTENSION 1)
+endif(WANT_JACK_EXTENSION AND JACK_FOUND)
+
+if(WANT_LV2_EXTENSION AND SLV2_FOUND)
+  set(BUILD_LV2_EXTENSION 1)
+endif(WANT_LV2_EXTENSION AND SLV2_FOUND)
+
+## Doxygen ########
 
 set(DOXYFILE_LATEX "NO")
 include(UseDoxygen OPTIONAL)
 
-configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
-               ${CMAKE_BINARY_DIR}/Doxyfile)
+#configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
+#               ${CMAKE_BINARY_DIR}/Doxyfile)
 
-find_package(Qt4 4.6.0 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED )
+## Define some stuff ########
+
 include(${QT_USE_FILE})
 
 # Qt translations feedback
@@ -55,40 +104,6 @@ endif(EXISTS "${QT_TRANSLATIONS_DIR}")
 if(NOT WIN32)
   string(REPLACE "-DQT_DLL" "" QT_DEFINITIONS "${QT_DEFINITIONS}")
 endif(NOT WIN32)
-
-
-if(JACK_FOUND)
-  set(STATUS_JACK "OK")
-else(JACK_FOUND)
-  set(STATUS_JACK "not found: please install libjack1.9.4-dev (or similiar)")
-endif(JACK_FOUND)
-
-
-if(LV2_FOUND)
-  set(STATUS_LV2 "OK")
-else(LV2_FOUND)
-  # TODO: Fallback to a distributed copy
-  set(STATUS_LV2 "LV2 devel packages not found: need lv2core-devel "
-                 "(or similar)")
-endif(LV2_FOUND)
-
-
-if(SLV2_FOUND)
-  # TODO: Fallback to a distributed copy
-  set(STATUS_SLV2 "SLV2 (Host) devel packages not found: need libslv2-dev, "
-                  "slv2-devel (or similiar)")
-else(SLV2_FOUND)
-  set(STATUS_SLV2 "OK")
-endif(SLV2_FOUND)
-
-
-if(RDF_FOUND)
-  # TODO: Fallback to a distributed copy
-  set(STATUS_RDF "LV2 (RDF) devel packages not found : need librdf0-dev, "
-                 "redland-devel or similiar")
-else(RDF_FOUND)
-  set(STATUS_RDF "OK")
-endif(RDF_FOUND)
 
 # use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -114,3 +129,8 @@ add_subdirectory(libs)
 add_subdirectory(extensions)
 add_subdirectory(plugins)
 add_subdirectory(unisonstudio)
+
+## Config Summary ########
+macro_display_feature_log()
+
+# vim: ts=8 sw=2 sts=2 et sta noai
