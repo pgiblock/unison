@@ -1,4 +1,4 @@
-<extension name="OggVorbisFile" version="0.0.1" compatVersion="0.0.1">
+<extension name="OggVorbis" version="0.0.1" compatVersion="0.0.1">
     <vendor>Unison</vendor>
     <copyright>(C) 2010 Paul Giblock</copyright>
     <license>
