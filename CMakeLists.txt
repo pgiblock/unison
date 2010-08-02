@@ -88,8 +88,8 @@ endif(WANT_LV2_EXTENSION AND SLV2_FOUND)
 set(DOXYFILE_LATEX "NO")
 include(UseDoxygen OPTIONAL)
 
-#configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
-#               ${CMAKE_BINARY_DIR}/Doxyfile)
+configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
+               ${CMAKE_BINARY_DIR}/Doxyfile)
 
 ## Define some stuff ########
 

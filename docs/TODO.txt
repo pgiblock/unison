@@ -14,15 +14,20 @@ x Documentation and add UNISON_ to #ifndefs
 x ControlPorts
 x Release To SF.net
 
-  ExtensionSystem
-    core
-    lv2
+x ExtensionSystem
+x   core
+x   lv2
     lv2-features
     Plugin => Component/Module/Extension ?
     ::Internal => ::Private ?
+x   jack
 
-  Add whatever we need to get compilations to happen automatically,
-  Properly defer installing new graph until pre-process
+> Simple sample-buffer looper for testing
+x Better handling of dependencies in CMake
+  Show lists of supported backends, formats, etc in CMake (features, not deps)
+
+x Add whatever we need to get compilations to happen automatically,
+x Properly defer installing new graph until pre-process
 
   MidiPorts
 
@@ -36,7 +41,6 @@ x Release To SF.net
   BufferSize Changes, and probably enhacements to PooledBufferProvider
 
   TODO-NOWs
-  Release To SF.net ??
   Jack - proper tie-in with session - allowing jack to disconnect etc..
   Mixing (multi-connect)
   Thread
