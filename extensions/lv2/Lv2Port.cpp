@@ -26,7 +26,6 @@
 
 #include <unison/BufferProvider.h>
 
-#include <QDebug>
 #include <QSet>
 
 using namespace Unison;
@@ -138,16 +137,6 @@ void Lv2Port::setValue (float value)
 }
 
 
-void Lv2Port::updateBufferValue ()
-{
-  qDebug() << "Updating value of private buffer for port" << name();
-  if (buffer() && type() == CONTROL_PORT) {
-    float * data = (float*) buffer()->data();
-    data[0] = value();
-  }
-}
-
-
 Node* Lv2Port::parent () const
 {
   return m_plugin;
@@ -178,56 +167,7 @@ void Lv2Port::connectToBuffer ()
 }
 
 
-void Lv2Port::acquireInputBuffer (BufferProvider& provider, nframes_t len)
-{
-  int numConnections = dependencies().count();
-  switch (numConnections) {
-    case 0:
-      if (type() == AUDIO_PORT) {
-        // Use silence
-        m_buffer = provider.zeroAudioBuffer();
-        return;
-      }
-      break;
-    case 1:
-    {
-      // Use the other port's buffer
-      // type should match due to validation on connect
-      Port* other = (Port*) *(dependencies().begin());
-      m_buffer = other->buffer();
-      break;
-    }
-    default:
-      qFatal("Internal mixing is not yet supported");
-      return;
-  }
-
-  if (!m_buffer) {
-    // Return internal port
-    m_buffer = provider.acquire(type(), len);
-    updateBufferValue();
-  }
-}
-
-
-void Lv2Port::acquireOutputBuffer (BufferProvider& provider, nframes_t len)
-{
-  int numConnections = dependents().count();
-  if (numConnections == 1) {
-    // Use the other port's buffer
-    Port* other = (Port*) *(dependents().begin());
-    m_buffer = other->buffer();
-  }
-  else if (numConnections == 2) {
-    qFatal("Internal mixing is not yet supported");
-  }
-
-  if (!m_buffer) {
-    m_buffer = provider.acquire(type(), len);
-  }
-}
-
   } // Internal
-} // Jack
+} // Lv2
 
 // vim: ts=8 sw=2 sts=2 et sta noai

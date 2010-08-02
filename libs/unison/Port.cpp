@@ -28,6 +28,8 @@
 
 #include "unison/Commander.h"
 
+#include <QDebug>
+
 namespace Unison {
 
 Port::Port () :
@@ -103,6 +105,85 @@ const QSet<Node* const> Port::dependents () const {
     }
   }
 }
+
+
+/**
+ * Utility function to help subclasses implement connectToBuffer.
+ * @param provider The provider to acquire a buffer from if needed.  This
+ *                 provider will typically belong to the port's parent.
+ * @param len      Size of the buffer to acquire
+ */
+void Port::acquireInputBuffer (BufferProvider& provider, nframes_t len)
+{
+  int numConnections = dependencies().count();
+  switch (numConnections) {
+    case 0:
+      if (type() == AUDIO_PORT) {
+        // Use silence
+        m_buffer = provider.zeroAudioBuffer();
+        return;
+      }
+      break;
+    case 1:
+    {
+      // Use the other port's buffer
+      // type should match due to validation on connect
+      Port* other = (Port*) *(dependencies().begin());
+      m_buffer = other->buffer();
+      break;
+    }
+    default:
+      qFatal("Internal mixing is not yet supported");
+      return;
+  }
+
+  if (!m_buffer) {
+    // Return internal port
+    m_buffer = provider.acquire(type(), len);
+    updateBufferValue();
+  }
+}
+
+
+/**
+ * Utility function to help subclasses implement connectToBuffer.
+ * @param provider The provider to acquire a buffer from if needed.  This
+ *                 provider will typically belong to the port's parent.
+ * @param len      Size of the buffer to acquire
+ */
+void Port::acquireOutputBuffer (BufferProvider& provider, nframes_t len)
+{
+  int numConnections = dependents().count();
+  if (numConnections == 1) {
+    // Use the other port's buffer
+    Port* other = (Port*) *(dependents().begin());
+    m_buffer = other->buffer();
+  }
+  else if (numConnections == 2) {
+    qFatal("Internal mixing is not yet supported");
+  }
+
+  if (!m_buffer) {
+    m_buffer = provider.acquire(type(), len);
+  }
+}
+
+
+/**
+ * Update the buffer's data with the currently shadowed data. Ports are
+ * expected to shadow the value when setValue() is called.  This way, the
+ * port will always know what the value is.  This allows the port to be
+ * connected to a new buffer and still retain the old value.  Note, the
+ * shadowed value is only relevant when the port is disconnected. */
+void Port::updateBufferValue ()
+{
+  qDebug() << "Updating value of private buffer for port" << name();
+  if (buffer() && type() == CONTROL_PORT) {
+    float * data = (float*) buffer()->data();
+    data[0] = value();
+  }
+}
+
 
 } // Unison
 

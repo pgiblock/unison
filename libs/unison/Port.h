@@ -122,6 +122,10 @@ class Port : public Node
     }
 
   protected:
+    void acquireInputBuffer (Unison::BufferProvider& provider, Unison::nframes_t len);
+    void acquireOutputBuffer (Unison::BufferProvider& provider, Unison::nframes_t len);
+    void updateBufferValue ();
+
     /**
      * Used by subclasses to list the nodes directly "behind" this port.  For
      * the most part this means either a single Processor, or some other ports

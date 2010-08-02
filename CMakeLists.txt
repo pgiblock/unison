@@ -42,7 +42,7 @@ set(BACKENDS_ENABLED "")
 
 ## Options ########
 
-option(WANT_FLAC_EXTENSION "Include FLAC file support extension" ON)
+option(WANT_FLAC_EXTENSION "Include FLAC file support extension" OFF)
 option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" ON)
 option(WANT_LV2_EXTENSION "Include LV2 plugin support extension" ON)
 option(WANT_OGGVORBIS_EXTENSION "Include OGG/Vorbis file support extension" ON)
@@ -132,8 +132,8 @@ endif(WANT_SNDFILE_EXTENSION AND SNDFILE_FOUND)
 set(DOXYFILE_LATEX "NO")
 include(UseDoxygen OPTIONAL)
 
-#configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
-#               ${CMAKE_BINARY_DIR}/Doxyfile)
+configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
+               ${CMAKE_BINARY_DIR}/Doxyfile)
 
 ## Define some stuff ########
 
