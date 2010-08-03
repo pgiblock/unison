@@ -37,12 +37,13 @@ set(Flac_MOC_HEADERS
 
 qt4_wrap_cpp(Flac_MOC_SRCS ${Flac_MOC_HEADERS})
 
-include_directories(.. ${COMMON_LIBS_INCLUDE_DIR})
+include_directories(.. ${COMMON_LIBS_INCLUDE_DIR} ${FLAC_INCLUDE_DIR})
 
 add_library(Flac SHARED ${Flac_MOC_SRCS} ${Flac_SRCS})
 
 target_link_libraries(Flac
     ${QT_LIBRARIES}
+    ${FLAC_LIBRARIES}
     aggregation
     extensionsystem
     Core

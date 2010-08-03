@@ -19,6 +19,6 @@ this softawre. If not, see http://www.gnu.org/licenses/.
     <url>http://www.unisonstudio.org</url>
 
     <argumentList>
-        <argument name="-infile" parameter="infile">Input sample-file for the sampler demo</argument>
+        <argument name="--infile" parameter="infile">Input sample-file for the sampler demo</argument>
     </argumentList>
 </extension>

@@ -83,7 +83,7 @@ CoreExtension::~CoreExtension()
 void CoreExtension::parseArguments(const QStringList &arguments)
 {
   for (int i = 0; i < arguments.size() - 1; i++) {
-    if (arguments.at(i) == QLatin1String("-infile")) {
+    if (arguments.at(i) == QLatin1String("--infile")) {
       i++; // skip to argument
       m_sampleInfile = arguments.at(i);
     }
@@ -151,35 +151,32 @@ void CoreExtension::extensionsInitialized()
   desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Phaser");
   fxLine->addPlugin(desc, 2);
 
-  // Sample-looper
+  // Stupid Sampler
+  Demo::StupidSamplerDemo *ssd = new Demo::StupidSamplerDemo(root, "Stupid sampler");
+  SampleBuffer *buf = NULL;
   if (!m_sampleInfile.isNull()) {
-    SampleBuffer *buf = NULL;
     QList<ISampleBufferReader *> readers = extMgr->getObjects<ISampleBufferReader>();
     QListIterator<ISampleBufferReader *> i(readers);
     while (i.hasNext() && buf == NULL) {
       buf = i.next()->read(m_sampleInfile);
     }
-
-    // Stupid Sampler
-    Demo::StupidSamplerDemo *ssd = new Demo::StupidSamplerDemo(root, "Stupid sampler");
+  }
+  else {
+    // Sawtooth oscillator
+    int length = 48000.0f / 440.0f;
+    sample_t *samples = new sample_t[length*2]; // 2 chans 
+    sample_t *s = samples;
+    sample_t val;
+    for(int i=0; i<length; ++i) {
+      val = (2.0f*i/length) - 1.0f;  // Range is -1,1
+      *(s++) = val; // clone left
+      *(s++) = val; //   and right
+    }
+    buf = new SampleBuffer(samples, length, 2, 48000.0f);
+  }
+  if (buf) {
     ssd->setSampleBuffer(buf);
   }
-
-
-  // Sawtooth oscillator
-  /*
-  int length = 48000.0f / 440.0f;
-  float *buf = new float[length*2]; // 2 chans 
-  float *b = buf;
-  float val;
-  for(int i=0; i<length; ++i) {
-    val = (2.0f*i/length) - 1.0f;  // Range is -1,1
-    *(b++) = val; // clone left
-    *(b++) = val; //   and right
-  }
-  ssd->setSampleBuffer(new SampleBuffer(buf, length, 2, 48000.0f));
-  delete[] buf;
-  */
 
   // TODO: cleanup
   // Let these ports leak all over the place. This is a stupid demo
