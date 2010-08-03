@@ -22,6 +22,7 @@
  *
  */
 
+#include <QtDebug>
 #include <sndfile.h>
 
 #include "SndFileBufferReader.h"
@@ -32,6 +33,7 @@ using namespace Core;
 
 Unison::SampleBuffer *SndFileBufferReader::read (const QString &filename)
 {
+  qDebug() << "SndFileBufferReader called to read" << filename;
   /*f_cnt_t sampleBuffer::decodeSampleSF( const char * _f,
 					int_sample_t * & _buf,
 					ch_cnt_t & _channels,

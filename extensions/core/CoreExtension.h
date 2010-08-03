@@ -50,6 +50,8 @@ public:
 private:
   void parseArguments(const QStringList & arguments);
 
+  QString m_sampleInfile;
+
 //    MainWindow *m_mainWindow;
 //    EditMode *m_editMode;
 //    DesignMode *m_designMode;

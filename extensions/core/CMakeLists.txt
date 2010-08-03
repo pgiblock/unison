@@ -29,8 +29,10 @@ set(CORE_SRCS
     CoreExtension.cpp
     Engine.cpp
     PluginManager.cpp
-    # Belongs in new extension:
+    # Might belongs in new extension:
     FxLine.cpp
+    # Silly demo
+    StupidSamplerDemo.cpp
 )
 
 set(CORE_MOC_HEADERS

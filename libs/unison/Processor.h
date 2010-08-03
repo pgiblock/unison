@@ -61,6 +61,9 @@ class Processor : public Node
     Node* parent () const;
     void setParent(Patch* parent);
 
+    virtual const QSet<Node * const> dependencies () const;
+    virtual const QSet<Node * const> dependents () const;
+
     /**
      * Has this node been visited (traversed)?  While compiling and perhaps
      * in other cases, it is useful to know if a processor has been visited

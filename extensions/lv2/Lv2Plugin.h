@@ -118,9 +118,6 @@ class Lv2Plugin : public Unison::Plugin
 
     void process(const Unison::ProcessingContext &context);
 
-    const QSet<Unison::Node* const> dependencies () const;
-    const QSet<Unison::Node* const> dependents () const;
-
     // TODO: loadState and saveState
 
     Unison::BufferProvider *bufferProvider ();

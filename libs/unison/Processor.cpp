@@ -65,6 +65,35 @@ void Processor::setParent (Patch* parent)
   m_parent = parent;
 }
 
+
+const QSet<Node* const> Processor::dependencies () const
+{
+  QSet<Node* const> n;
+  int count = portCount();
+  for (int i=0; i<count; ++i) {
+    Port* p  = port(i);
+    if (p->direction() == INPUT) {
+      n += p;
+    }
+  }
+  return n;
+}
+
+
+const QSet<Node* const> Processor::dependents () const {
+  QSet<Node* const> n;
+  int count = portCount();
+  for (int i=0; i<count; ++i) {
+    Port* p  = port(i);
+    if (p->direction() == OUTPUT) {
+      n += p;
+    }
+  }
+  return n;
+}
+
+
+
 } // Unison
 
 // vim: ts=8 sw=2 sts=2 et sta noai

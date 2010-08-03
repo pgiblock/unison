@@ -25,6 +25,7 @@
 #include "CoreExtension.h"
 
 #include "IBackendProvider.h"
+#include "ISampleBufferReader.h"
 
 // For Engine
 #include "Engine.h"
@@ -33,9 +34,11 @@
 #include <unison/Commander.h>
 #include <unison/Patch.h>
 #include <unison/PooledBufferProvider.h>
+#include <unison/SampleBuffer.h>
 
 // For connection frenzy
 #include "FxLine.h"
+#include "StupidSamplerDemo.h"
 #include "PluginManager.h"
 #include <unison/Plugin.h>
 
@@ -79,16 +82,12 @@ CoreExtension::~CoreExtension()
 
 void CoreExtension::parseArguments(const QStringList &arguments)
 {
-  Q_UNUSED(arguments)
-  /*
   for (int i = 0; i < arguments.size() - 1; i++) {
-    if (arguments.at(i) == QLatin1String("-color")) {
-      const QString colorcode(arguments.at(i + 1));
-      m_mainWindow->setOverrideColor(QColor(colorcode));
-      i++; // skip the argument
+    if (arguments.at(i) == QLatin1String("-infile")) {
+      i++; // skip to argument
+      m_sampleInfile = arguments.at(i);
     }
   }
-  */
 }
 
 
@@ -141,6 +140,7 @@ void CoreExtension::extensionsInitialized()
 
   backend->activate();
 
+  // Silly Fx Line
   FxLine *fxLine = new FxLine(*root, "Super Duper Fx-Line");
 
   PluginDescriptorPtr desc;
@@ -150,6 +150,35 @@ void CoreExtension::extensionsInitialized()
   fxLine->addPlugin(desc, 0);
   desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Phaser");
   fxLine->addPlugin(desc, 2);
+
+  // Sample-looper
+  if (!m_sampleInfile.isNull()) {
+    SampleBuffer *buf = NULL;
+    QList<ISampleBufferReader *> readers = extMgr->getObjects<ISampleBufferReader>();
+    QListIterator<ISampleBufferReader *> i(readers);
+    while (i.hasNext() && buf == NULL) {
+      buf = i.next()->read(m_sampleInfile);
+    }
+
+    // Stupid Sampler
+    Demo::StupidSamplerDemo *ssd = new Demo::StupidSamplerDemo(root, "Stupid sampler");
+    ssd->setSampleBuffer(buf);
+  }
+
+
+  // Sawtooth oscillator
+  /*
+  int length = 48000.0f / 440.0f;
+  float *buf = new float[length*2]; // 2 chans 
+  float *b = buf;
+  float val;
+  for(int i=0; i<length; ++i) {
+    val = (2.0f*i/length) - 1.0f;  // Range is -1,1
+    *(b++) = val; // clone left
+    *(b++) = val; //   and right
+  }
+  ssd->setSampleBuffer(new SampleBuffer(buf, length, 2, 48000.0f));
+  */
 
   // TODO: cleanup
   // Let these ports leak all over the place. This is a stupid demo
