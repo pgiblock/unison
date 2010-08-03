@@ -37,13 +37,18 @@ set(OGGVORBIS_MOC_HEADERS
 
 qt4_wrap_cpp(OGGVORBIS_MOC_SRCS ${OGGVORBIS_MOC_HEADERS})
 
-include_directories(.. ${COMMON_LIBS_INCLUDE_DIR})
+include_directories(.. 
+    ${COMMON_LIBS_INCLUDE_DIR}
+    ${VORBIS_INCLUDE_DIR}
+    ${OGG_INCLUDE_DIR}
+)
 
 add_library(OggVorbis SHARED ${OGGVORBIS_MOC_SRCS} 
     ${OGGVORBIS_SRCS})
 
 target_link_libraries(OggVorbis
     ${QT_LIBRARIES}
+    ${OGGVORBIS_LIBRARIES}
     aggregation
     extensionsystem
     Core

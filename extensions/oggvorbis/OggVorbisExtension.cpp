@@ -23,6 +23,7 @@
  */
 
 #include "OggVorbisExtension.h"
+#include "OggVorbisBufferReader.h"
 
 #include <extensionsystem/ExtensionManager.h>
 
@@ -33,11 +34,14 @@ using namespace OggVorbis::Internal;
 
 OggVorbisExtension::OggVorbisExtension()
 {
+  m_bufferReader = new OggVorbisBufferReader();
 }
 
 
 OggVorbisExtension::~OggVorbisExtension()
 {
+  removeObject(m_bufferReader);
+  delete m_bufferReader;
 }
 
 
@@ -45,6 +49,7 @@ bool OggVorbisExtension::initialize(const QStringList &arguments, QString *error
 {
   Q_UNUSED(errorMessage)
   Q_UNUSED(arguments)
+  addObject(m_bufferReader);
   return true;
 }
 

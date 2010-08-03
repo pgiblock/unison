@@ -178,6 +178,7 @@ void CoreExtension::extensionsInitialized()
     *(b++) = val; //   and right
   }
   ssd->setSampleBuffer(new SampleBuffer(buf, length, 2, 48000.0f));
+  delete[] buf;
   */
 
   // TODO: cleanup

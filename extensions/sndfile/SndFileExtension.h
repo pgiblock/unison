@@ -29,7 +29,7 @@
 #include <extensionsystem/IExtension.h>
 
 namespace SndFile {
-namespace Internal {
+  namespace Internal {
 
 class SndFileBufferReader;
 
@@ -51,7 +51,7 @@ private:
   
 };
 
-} // namespace Internal
+  } // namespace Internal
 } // namespace SndFile
 
 #endif

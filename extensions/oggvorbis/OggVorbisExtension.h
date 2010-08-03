@@ -29,7 +29,9 @@
 #include <extensionsystem/IExtension.h>
 
 namespace OggVorbis {
-namespace Internal {
+  namespace Internal {
+
+class OggVorbisBufferReader;
 
 class OggVorbisExtension : public ExtensionSystem::IExtension
 {
@@ -43,9 +45,12 @@ public:
   void extensionsInitialized();
   void shutdown();
   void remoteCommand(const QStringList &options, const QStringList &args);
+
+private:
+  OggVorbisBufferReader *m_bufferReader;
 };
 
-} // namespace Internal
+  } // namespace Internal
 } // namespace OggVorbis
 
 #endif

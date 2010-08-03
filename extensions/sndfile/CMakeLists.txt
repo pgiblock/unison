@@ -37,12 +37,13 @@ set(SNDFILE_MOC_HEADERS
 
 qt4_wrap_cpp(SNDFILE_MOC_SRCS ${SNDFILE_MOC_HEADERS})
 
-include_directories(.. ${COMMON_LIBS_INCLUDE_DIR})
+include_directories(.. ${COMMON_LIBS_INCLUDE_DIR} ${SNDFILE_INCLUDE_DIR})
 
 add_library(SndFile SHARED ${SNDFILE_MOC_SRCS} ${SNDFILE_SRCS})
 
 target_link_libraries(SndFile
     ${QT_LIBRARIES}
+    ${SNDFILE_LIBRARIES}
     aggregation
     extensionsystem
     Core
