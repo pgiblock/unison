@@ -30,6 +30,10 @@ if(BUILD_JACK_EXTENSION)
   add_subdirectory(jack)
 endif(BUILD_JACK_EXTENSION)
 
+if(BUILD_LADSPA_EXTENSION)
+  add_subdirectory(ladspa)
+endif(BUILD_LADSPA_EXTENSION)
+
 if(BUILD_LV2_EXTENSION)
   add_subdirectory(lv2)
 endif(BUILD_LV2_EXTENSION)
