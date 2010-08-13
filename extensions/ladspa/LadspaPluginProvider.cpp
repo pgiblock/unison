@@ -26,45 +26,107 @@
 #include <QFileInfo>
 #include <QLibrary>
 #include <QFile>
-#include <QTextStream>
 #include <QtDebug>
 
-#include <math.h>
-
 #include "LadspaPluginProvider.h"
+#include "ladspa.h"
+
+#ifdef Q_WS_WIN
+#  define PATH_SEPERATOR ';'
+#else
+#  define PATH_SEPERATOR ':'
+#endif
   
 using namespace Unison;
 
 namespace Ladspa {
   namespace Internal {
 
-LadspaPluginProvider::LadspaPluginProvider() :
-  m_ladspaWorld(),
-  m_ladspaDescriptorMap()
+LadspaPluginProvider::LadspaPluginProvider ()
+//  m_ladspaDescriptorMap()
 {
-  qDebug( "Initializing Ladspa Plugin Provider" );
-  if (m_ladspaWorld.world == NULL) {
-    qWarning(  "Failed to Initialize slv2_world" );
-    return;
-  }
-
-  // Do Ladspa-Plugin discovery
-
-  // slv2_world_load_all( m_world ); // No special path apart from LADSPA_PATH
-  SLV2Plugins ladspaPluginList = slv2_world_get_all_plugins( m_ladspaWorld.world );
-  size_t ladspaPluginListSize = slv2_plugins_size( ladspaPluginList );
-
-  // TODO-NOW: Allow user to choose multiple paths
-  for (unsigned i=0; i < ladspaPluginListSize; ++i) {
-    SLV2Plugin p = slv2_plugins_get_at( ladspaPluginList, i );
-    addLadspaPlugin( p );
-  }
-
-  qDebug() << "Found" << ladspaPluginListSize << "Ladspa plugins.";
-
-  slv2_plugins_free( m_ladspaWorld.world, ladspaPluginList );
-  qDebug( "Done initializing Ladspa Plugin Provider" );
+  qDebug( "Initializing LADSPA Plugin Provider" );
+  discoverPlugins();
+  qDebug( "Done initializing LADSPA Plugin Provider" );
 }
+
+
+void LadspaPluginProvider::discoverPlugins ()
+{
+  // Figure out the search paths
+  QStringList directories;
+
+  const char *envPath = getenv("LADSPA_PATH");
+  if (envPath) {
+    directories << QString(envPath).split(PATH_SEPERATOR);
+  }
+  else {
+    // Create a sensible default if LADSPA_PATH is unset
+    const char *envHome = getenv("HOME");
+    if (envHome) {
+      directories << QString(envHome);
+    }
+
+    directories
+#ifdef Q_WS_MAC
+        << "/Library/Audio/Plug-Ins/LADSPA"
+#endif
+        << "/usr/local/lib/ladspa"
+        << "/usr/local/lib64/ladspa"
+        << "/usr/lib/ladspa"
+        << "/usr/lib64/ladspa";
+  }
+
+  foreach (QString path, directories) {
+    discoverFromDirectory(path);
+  }
+}
+
+
+void LadspaPluginProvider::discoverFromDirectory (const QString &path)
+{
+  QDir directory(path);
+  QFileInfoList files = directory.entryInfoList( QDir::Files );
+
+  foreach (QFileInfo file, files) {
+    if (QLibrary::isLibrary(file.absoluteFilePath())) {
+      QLibrary pluginLib( file.absoluteFilePath() );
+      discoverFromLibrary(pluginLib);
+    }
+  }
+}
+
+
+int LadspaPluginProvider::discoverFromLibrary (QLibrary &lib)
+{
+  if (!lib.load()) {
+    qWarning() << "Could not open library"
+               << lib.fileName() << "for LADSPA discovery";
+    return 0;
+  }
+
+  LADSPA_Descriptor_Function descriptorFunction = 
+      (LADSPA_Descriptor_Function) lib.resolve("ladspa_descriptor");
+    
+  if (descriptorFunction == NULL) {
+    // Couldn't find function, no worries, maybe the SO isn't a LADSPA
+    lib.unload();
+    return 0;
+  }
+
+  // Start loading plugins from the library
+  int i;
+  for (i=0; ; ++i) {
+    const LADSPA_Descriptor *descriptor = descriptorFunction(i);
+    if (descriptor == NULL) {
+      break; // Nothing left
+    }
+
+    //LadspaPluginDescriptorPtr desc(new LadspaPluginDescriptor());
+  }
+  return i;
+}
+
 
 
 LadspaPluginProvider::~LadspaPluginProvider ()
@@ -74,54 +136,10 @@ LadspaPluginProvider::~LadspaPluginProvider ()
 PluginDescriptorPtr LadspaPluginProvider::descriptor (const QString uniqueId)
 {
   // returns null on fail
-  return m_ladspaDescriptorMap.value( uniqueId );
+//  return m_ladspaDescriptorMap.value( uniqueId );
+  return PluginDescriptorPtr();
 }
 
-
-/*
-void LadspaManager::ensureLADSPADataExists (LadspaPluginDescriptor* desc) {
-  if (desc->plugin == NULL) {
-    printf( " Need to load actual plugin data for '%s'\n",
-            (desc->uri).toAscii().constData() );
-
-    // use uri to get data
-    SLV2Value uri = slv2_value_new_uri(
-        m_ladspaWorld.world, (desc->uri).toAscii().constData() );
-
-    desc->plugin = slv2_plugins_get_by_uri( m_pluginList, uri );
-    slv2_value_free( uri );
-
-    // Still empty??
-    if( desc->plugin == NULL ) {
-            printf( " Failed to load actual plugin data for '%s'\n", (desc->uri).toAscii().constData() );
-    }
-  }
-}
-*/
-
-
-void LadspaPluginProvider::addLadspaPlugin (SLV2Plugin plugin)
-{
-  QString key = slv2_value_as_uri( slv2_plugin_get_uri( plugin ) );
-
-  if (m_ladspaDescriptorMap.contains( key )) {
-    return;
-  }
-
-  PluginDescriptorPtr descriptor(new LadspaPluginDescriptor(m_ladspaWorld, plugin));
-
-  // This always seems to return 'Plugin', which isn't so useful to us
-  //	SLV2PluginClass pclass = slv2_plugin_get_class( _plugin );
-  //	SLV2Value label = slv2_plugin_class_get_label( pclass );
-  //	printf( "Plugin Class is : '%s'\n", slv2_value_as_string( label ) );
-
-  //printf("  Audio (input, output)=(%d,%d)\n",
-  //        descriptor->audioInputCount(), descriptor->audioOutputCount());
-
-  m_ladspaDescriptorMap.insert(key, descriptor);
-
-  //printf("  Type=%d\n", (int)descriptor->type());
-}
 
   } // Internal
 } // Ladspa

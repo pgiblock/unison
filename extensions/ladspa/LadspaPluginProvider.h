@@ -25,31 +25,18 @@
 #ifndef LADSPA_PLUGIN_PROVIDER_H
 #define LADSPA_PLUGIN_PROVIDER_H
 
-#include "LadspaPlugin.h"
+//#include "LadspaPlugin.h"
 #include "core/IPluginProvider.h"
 
-#include <slv2/world.h>
-#include <slv2/plugin.h>
-#include <slv2/scalepoint.h>
-
-#ifdef HAVE_SLV2_SCALEPOINTS_H
-#include <slv2/scalepoints.h>
-#endif
-
-#include <assert.h>
-#include <stdint.h>
-
 #include <QMap>
-#include <QPair>
 #include <QString>
-#include <QStringList>
+
+class QLibrary;
 
 namespace Ladspa {
   namespace Internal {
 
-/** Provides a database of LADSPA plug-ins.
- * TODO: Describe what you are doing to query all the ladspa plugin names etc,
- *       what is being initialized? */
+/** Provides a database of LADSPA plug-ins. */
 class LadspaPluginProvider : public Core::IPluginProvider
 {
   Q_OBJECT
@@ -59,8 +46,10 @@ class LadspaPluginProvider : public Core::IPluginProvider
 
     QString displayName()
     {
-      return tr("Ladspa Plugin Provider");
+      return tr("LADSPA Plugin Provider");
     }
+
+    void discoverPlugins ();
 
     /** Describes the requested plugin.  
      *  @param plugin  The Name of the plugin to describe
@@ -68,10 +57,11 @@ class LadspaPluginProvider : public Core::IPluginProvider
     Unison::PluginDescriptorPtr descriptor (const QString plugin);
 
   private:
-    void addLadspaPlugin (SLV2Plugin _plugin);
+    void discoverFromDirectory (const QString &path);
+    int discoverFromLibrary (QLibrary &lib);
 
-    typedef QMap<QString, Unison::PluginDescriptorPtr> LadspaPluginDescriptorMap;
-    LadspaPluginDescriptorMap m_ladspaDescriptorMap;
+//    typedef QMap<QString, Unison::PluginDescriptorPtr> LadspaPluginDescriptorMap;
+//    LadspaPluginDescriptorMap m_ladspaDescriptorMap;
 };
 
   } // Internal

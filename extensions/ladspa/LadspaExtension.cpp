@@ -27,22 +27,20 @@
 
 #include <extensionsystem/ExtensionManager.h>
 
-#include <QtPlugin>
-#include <QDebug>
-
 namespace Ladspa {
   namespace Internal {
 
-LadspaExtension::LadspaExtension()
-{
-  m_pluginProvider = new LadspaPluginProvider;
-}
+LadspaExtension::LadspaExtension() :
+  m_pluginProvider(NULL)
+{}
 
 
 LadspaExtension::~LadspaExtension()
 {
-  removeObject(m_pluginProvider);
-  delete m_pluginProvider;
+  if (m_pluginProvider) {
+    removeObject(m_pluginProvider);
+    delete m_pluginProvider;
+  }
 }
 
 
@@ -56,7 +54,10 @@ bool LadspaExtension::initialize(const QStringList &arguments, QString *errorMes
 {
   Q_UNUSED(errorMessage)
   parseArguments(arguments);
+
+  m_pluginProvider = new LadspaPluginProvider();
   addObject(m_pluginProvider);
+  
   return true;
 }
 

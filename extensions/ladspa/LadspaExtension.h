@@ -46,9 +46,6 @@ public:
   virtual void shutdown();
   virtual void remoteCommand(const QStringList &options, const QStringList &args);
 
-//public slots:
-//    void fileOpenRequest(const QString&);
-
 private:
   void parseArguments(const QStringList &arguments);
 
