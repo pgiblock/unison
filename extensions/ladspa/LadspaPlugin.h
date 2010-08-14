@@ -35,13 +35,10 @@
 namespace Ladspa {
   namespace Internal {
 
-/** Plugin implementation for an LadspaPlugin. 
- *  Put docs here */
-    /*
 class LadspaPlugin : public Unison::Plugin
 {
-  public:
-    LadspaPlugin ( stuff you need for a Ladspa Instance,
+  public
+    LadspaPlugin (const LADSPA_Descriptor *descriptor,
                Unison::nframes_t sampleRate);
     LadspaPlugin (const LadspaPlugin &);
 
@@ -78,13 +75,16 @@ class LadspaPlugin : public Unison::Plugin
     Unison::BufferProvider *bufferProvider ();
 
   private:
+    const LADSPA_Descriptor *m_descriptor;
+    LADSPA_Handle m_handle;
+
     bool              m_activated;
     Unison::nframes_t m_sampleRate;
+    QVarLengthArray<Unison::Port*, 16> m_ports;
     Unison::BufferProvider *m_bufferProvider;
 
     void init ();
 };
-*/
 
 
 /** A description of a LADSPA plugin. */

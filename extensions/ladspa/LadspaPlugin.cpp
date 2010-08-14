@@ -35,12 +35,10 @@ using namespace Unison;
 namespace Ladspa {
   namespace Internal {
 
-/*
-LadspaPlugin::LadspaPlugin (LadspaWorld& world, SLV2Plugin plugin,
-                      nframes_t sampleRate) :
+LadspaPlugin::LadspaPlugin (const LadspaDescriptor* descriptor,
+                            nframes_t sampleRate) :
   Plugin(),
-  m_world(world),
-  m_plugin(plugin),
+  m_descriptor(descriptor),
   m_sampleRate(sampleRate)
 {
   init();
@@ -49,8 +47,7 @@ LadspaPlugin::LadspaPlugin (LadspaWorld& world, SLV2Plugin plugin,
 
 LadspaPlugin::LadspaPlugin (const LadspaPlugin& other) :
   Plugin(other),
-  m_world(other.m_world),
-  m_plugin(other.m_plugin),
+  m_descriptor(other.m_descriptor),
   m_sampleRate(other.m_sampleRate)
 {
   init();
@@ -60,25 +57,17 @@ LadspaPlugin::LadspaPlugin (const LadspaPlugin& other) :
 void LadspaPlugin::init ()
 {
   m_activated = false;
-  m_instance = slv2_plugin_instantiate( m_plugin, m_sampleRate, NULL );
-  Q_ASSERT(m_instance);
-
-  m_name = slv2_plugin_get_name( m_plugin );
-  Q_ASSERT(m_name);
+  m_handle = m_descriptor->instantiate(m_descriptor, m_sampleRate);
+  Q_ASSERT(m_handle);
 
   qDebug() << "Initializing LadspaPlugin" << m_name << "with ports:";
 
   int count = portCount();
   m_ports.resize( count );
   for (int i = 0; i < count; ++i) {
-    m_ports[i] = new LadspaPort( m_world, this, i );
+    m_ports[i] = new LadspaPort( this, i );
     qDebug() << i << m_ports[i]->name();
   }
-
-
-  m_authorName     = slv2_plugin_get_author_name( m_plugin );
-  m_authorEmail    = slv2_plugin_get_author_email( m_plugin );
-  m_authorHomepage = slv2_plugin_get_author_homepage( m_plugin );
 
   qDebug() << "Instantiated LadspaPlugin:" << m_name;
 }
@@ -86,16 +75,12 @@ void LadspaPlugin::init ()
 
 LadspaPlugin::~LadspaPlugin () {
   deactivate();
-  slv2_instance_free( m_instance );
-  slv2_value_free( m_name );
-  slv2_value_free( m_authorName );
-  slv2_value_free( m_authorEmail );
-  slv2_value_free( m_authorHomepage );
+  m_descriptor->cleanup(m_instance)
   for (int i=0; i<m_ports.count(); ++i) {
     delete m_ports[i];
   }
 
-  m_instance = NULL;
+  m_handle = NULL;
 }
 
 
@@ -134,7 +119,7 @@ void LadspaPlugin::activate (BufferProvider *bp)
       m_ports[i]->connectToBuffer();
     }
 
-    slv2_instance_activate( m_instance );
+    m_descriptor->activate(m_handle);
     m_activated = true;
   }
 }
@@ -143,7 +128,7 @@ void LadspaPlugin::activate (BufferProvider *bp)
 void LadspaPlugin::deactivate ()
 {
   if (m_activated) {
-    slv2_instance_deactivate( m_instance );
+    m_descriptor->deactivate(m_handle);
     m_activated = false;
   }
 }
@@ -151,52 +136,43 @@ void LadspaPlugin::deactivate ()
 
 int LadspaPlugin::audioInputCount () const
 {
-  return slv2_plugin_get_num_ports_of_class(
-      m_plugin, m_world.inputClass, m_world.audioClass, NULL );
+  return TODO;
 }
 
 
 int LadspaPlugin::audioOutputCount () const
 {
-  return slv2_plugin_get_num_ports_of_class(
-      m_plugin, m_world.outputClass, m_world.audioClass, NULL );
+  return TODO;
 }
 
 
 QString LadspaPlugin::authorName () const
 {
-  return m_authorName ? slv2_value_as_string( m_authorName ) : "Unknown";
+  return m_descriptor->Maker ? m_descriptor->Maker : "Unknown";
 }
 
 
 QString LadspaPlugin::authorEmail () const
 {
-  return m_authorEmail ? slv2_value_as_string( m_authorEmail ) : NULL;
+  return NULL
 }
 
 
 QString LadspaPlugin::authorHomepage () const
 {
-  return m_authorHomepage ? slv2_value_as_string( m_authorHomepage ) : NULL;
+  return NULL;
 }
 
 
 QString LadspaPlugin::copyright () const
 {
-  return m_copyright ? slv2_value_as_string( m_copyright ) : NULL;
+  return m_descriptor->Copyright;
 }
 
 
 void LadspaPlugin::process (const ProcessingContext & context)
 {
-  int count = portCount();
-  for (int i=0; i<count; ++i) {
-    Port* p  = port(i);
-    if (p->direction() == INPUT && p->type() == CONTROL_PORT) {
-//      qDebug() << "Control Port" << p->name() << "has value" << ((float*)(p->buffer()->data()))[0] ;
-    }
-  }
-  slv2_instance_run(m_instance, context.bufferSize());
+  m_descriptor->run(m_handle, context.bufferSize());
 }
 
 
@@ -225,7 +201,6 @@ const QSet<Node* const> LadspaPlugin::dependents () const {
   }
   return n;
 }
-*/
 
 
 LadspaPluginDescriptor::LadspaPluginDescriptor (const QString &path, 
