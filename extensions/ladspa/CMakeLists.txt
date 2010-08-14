@@ -31,7 +31,7 @@ set(UNISON_BUFFER_LENGTH "1024" CACHE STRING
 
 set(LADSPA_SRCS
     LadspaExtension.cpp
-    #LadspaPlugin.cpp
+    LadspaPlugin.cpp
     LadspaPluginProvider.cpp
     #LadspaPort.cpp
 )

@@ -25,7 +25,6 @@
 #ifndef LADSPA_PLUGIN_PROVIDER_H
 #define LADSPA_PLUGIN_PROVIDER_H
 
-//#include "LadspaPlugin.h"
 #include "core/IPluginProvider.h"
 
 #include <QMap>
@@ -58,10 +57,10 @@ class LadspaPluginProvider : public Core::IPluginProvider
 
   private:
     void discoverFromDirectory (const QString &path);
-    int discoverFromLibrary (QLibrary &lib);
+    int discoverFromLibrary (const QString &path);
 
-//    typedef QMap<QString, Unison::PluginDescriptorPtr> LadspaPluginDescriptorMap;
-//    LadspaPluginDescriptorMap m_ladspaDescriptorMap;
+    typedef QMap<QString, Unison::PluginDescriptorPtr> LadspaPluginDescriptorMap;
+    LadspaPluginDescriptorMap m_descriptorMap;
 };
 
   } // Internal

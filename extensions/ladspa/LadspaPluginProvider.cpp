@@ -29,6 +29,7 @@
 #include <QtDebug>
 
 #include "LadspaPluginProvider.h"
+#include "LadspaPlugin.h"
 #include "ladspa.h"
 
 #ifdef Q_WS_WIN
@@ -47,6 +48,7 @@ LadspaPluginProvider::LadspaPluginProvider ()
 {
   qDebug( "Initializing LADSPA Plugin Provider" );
   discoverPlugins();
+  qDebug() << "Found" << m_descriptorMap.size() << "LADSPA plugins.";
   qDebug( "Done initializing LADSPA Plugin Provider" );
 }
 
@@ -90,15 +92,15 @@ void LadspaPluginProvider::discoverFromDirectory (const QString &path)
 
   foreach (QFileInfo file, files) {
     if (QLibrary::isLibrary(file.absoluteFilePath())) {
-      QLibrary pluginLib( file.absoluteFilePath() );
-      discoverFromLibrary(pluginLib);
+      discoverFromLibrary(file.absoluteFilePath());
     }
   }
 }
 
 
-int LadspaPluginProvider::discoverFromLibrary (QLibrary &lib)
+int LadspaPluginProvider::discoverFromLibrary (const QString &path)
 {
+  QLibrary lib(path);
   if (!lib.load()) {
     qWarning() << "Could not open library"
                << lib.fileName() << "for LADSPA discovery";
@@ -122,7 +124,9 @@ int LadspaPluginProvider::discoverFromLibrary (QLibrary &lib)
       break; // Nothing left
     }
 
-    //LadspaPluginDescriptorPtr desc(new LadspaPluginDescriptor());
+    PluginDescriptorPtr desc(new LadspaPluginDescriptor(path, descriptor));
+
+    m_descriptorMap.insert(desc->uniqueId(), desc);
   }
   return i;
 }
@@ -136,8 +140,7 @@ LadspaPluginProvider::~LadspaPluginProvider ()
 PluginDescriptorPtr LadspaPluginProvider::descriptor (const QString uniqueId)
 {
   // returns null on fail
-//  return m_ladspaDescriptorMap.value( uniqueId );
-  return PluginDescriptorPtr();
+  return m_descriptorMap.value( uniqueId );
 }
 
 

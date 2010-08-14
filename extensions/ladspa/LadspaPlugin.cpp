@@ -23,7 +23,7 @@
  */
 
 #include "LadspaPlugin.h"
-#include "LadspaPort.h"
+//#include "LadspaPort.h"
 
 #include <unison/ProcessingContext.h>
 
@@ -35,6 +35,7 @@ using namespace Unison;
 namespace Ladspa {
   namespace Internal {
 
+/*
 LadspaPlugin::LadspaPlugin (LadspaWorld& world, SLV2Plugin plugin,
                       nframes_t sampleRate) :
   Plugin(),
@@ -224,62 +225,42 @@ const QSet<Node* const> LadspaPlugin::dependents () const {
   }
   return n;
 }
+*/
 
 
-
-LadspaPluginDescriptor::LadspaPluginDescriptor (LadspaWorld& world, SLV2Plugin plugin) :
-  m_world(world),
-  m_plugin(plugin)
+LadspaPluginDescriptor::LadspaPluginDescriptor (const QString &path, 
+    const LADSPA_Descriptor *desc) :
+  m_path(path),
+  m_descriptor(desc)
 {
+  m_uniqueId = QString("%1").arg(desc->UniqueID);
+  m_author = desc->Maker;
+  m_name = desc->Name;
 
-  SLV2Value data;
-
-  m_uniqueId = QString( slv2_value_as_uri( slv2_plugin_get_uri( plugin ) ) );
-
-  data = slv2_plugin_get_name( plugin );
-  m_name = QString( slv2_value_as_string( data ) );
-  slv2_value_free( data );
-
-  data = slv2_plugin_get_author_name( plugin );
-  if (data) {
-    m_author = QString( slv2_value_as_string( data ) );
-    slv2_value_free( data );
-  }
-
-  m_audioInputs = slv2_plugin_get_num_ports_of_class( plugin,
-          world.inputClass, world.audioClass, NULL );
-
-  m_audioOutputs = slv2_plugin_get_num_ports_of_class( plugin,
-          world.outputClass, world.audioClass, NULL );
-
-  // TODO: Are 'types' needed? if so, move to non-virtual Plugin function
-  if (m_audioInputs > 0) {
-    if (m_audioOutputs > 0) {
-      m_type = TRANSFER;
+  for (int i=0; i < desc->PortCount; ++i) {
+    LADSPA_PortDescriptor p = desc->PortDescriptors[i];
+    if (LADSPA_IS_PORT_AUDIO(p)) {
+      if (LADSPA_IS_PORT_INPUT(p)) {
+        ++m_audioInputs;
+      }
+      else if (LADSPA_IS_PORT_OUTPUT(p)) {
+        ++m_audioOutputs;
+      }
     }
-    else {
-      m_type = SINK;
-    }
-  }
-  else if (m_audioOutputs > 0) {
-    m_type = SOURCE;
-  }
-  else {
-    m_type = OTHER;
   }
 }
 
 
 LadspaPluginDescriptor::LadspaPluginDescriptor (const LadspaPluginDescriptor& d) :
   PluginDescriptor(d),
-  m_world(d.m_world),
-  m_plugin(d.m_plugin)
+  m_path(d.m_path),
+  m_descriptor(d.m_descriptor)
 {}
 
 
 PluginPtr LadspaPluginDescriptor::createPlugin (nframes_t sampleRate) const
 {
-  return PluginPtr( new LadspaPlugin( m_world, m_plugin, sampleRate ) );
+  return PluginPtr(); // new LadspaPlugin( m_world, m_plugin, sampleRate ) );
 }
 
   } // Internal

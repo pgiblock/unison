@@ -30,15 +30,18 @@
 
 #include <QVarLengthArray>
 
+#include "ladspa.h"
+
 namespace Ladspa {
   namespace Internal {
 
 /** Plugin implementation for an LadspaPlugin. 
  *  Put docs here */
+    /*
 class LadspaPlugin : public Unison::Plugin
 {
   public:
-    LadspaPlugin (/* stuff you need for a Ladspa Instance*/,
+    LadspaPlugin ( stuff you need for a Ladspa Instance,
                Unison::nframes_t sampleRate);
     LadspaPlugin (const LadspaPlugin &);
 
@@ -62,7 +65,7 @@ class LadspaPlugin : public Unison::Plugin
     Unison::Port* port (int idx) const;
     Unison::Port* port (QString name) const;
 
-    /* TODO: Functions that expose the C Ladspa structures (for LadspaPort) */
+    // TODO: Functions that expose the C Ladspa structures (for LadspaPort)
 
     void activate (Unison::BufferProvider *bp);
     void deactivate ();
@@ -81,17 +84,21 @@ class LadspaPlugin : public Unison::Plugin
 
     void init ();
 };
-
+*/
 
 
 /** A description of a LADSPA plugin. */
 class LadspaPluginDescriptor : public Unison::PluginDescriptor
 {
   public:
-    LadspaPluginDescriptor (/* Stuff you need for a description*/);
-    LadspaPluginDescriptor (const LadspaPluginDescriptor& descriptor);
+    LadspaPluginDescriptor (const QString &path, const LADSPA_Descriptor *descriptor);
+    LadspaPluginDescriptor (const LadspaPluginDescriptor &descriptor);
 
     Unison::PluginPtr createPlugin (Unison::nframes_t sampleRate) const;
+
+  private:
+     QString m_path;
+     const LADSPA_Descriptor *m_descriptor;
 };
 
   } // Internal
