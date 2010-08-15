@@ -160,12 +160,6 @@ void CoreExtension::extensionsInitialized()
     }
   }
 
-  PluginDescriptorPtr desc;
-  desc = PluginManager::instance()->descriptor("2143");
-  fxLine->addPlugin(desc, 0);
-  desc = PluginManager::instance()->descriptor("33924");
-  fxLine->addPlugin(desc, 0);
-
   // TODO: cleanup
   // Let these ports leak all over the place. This is a stupid demo
   //backend->deactivate();

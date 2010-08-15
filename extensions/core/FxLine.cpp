@@ -122,7 +122,6 @@ void FxLine::addPlugin(const PluginDescriptorPtr descriptor, int pos)
   // Check for proper position value. TODO: Report error, not fatal
   Q_ASSERT(pos <= pluginCnt);
 
-  qDebug() << "Fucking lord:" << descriptor->name();
   // Create the plugin. TODO: Report error, not fatal
   Plugin *plugin = descriptor->createPlugin(48000);
   Q_ASSERT(plugin);
