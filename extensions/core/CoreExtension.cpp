@@ -124,7 +124,13 @@ bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessa
 void CoreExtension::extensionsInitialized()
 {
   ExtensionManager *extMgr = ExtensionManager::instance();
-  
+
+  // Loading a mix of LADSPA and LV2
+  QStringList plugins;
+  plugins << "2143"
+          << "http://calf.sourceforge.net/plugins/Reverb"
+          << "http://calf.sourceforge.net/plugins/Phaser";
+
   // Find backends, load the first one
   QList<IBackendProvider *> backends = extMgr->getObjects<IBackendProvider>();
   qDebug("Found Backends:");
@@ -133,15 +139,26 @@ void CoreExtension::extensionsInitialized()
   }
 
   Backend *backend = backends.at(0)->createBackend();
-  
+
   Patch *root = new Patch();
   backend->setRootProcessor(root);
-  
+
   Engine::setBackend(backend);
 
   backend->activate();
 
   FxLine *fxLine = new FxLine(*root, "Super Duper Fx-Line");
+
+  for (int i = 0; i < plugins.size(); ++i) {
+    QString plugin = plugins.at(i);
+    PluginDescriptorPtr desc = PluginManager::instance()->descriptor(plugin);
+    if (desc) {
+      fxLine->addPlugin(desc, i);
+    }
+    else {
+      qWarning() << "Could not load plugin: " << plugin;
+    }
+  }
 
   PluginDescriptorPtr desc;
   desc = PluginManager::instance()->descriptor("2143");

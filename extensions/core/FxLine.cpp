@@ -175,8 +175,8 @@ void FxLine::addPlugin(const PluginDescriptorPtr descriptor, int pos)
       else {
         producerPort->disconnect(consumerPort);
       }
-      qWarning() << "FX: Conencting: " << producerPort->name() << " TO " << entry.inputPorts.at(i)->name();
-      qWarning() << "FX: and Conencting: " << consumerPort->name() << " TO " << entry.outputPorts.at(i)->name();
+      qWarning() << "FX: Connecting: " << producerPort->name() << " TO " << entry.inputPorts.at(i)->name();
+      qWarning() << "FX: and Connecting: " << consumerPort->name() << " TO " << entry.outputPorts.at(i)->name();
       producerPort->connect(entry.inputPorts.at(i));
       consumerPort->connect(entry.outputPorts.at(i));
     }
