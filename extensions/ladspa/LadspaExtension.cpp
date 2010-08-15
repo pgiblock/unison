@@ -1,5 +1,5 @@
 /*
- * Lv2Extension.cpp
+ * LadspaExtension.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,62 +22,64 @@
  *
  */
 
-#include "Lv2Extension.h"
-#include "Lv2PluginProvider.h"
+#include "LadspaExtension.h"
+#include "LadspaPluginProvider.h"
 
 #include <extensionsystem/ExtensionManager.h>
 
-#include <QDebug>
-
-namespace Lv2 {
+namespace Ladspa {
   namespace Internal {
 
-Lv2Extension::Lv2Extension()
+LadspaExtension::LadspaExtension() :
+  m_pluginProvider(NULL)
+{}
+
+
+LadspaExtension::~LadspaExtension()
 {
-  m_pluginProvider = new Lv2PluginProvider;
+  if (m_pluginProvider) {
+    removeObject(m_pluginProvider);
+    delete m_pluginProvider;
+  }
 }
 
 
-Lv2Extension::~Lv2Extension()
-{
-  removeObject(m_pluginProvider);
-  delete m_pluginProvider;
-}
-
-
-void Lv2Extension::parseArguments(const QStringList &arguments)
+void LadspaExtension::parseArguments(const QStringList &arguments)
 {
   Q_UNUSED(arguments)
 }
 
 
-bool Lv2Extension::initialize(const QStringList &arguments, QString *errorMessage)
+bool LadspaExtension::initialize(const QStringList &arguments, QString *errorMessage)
 {
   Q_UNUSED(errorMessage)
   parseArguments(arguments);
+
+  m_pluginProvider = new LadspaPluginProvider();
   addObject(m_pluginProvider);
+  
   return true;
 }
 
 
-void Lv2Extension::extensionsInitialized()
+void LadspaExtension::extensionsInitialized()
 {
 }
 
 
-void Lv2Extension::remoteCommand(const QStringList &options, const QStringList &args)
+void LadspaExtension::remoteCommand(const QStringList &options, const QStringList &args)
 {
   Q_UNUSED(options)
   Q_UNUSED(args)
 }
 
-void Lv2Extension::shutdown()
+void LadspaExtension::shutdown()
 {
 }
 
-EXPORT_EXTENSION(Lv2Extension)
+EXPORT_EXTENSION(LadspaExtension)
 
   } // Internal
-} // Jack
+} // Ladspa
 
 // vim: ts=8 sw=2 sts=2 et sta noai

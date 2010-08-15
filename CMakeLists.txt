@@ -43,6 +43,7 @@ set(BACKENDS_ENABLED "")
 ## Options ########
 
 option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" ON)
+option(WANT_LADSPA_EXTENSION "Include LADSPA plugin support extension" ON)
 option(WANT_LV2_EXTENSION "Include LV2 plugin support extension" ON)
 
 ## Find required dependencies ########
@@ -78,6 +79,10 @@ endif(WANT_LV2_EXTENSION)
 if(WANT_JACK_EXTENSION AND JACK_FOUND)
   set(BUILD_JACK_EXTENSION 1)
 endif(WANT_JACK_EXTENSION AND JACK_FOUND)
+
+if(WANT_LADSPA_EXTENSION)
+  set(BUILD_LADSPA_EXTENSION 1)
+endif(WANT_LADSPA_EXTENSION)
 
 if(WANT_LV2_EXTENSION AND SLV2_FOUND)
   set(BUILD_LV2_EXTENSION 1)
