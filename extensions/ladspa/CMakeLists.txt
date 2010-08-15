@@ -33,7 +33,7 @@ set(LADSPA_SRCS
     LadspaExtension.cpp
     LadspaPlugin.cpp
     LadspaPluginProvider.cpp
-    #LadspaPort.cpp
+    LadspaPort.cpp
 )
 
 set(LADSPA_MOC_HEADERS

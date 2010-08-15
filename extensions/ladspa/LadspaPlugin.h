@@ -37,7 +37,7 @@ namespace Ladspa {
 
 class LadspaPlugin : public Unison::Plugin
 {
-  public
+  public:
     LadspaPlugin (const LADSPA_Descriptor *descriptor,
                Unison::nframes_t sampleRate);
     LadspaPlugin (const LadspaPlugin &);
@@ -56,18 +56,33 @@ class LadspaPlugin : public Unison::Plugin
 
     int portCount () const
     {
-      return slv2_plugin_get_num_ports(m_plugin);
+      return m_ports.count();
     }
 
     Unison::Port* port (int idx) const;
     Unison::Port* port (QString name) const;
 
-    // TODO: Functions that expose the C Ladspa structures (for LadspaPort)
+    // Exposing some innards for LadspaPort
+
+    const LADSPA_Descriptor *ladspaDescriptor ()
+    {
+      return m_descriptor;
+    }
+
+    LADSPA_Handle ladspaHandle ()
+    {
+      return m_handle;
+    }
+
+    inline Unison::nframes_t sampleRate () const
+    {
+      return m_sampleRate;
+    }
 
     void activate (Unison::BufferProvider *bp);
     void deactivate ();
 
-    void process(const Unison::ProcessingContext &context);
+    void process (const Unison::ProcessingContext &context);
 
     const QSet<Unison::Node* const> dependencies () const;
     const QSet<Unison::Node* const> dependents () const;
@@ -78,9 +93,12 @@ class LadspaPlugin : public Unison::Plugin
     const LADSPA_Descriptor *m_descriptor;
     LADSPA_Handle m_handle;
 
+    QString m_uniqueId;
     bool              m_activated;
     Unison::nframes_t m_sampleRate;
     QVarLengthArray<Unison::Port*, 16> m_ports;
+    QSet<Unison::Node* const> m_audioInPorts;
+    QSet<Unison::Node* const> m_audioOutPorts;
     Unison::BufferProvider *m_bufferProvider;
 
     void init ();
@@ -95,6 +113,16 @@ class LadspaPluginDescriptor : public Unison::PluginDescriptor
     LadspaPluginDescriptor (const LadspaPluginDescriptor &descriptor);
 
     Unison::PluginPtr createPlugin (Unison::nframes_t sampleRate) const;
+
+    const LADSPA_Descriptor *ladspaDescriptor ()
+    {
+      return m_descriptor;
+    }
+
+    QString filePath () const
+    {
+      return m_path;
+    }
 
   private:
      QString m_path;

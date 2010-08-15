@@ -27,7 +27,6 @@
 
 #include <extensionsystem/ExtensionManager.h>
 
-#include <QtPlugin>
 #include <QDebug>
 
 namespace Lv2 {

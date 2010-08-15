@@ -48,7 +48,7 @@ LadspaPluginProvider::LadspaPluginProvider ()
 {
   qDebug( "Initializing LADSPA Plugin Provider" );
   discoverPlugins();
-  qDebug() << "Found" << m_descriptorMap.size() << "LADSPA plugins.";
+  qDebug() << "Found" << m_descriptorMap.count() << "LADSPA plugins.";
   qDebug( "Done initializing LADSPA Plugin Provider" );
 }
 
@@ -80,6 +80,7 @@ void LadspaPluginProvider::discoverPlugins ()
   }
 
   foreach (QString path, directories) {
+    qDebug() <<(path);
     discoverFromDirectory(path);
   }
 }
@@ -125,7 +126,9 @@ int LadspaPluginProvider::discoverFromLibrary (const QString &path)
     }
 
     PluginDescriptorPtr desc(new LadspaPluginDescriptor(path, descriptor));
+    qDebug() << desc->uniqueId() << "]" << desc->name() << ":" << desc->audioInputCount() << "," << desc->audioOutputCount();
 
+    // TODO: Bitch if we overwrite an entry
     m_descriptorMap.insert(desc->uniqueId(), desc);
   }
   return i;

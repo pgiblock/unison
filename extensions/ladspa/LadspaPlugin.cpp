@@ -23,7 +23,7 @@
  */
 
 #include "LadspaPlugin.h"
-//#include "LadspaPort.h"
+#include "LadspaPort.h"
 
 #include <unison/ProcessingContext.h>
 
@@ -35,7 +35,7 @@ using namespace Unison;
 namespace Ladspa {
   namespace Internal {
 
-LadspaPlugin::LadspaPlugin (const LadspaDescriptor* descriptor,
+LadspaPlugin::LadspaPlugin (const LADSPA_Descriptor *descriptor,
                             nframes_t sampleRate) :
   Plugin(),
   m_descriptor(descriptor),
@@ -57,25 +57,37 @@ LadspaPlugin::LadspaPlugin (const LadspaPlugin& other) :
 void LadspaPlugin::init ()
 {
   m_activated = false;
+  m_uniqueId = QString("%1").arg(m_descriptor->UniqueID);
   m_handle = m_descriptor->instantiate(m_descriptor, m_sampleRate);
   Q_ASSERT(m_handle);
 
-  qDebug() << "Initializing LadspaPlugin" << m_name << "with ports:";
+  qDebug() << "Initializing LadspaPlugin" << name() << "with ports:";
 
-  int count = portCount();
+  Port *port;
+  int count = m_descriptor->PortCount;
   m_ports.resize( count );
   for (int i = 0; i < count; ++i) {
-    m_ports[i] = new LadspaPort( this, i );
-    qDebug() << i << m_ports[i]->name();
+    port = m_ports[i] = new LadspaPort( this, i );
+    qDebug() << i << port->name();
+    if (port->type() == AUDIO_PORT) {
+      if (port->direction() == INPUT) {
+        m_audioInPorts.insert(port);
+      }
+      else {
+        // Ladspa specs says it must be either input or output
+        Q_ASSERT(port->direction() == OUTPUT);
+        m_audioOutPorts.insert(port);
+      }
+    }
   }
 
-  qDebug() << "Instantiated LadspaPlugin:" << m_name;
+  qDebug() << "Instantiated LadspaPlugin:" << name();
 }
 
 
 LadspaPlugin::~LadspaPlugin () {
   deactivate();
-  m_descriptor->cleanup(m_instance)
+  m_descriptor->cleanup(m_handle);
   for (int i=0; i<m_ports.count(); ++i) {
     delete m_ports[i];
   }
@@ -136,37 +148,51 @@ void LadspaPlugin::deactivate ()
 
 int LadspaPlugin::audioInputCount () const
 {
-  return TODO;
+  return m_audioInPorts.count();
 }
 
 
 int LadspaPlugin::audioOutputCount () const
 {
-  return TODO;
+  return m_audioOutPorts.count();
+}
+
+
+QString LadspaPlugin::name () const
+{
+  return QString::fromAscii(m_descriptor->Name);
+}
+
+
+QString LadspaPlugin::uniqueId () const
+{
+  return m_uniqueId;
 }
 
 
 QString LadspaPlugin::authorName () const
 {
-  return m_descriptor->Maker ? m_descriptor->Maker : "Unknown";
+  return m_descriptor->Maker ?
+    QString::fromAscii(m_descriptor->Maker) :
+    QObject::tr("Unknown");
 }
 
 
 QString LadspaPlugin::authorEmail () const
 {
-  return NULL
+  return QString();
 }
 
 
 QString LadspaPlugin::authorHomepage () const
 {
-  return NULL;
+  return QString();
 }
 
 
 QString LadspaPlugin::copyright () const
 {
-  return m_descriptor->Copyright;
+  return QString::fromAscii(m_descriptor->Copyright);
 }
 
 
@@ -178,6 +204,7 @@ void LadspaPlugin::process (const ProcessingContext & context)
 
 const QSet<Node* const> LadspaPlugin::dependencies () const
 {
+  /*
   QSet<Node* const> n;
   int count = portCount();
   for (int i=0; i<count; ++i) {
@@ -187,10 +214,14 @@ const QSet<Node* const> LadspaPlugin::dependencies () const
     }
   }
   return n;
+  */
+  return m_audioInPorts;
 }
 
 
-const QSet<Node* const> LadspaPlugin::dependents () const {
+const QSet<Node* const> LadspaPlugin::dependents () const
+{
+  /*  
   QSet<Node* const> n;
   int count = portCount();
   for (int i=0; i<count; ++i) {
@@ -200,6 +231,8 @@ const QSet<Node* const> LadspaPlugin::dependents () const {
     }
   }
   return n;
+  */
+  return m_audioOutPorts;
 }
 
 
@@ -208,9 +241,9 @@ LadspaPluginDescriptor::LadspaPluginDescriptor (const QString &path,
   m_path(path),
   m_descriptor(desc)
 {
-  m_uniqueId = QString("%1").arg(desc->UniqueID);
   m_author = desc->Maker;
   m_name = desc->Name;
+  m_uniqueId = QString("%1").arg(desc->UniqueID);
 
   for (int i=0; i < desc->PortCount; ++i) {
     LADSPA_PortDescriptor p = desc->PortDescriptors[i];
@@ -235,7 +268,7 @@ LadspaPluginDescriptor::LadspaPluginDescriptor (const LadspaPluginDescriptor& d)
 
 PluginPtr LadspaPluginDescriptor::createPlugin (nframes_t sampleRate) const
 {
-  return PluginPtr(); // new LadspaPlugin( m_world, m_plugin, sampleRate ) );
+  return PluginPtr(new LadspaPlugin(m_descriptor, sampleRate ) );
 }
 
   } // Internal

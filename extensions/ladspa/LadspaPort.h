@@ -44,7 +44,7 @@ namespace Ladspa {
 class LadspaPort : public Unison::Port
 {
   public:
-    LadspaPort (const LadspaWorld & world, LadspaPlugin * plugin, uint32_t index);
+    LadspaPort (LadspaPlugin *plugin, uint32_t index);
 
     ~LadspaPort ();
 
@@ -56,31 +56,12 @@ class LadspaPort : public Unison::Port
     float value () const;
     void setValue (float value);
 
-    float defaultValue () const
-    {
-      return m_defaultValue;
-    }
+    float defaultValue () const;
 
-    bool isBounded () const
-    {
-      return true;
-    }
-
-    float minimum () const
-    {
-      return m_min;
-    }
-
-    float maximum () const
-    {
-      return m_max;
-    }
-
-    bool isToggled () const
-    {
-      return slv2_port_has_property( m_plugin->slv2Plugin(),
-                                     m_port, m_world.toggled );
-    }
+    bool isBounded () const;
+    float minimum () const;
+    float maximum () const;
+    bool isToggled () const;
 
     Node* parent () const;
     const QSet<Unison::Node* const> interfacedNodes () const;
@@ -89,15 +70,13 @@ class LadspaPort : public Unison::Port
 
 
   private:
-    LadspaPlugin * m_plugin;
-    SLV2Port m_port;
-    uint32_t m_index;
+    const LADSPA_Descriptor *pluginDescriptor () const;
+    const LADSPA_PortDescriptor portDescriptor () const;
+    const LADSPA_PortRangeHint portRangeHints () const;
+    LadspaPlugin *m_plugin;
 
-    float m_value;
-    float m_defaultValue;
-    float m_min;
-    float m_max;
-    bool  m_isSampleRate;
+    uint32_t m_index;
+    float m_value; ///< Shadowed value
 };
 
   } // Internal

@@ -108,7 +108,9 @@ typedef Plugin* PluginPtr;
 class PluginDescriptor
 {
   public:
-    PluginDescriptor ()
+    PluginDescriptor () :
+      m_audioInputs(0),
+      m_audioOutputs(0)
     {
       // Not much sense initializing anything here since no defaults make
       // sense and this class is abstract anyways.
