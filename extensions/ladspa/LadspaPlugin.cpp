@@ -57,7 +57,7 @@ LadspaPlugin::LadspaPlugin (const LadspaPlugin& other) :
 void LadspaPlugin::init ()
 {
   m_activated = false;
-  m_uniqueId = QString("%1").arg(m_descriptor->UniqueID);
+  m_uniqueId = QString("%1%2").arg(UriRoot, m_descriptor->UniqueID);
   m_handle = m_descriptor->instantiate(m_descriptor, m_sampleRate);
   Q_ASSERT(m_handle);
 
@@ -243,7 +243,7 @@ LadspaPluginDescriptor::LadspaPluginDescriptor (const QString &path,
 {
   m_author = desc->Maker;
   m_name = desc->Name;
-  m_uniqueId = QString("%1").arg(desc->UniqueID);
+  m_uniqueId = QString("%1%2").arg(UriRoot, m_descriptor->UniqueID);
 
   for (int i=0; i < desc->PortCount; ++i) {
     LADSPA_PortDescriptor p = desc->PortDescriptors[i];

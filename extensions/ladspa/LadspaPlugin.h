@@ -33,6 +33,9 @@
 #include "ladspa.h"
 
 namespace Ladspa {
+
+const char * const UriRoot = "http://ladspa.org/plugins/";
+
   namespace Internal {
 
 class LadspaPlugin : public Unison::Plugin

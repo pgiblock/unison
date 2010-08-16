@@ -127,7 +127,7 @@ void CoreExtension::extensionsInitialized()
 
   // Loading a mix of LADSPA and LV2
   QStringList plugins;
-  plugins << "2143"
+  plugins << "http://ladspa.org/plugins/2143"
           << "http://calf.sourceforge.net/plugins/Reverb"
           << "http://calf.sourceforge.net/plugins/Phaser";
 
@@ -149,11 +149,12 @@ void CoreExtension::extensionsInitialized()
 
   FxLine *fxLine = new FxLine(*root, "Super Duper Fx-Line");
 
+  int j = 0;
   for (int i = 0; i < plugins.size(); ++i) {
     QString plugin = plugins.at(i);
     PluginDescriptorPtr desc = PluginManager::instance()->descriptor(plugin);
     if (desc) {
-      fxLine->addPlugin(desc, i);
+      fxLine->addPlugin(desc, j++);
     }
     else {
       qWarning() << "Could not load plugin: " << plugin;

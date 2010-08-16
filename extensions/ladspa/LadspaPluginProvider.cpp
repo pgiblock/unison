@@ -80,7 +80,6 @@ void LadspaPluginProvider::discoverPlugins ()
   }
 
   foreach (QString path, directories) {
-    qDebug() <<(path);
     discoverFromDirectory(path);
   }
 }
@@ -126,10 +125,9 @@ int LadspaPluginProvider::discoverFromLibrary (const QString &path)
     }
 
     PluginDescriptorPtr desc(new LadspaPluginDescriptor(path, descriptor));
-    qDebug() << desc->uniqueId() << "]" << desc->name() << ":" << desc->audioInputCount() << "," << desc->audioOutputCount();
 
     // TODO: Bitch if we overwrite an entry
-    m_descriptorMap.insert(desc->uniqueId(), desc);
+    m_descriptorMap.insert(descriptor->UniqueID, desc);
   }
   return i;
 }
@@ -142,8 +140,27 @@ LadspaPluginProvider::~LadspaPluginProvider ()
 
 PluginDescriptorPtr LadspaPluginProvider::descriptor (const QString uniqueId)
 {
-  // returns null on fail
-  return m_descriptorMap.value( uniqueId );
+  unsigned long id;
+  bool ok = false;
+
+  // Parse out the Id,
+  if (uniqueId.startsWith(UriRoot, Qt::CaseInsensitive)) {
+    id = uniqueId.mid(strlen(UriRoot)).toULong(&ok);
+  }
+  // Maybe the user forgot the URI-root
+  else {
+    id = uniqueId.toULong(&ok);
+  }
+
+  // Not a ladspa URI
+  if (!ok) {
+    return PluginDescriptorPtr();
+  }
+
+  Q_ASSERT(id > 0 && id < 0x1000000);
+
+  // returns null if not found
+  return m_descriptorMap.value( id );
 }
 
 

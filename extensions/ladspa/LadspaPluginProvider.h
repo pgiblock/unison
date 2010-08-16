@@ -59,7 +59,7 @@ class LadspaPluginProvider : public Core::IPluginProvider
     void discoverFromDirectory (const QString &path);
     int discoverFromLibrary (const QString &path);
 
-    typedef QMap<QString, Unison::PluginDescriptorPtr> LadspaPluginDescriptorMap;
+    typedef QMap<long unsigned int, Unison::PluginDescriptorPtr> LadspaPluginDescriptorMap;
     LadspaPluginDescriptorMap m_descriptorMap;
 };
 
