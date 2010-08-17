@@ -25,6 +25,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QSettings>
+#include <QTimer>
 
 #include <QtNetwork/QNetworkProxyFactory>
 
@@ -116,17 +117,21 @@ static inline QStringList getExtensionPaths()
 
 int main (int argc, char **argv)
 {
-  bool createGui = false;
+  bool createGui = true;
   printLogo();
 
-  QCoreApplication * app = NULL;
+  QCoreApplication* appPtr;
   if (createGui) {
-    app = new QApplication( argc, argv );
+    appPtr = new QApplication( argc, argv );
   }
   else {
     printDisclaimer();
-    app = new QCoreApplication( argc, argv );
+    appPtr = new QCoreApplication( argc, argv );
   }
+  QScopedPointer<QCoreApplication> app(appPtr);
+  appPtr = NULL;
+
+  QTimer::singleShot(10000, qApp, SLOT(quit()));
 
   app->setApplicationName( "Unison" );
   app->setOrganizationDomain( "unison.sourceforge.net" );
@@ -247,6 +252,7 @@ int main (int argc, char **argv)
     }
   }
 
+
   // Single instance stuff
   //if (isFirstInstance) {
       // Set up lock and remote arguments for the first instance only.
@@ -259,7 +265,6 @@ int main (int argc, char **argv)
   //QObject::connect(&app, SIGNAL(fileOpenRequest(QString)), coreplugin->plugin(), SLOT(fileOpenRequest(QString)));
 
   // Do this after the event loop has started
-  //QTimer::singleShot(100, &pluginManager, SLOT(startTests()));
   return app->exec();
 }
 

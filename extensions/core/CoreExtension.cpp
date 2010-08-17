@@ -58,6 +58,10 @@ CoreExtension::CoreExtension()
 
 CoreExtension::~CoreExtension()
 {
+  qDebug() << "CORE dtor";
+  if (Engine::backend()) {
+    delete Engine::backend();
+  }
   /*
   if (m_editMode) {
       removeObject(m_editMode);
@@ -133,11 +137,17 @@ void CoreExtension::extensionsInitialized()
 
   // Find backends, load the first one
   QList<IBackendProvider *> backends = extMgr->getObjects<IBackendProvider>();
+  
+  if (backends.count() == 0) {
+    qWarning("No backends found, I guess we aren't doing anything");
+    return;
+  }
   qDebug("Found Backends:");
   foreach (IBackendProvider *bep, backends) {
     qDebug() << bep->displayName();
   }
 
+  // We gain control of created backends
   Backend *backend = backends.at(0)->createBackend();
 
   Patch *root = new Patch();
@@ -161,10 +171,6 @@ void CoreExtension::extensionsInitialized()
     }
   }
 
-  // TODO: cleanup
-  // Let these ports leak all over the place. This is a stupid demo
-  //backend->deactivate();
-
   //m_mainWindow->extensionsInitialized();
 }
 
@@ -186,6 +192,14 @@ void CoreExtension::fileOpenRequest(const QString &f)
 
 void CoreExtension::shutdown()
 {
+  qDebug() << "CORE shutdown";
+
+  // We don't need to be processing while shutting down
+  // TODO: Probably end up killing the whole engine here
+  if (Engine::backend()) {
+    Engine::backend()->deactivate();
+  }
+
   //m_mainWindow->shutdown();
 }
 
