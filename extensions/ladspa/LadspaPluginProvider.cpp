@@ -30,7 +30,7 @@
 
 #include "LadspaPluginProvider.h"
 #include "LadspaPlugin.h"
-#include "ladspa.h"
+#include "ladspa/ladspa.h"
 
 #ifdef Q_WS_WIN
 #  define PATH_SEPERATOR ';'

@@ -30,7 +30,7 @@
 
 #include <QVarLengthArray>
 
-#include "ladspa.h"
+#include "ladspa/ladspa.h"
 
 namespace Ladspa {
 
