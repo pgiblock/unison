@@ -64,3 +64,5 @@ set_target_properties(Lv2 PROPERTIES
 set(INSTALL_DIR lib/unison/extensions)
 install(FILES   Lv2.extinfo  DESTINATION ${INSTALL_DIR})
 install(TARGETS Lv2 LIBRARY  DESTINATION ${INSTALL_DIR})
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

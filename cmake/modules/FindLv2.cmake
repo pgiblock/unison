@@ -17,11 +17,11 @@
 if (NOT LV2_INCLUDE_DIRS)
 
   find_path(LV2_INCLUDE_DIR
-    NAMES lv2.h
+      NAMES lv2.h
   )
 
   set(LV2_INCLUDE_DIRS
-    ${LV2_INCLUDE_DIR}
+      ${LV2_INCLUDE_DIR}
   )
 
   # show the LV2_INCLUDE_DIRS variables only in the advanced view
@@ -34,3 +34,4 @@ if (LV2_INCLUDE_DIRS)
   set(LV2_FOUND TRUE)
 endif (LV2_INCLUDE_DIRS)
 
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

@@ -22,3 +22,5 @@ if (NOT CMAKE_BUILD_TYPE)
       "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
   )
 endif (NOT CMAKE_BUILD_TYPE)
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

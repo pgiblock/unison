@@ -170,4 +170,4 @@ void Lv2Port::connectToBuffer ()
   } // Internal
 } // Lv2
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

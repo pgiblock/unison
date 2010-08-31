@@ -33,3 +33,5 @@ set(INSTALL_DIR lib/lv2/unison-LfoController.lv2)
 
 install(TARGETS LfoController LIBRARY DESTINATION ${INSTALL_DIR})
 install(FILES   LfoController.ttl manifest.ttl DESTINATION ${INSTALL_DIR})
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

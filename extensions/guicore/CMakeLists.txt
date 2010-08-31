@@ -21,10 +21,6 @@
 # Boston, MA 02110-1301 USA.
 #
 
-#set(LFO_CONTROLLER_SRCS
-#    LfoController.c
-#)
-
 configure_file(GuiCore.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 add_definitions(-DGUICORE_EXTENSION)
@@ -56,3 +52,5 @@ set_target_properties(GuiCore PROPERTIES
 set(INSTALL_DIR lib/unison/extensions)
 install(FILES   GuiCore.extinfo  DESTINATION ${INSTALL_DIR})
 install(TARGETS GuiCore    LIBRARY  DESTINATION ${INSTALL_DIR})
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

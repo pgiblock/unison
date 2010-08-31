@@ -59,3 +59,5 @@ set_target_properties(Jack PROPERTIES
 set(INSTALL_DIR lib/unison/extensions)
 install(FILES   Jack.extinfo  DESTINATION ${INSTALL_DIR})
 install(TARGETS Jack    LIBRARY  DESTINATION ${INSTALL_DIR})
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

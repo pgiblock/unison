@@ -60,3 +60,5 @@ endif (UNIX AND NOT WIN32)
 if (MSVC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_CRT_SECURE_NO_WARNINGS")
 endif (MSVC)
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

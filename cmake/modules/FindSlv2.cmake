@@ -24,23 +24,18 @@ if (NOT SLV2_LIBRARIES OR NOT SLV2_INCLUDE_DIRS)
     endif (PKG_CONFIG_FOUND)
 
     find_path(SLV2_INCLUDE_DIR
-      NAMES
-        slv2/slv2.h
-      HINTS 
-        ${_SLV2_INCLUDEDIR}
-      PATH_SUFFIXES
-        slv2
+        NAMES slv2/slv2.h
+        HINTS ${_SLV2_INCLUDEDIR}
+        PATH_SUFFIXES slv2
     )
 
     find_library(SLV2_LIBRARY
-      NAMES
-        slv2
-      HINTS 
-        ${_SLV2_LIBDIR}
+        NAMES slv2
+        HINTS ${_SLV2_LIBDIR}
     )
 
     set(SLV2_INCLUDE_DIRS
-      ${SLV2_INCLUDE_DIR}
+        ${SLV2_INCLUDE_DIR}
     )
 
     if (SLV2_LIBRARY)
@@ -63,4 +58,4 @@ if (SLV2_LIBRARIES AND SLV2_INCLUDE_DIRS)
   set(SLV2_FOUND TRUE)
 endif (SLV2_LIBRARIES AND SLV2_INCLUDE_DIRS)
 
-
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

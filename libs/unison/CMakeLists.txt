@@ -73,3 +73,5 @@ install(TARGETS unison LIBRARY
 
 install(FILES ${UNISON_INCLUDES}
         DESTINATION include/unison/)
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai
