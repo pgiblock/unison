@@ -119,10 +119,10 @@ JackPort* JackBackend::registerPort (QString name, PortDirection direction)
   // jack_port_t's direction is relative to Jack's graph.
   JackPortFlags flag;
   switch (direction) {
-    case INPUT:
+    case Input:
       flag = JackPortIsOutput;
       break;
-    case OUTPUT:
+    case Output:
     default:
       flag = JackPortIsInput;
       break;

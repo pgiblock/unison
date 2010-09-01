@@ -42,14 +42,14 @@ FxLine::FxLine (Patch& parent, QString name) :
   m_parent(parent),
   m_entries()
 {
-  m_inPorts[0]  = Engine::backend()->registerPort(name + "/in 1", OUTPUT);
-  m_inPorts[1]  = Engine::backend()->registerPort(name + "/in 2", OUTPUT);
+  m_inPorts[0]  = Engine::backend()->registerPort(name + "/in 1", Output);
+  m_inPorts[1]  = Engine::backend()->registerPort(name + "/in 2", Output);
   Entry entry = Entry();
   entry.outputPorts << m_inPorts[0] << m_inPorts[1];
   m_entries.append(entry);
   
-  m_outPorts[0] = Engine::backend()->registerPort(name + "/out 1", INPUT);
-  m_outPorts[1] = Engine::backend()->registerPort(name + "/out 2", INPUT);
+  m_outPorts[0] = Engine::backend()->registerPort(name + "/out 1", Input);
+  m_outPorts[1] = Engine::backend()->registerPort(name + "/out 2", Input);
   entry = Entry();
   entry.inputPorts << m_outPorts[0] << m_outPorts[1];
   m_entries.append(entry);
@@ -87,15 +87,15 @@ void FxLine::collectPorts (Plugin *plugin, QList<Port*> *audioIn, QList<Port*> *
   {
     Port *p = plugin->port(i);
 
-    if (p->type() == AUDIO_PORT)
+    if (p->type() == AudioPort)
     {
       switch (p->direction()) {
-        case INPUT:
+        case Input:
           if (audioIn) {
             audioIn->append(p);
           }
           break;
-        case OUTPUT:
+        case Output:
           if (audioOut) {
             audioOut->append(p);
           }

@@ -23,15 +23,17 @@
  */
 
 
-#ifndef UNISON_PORT_DISCONNECT_H
-#define UNISON_PORT_DISCONNECT_H
+#ifndef UNISON_PORT_DISCONNECT_H_
+#define UNISON_PORT_DISCONNECT_H_
 
-#include "unison/Command.h"
-#include "unison/Port.h"
-#include "unison/Patch.h"
+#include "Command.h"
+#include "Patch.h"
 
 namespace Unison {
+  
+  class Port;
   class ProcessingContext;
+
   namespace Internal {
 
 class PortDisconnect : public Command
@@ -44,11 +46,12 @@ class PortDisconnect : public Command
   private:
     Port *m_port1, *m_port2;
     Patch *m_patch;
-    QList<Patch::CompiledProcessor>* m_compiled;
+    QList<Patch::CompiledProcessor> *m_compiled;
 };
 
   } // Internal
 } // Unison
+
 
 #endif
 

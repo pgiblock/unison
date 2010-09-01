@@ -22,11 +22,12 @@
  *
  */
 
-#include <QDebug>
+#include "Patch.h"
 
-#include "unison/Node.h"
-#include "unison/Patch.h"
-#include "unison/BufferProvider.h"
+#include "Node.h"
+#include "Port.h"
+
+#include <QtCore/QDebug>
 
 namespace Unison {
 
@@ -42,7 +43,7 @@ int Patch::portCount () const
 }
 
 
-Port* Patch::port (int idx) const
+Port *Patch::port (int idx) const
 {
   Q_UNUSED(idx);
   // TODO: Implement registered-ports
@@ -50,7 +51,7 @@ Port* Patch::port (int idx) const
 }
 
 
-Port* Patch::port (QString id) const
+Port *Patch::port (QString id) const
 {
   Q_UNUSED(id);
   // TODO: Implement registered-ports
@@ -60,7 +61,7 @@ Port* Patch::port (QString id) const
 
 void Patch::activate (BufferProvider *bp)
 {
-  foreach (Processor* p, m_processors) {
+  foreach (Processor *p, m_processors) {
     p->activate(bp);
   }
 }
@@ -68,7 +69,7 @@ void Patch::activate (BufferProvider *bp)
 
 void Patch::deactivate ()
 {
-  foreach (Processor* p, m_processors) {
+  foreach (Processor *p, m_processors) {
     p->deactivate();
   }
 }
@@ -90,13 +91,13 @@ void Patch::process (const ProcessingContext & context)
 }
 
 
-const QSet<Node* const> Patch::dependencies () const
+const QSet<Node * const> Patch::dependencies () const
 {
-  QSet<Node* const> n;
+  QSet<Node * const> n;
   int count = portCount();
   for (int i=0; i<count; ++i) {
-    Port* p  = port(i);
-    if (p->direction() == INPUT) {
+    Port *p  = port(i);
+    if (p->direction() == Input) {
       n += p;
     }
   }
@@ -104,13 +105,13 @@ const QSet<Node* const> Patch::dependencies () const
 }
 
 
-const QSet<Node* const> Patch::dependents () const
+const QSet<Node * const> Patch::dependents () const
 {
-  QSet<Node* const> n;
+  QSet<Node * const> n;
   int count = portCount();
   for (int i=0; i<count; ++i) {
-    Port* p  = port(i);
-    if (p->direction() == OUTPUT) {
+    Port *p  = port(i);
+    if (p->direction() == Output) {
       n += p;
     }
   }
@@ -124,7 +125,7 @@ QString Patch::name () const
 }
 
 
-void Patch::add (Processor * processor)
+void Patch::add (Processor *processor)
 {
   Q_ASSERT(processor != NULL);
   if (processor->parent() == this ) {
@@ -140,27 +141,28 @@ void Patch::add (Processor * processor)
 }
 
 
-void Patch::remove (Processor * processor)
+void Patch::remove (Processor *processor)
 {
   Q_ASSERT(processor != NULL);
   Q_ASSERT(processor->parent() == this);
   m_processors.removeOne(processor);
   processor->setParent(NULL);
+  // XXX: Need to fix connections!
 }
 
 
 /**
  * Walks @n's parents and returns the parent closest to @_this.  If node @n
  * is not contained in @_this, then NULL is returned.  */
-Processor* findOutermostProcessor (Patch * _this, Node * n)
+Processor *findOutermostProcessor (Patch *_this, Node *n)
 {
-  Processor* outer = NULL;
+  Processor *outer = NULL;
   while (n) {
     if (n == _this) {
       return outer;
     }
 
-    if (Processor* p = dynamic_cast<Processor*>( n )) {
+    if (Processor *p = dynamic_cast<Processor *>( n )) {
       outer = p;
     }
 
@@ -171,18 +173,17 @@ Processor* findOutermostProcessor (Patch * _this, Node * n)
 
 // 2 if child's dependency is sibling, nothing special - walk and visit
 // 3 if child's dependency is nested, then walk into the "nesting" sibling instead
-void Patch::compileWalk (Node *n,
-    QList<CompiledProcessor> &output)
+void Patch::compileWalk (Node *n, QList<CompiledProcessor> &output)
 {
   Processor *p;
   bool pendingAddition = false;
 
-  if ((p = dynamic_cast<Processor*>(n)) && !p->isVisited()) {
+  if ((p = dynamic_cast<Processor *>(n)) && !p->isVisited()) {
     p->visit();
     pendingAddition = true;
   }
 
-  foreach (Node* dep, n->dependencies()) {
+  foreach (Node *dep, n->dependencies()) {
     compileWalk( dep, output );
   }
 
@@ -200,10 +201,10 @@ void Patch::compileWalk (Node *n,
 */
 
 
-void Patch::compile (QList<CompiledProcessor>& output)
+void Patch::compile (QList<CompiledProcessor> &output)
 {
   // Mark everything as unvisited
-  QListIterator<Processor*> i( m_processors );
+  QListIterator<Processor *> i( m_processors );
   while (i.hasNext()) {
     i.next()->unvisit();
   }
@@ -211,7 +212,7 @@ void Patch::compile (QList<CompiledProcessor>& output)
   // Process nodes that are pure-sinks first
   i.toFront();
   while (i.hasNext()) {
-    Processor* proc = i.next();
+    Processor *proc = i.next();
 
     bool isSink = true;
     bool done = false;
@@ -220,12 +221,14 @@ void Patch::compile (QList<CompiledProcessor>& output)
 
     // For each output port
     for (int j = 0; j < proc->portCount() && !done; ++j) {
-      Port* port = proc->port(j);
-      if (port->direction() == OUTPUT) {
+      Port *port = proc->port(j);
+      if (port->direction() == Output) {
         // For all connected Ports.
-        QSetIterator<Node* const> k( port->dependents() );
+        QSetIterator<Node * const> k( port->dependents() );
         while (k.hasNext()) {
-          Port* otherPort = (Port*)k.next();
+          // All Processor dependents are Ports
+          Port *otherPort = static_cast<Port *>(k.next());
+
           // Not a sink if a connected port has any dependents.
           if (otherPort->dependents().count() != 0) {
             // Not sink, and break out of outer loop:
@@ -243,7 +246,7 @@ void Patch::compile (QList<CompiledProcessor>& output)
   }
 
   // Then compile everything else
-  QListIterator<Processor*> p( m_processors );
+  QListIterator<Processor *> p( m_processors );
   while (p.hasNext()) {
     compileWalk( p.next(), output );
   }

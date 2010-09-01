@@ -22,11 +22,12 @@
  *
  */
 
-#include <QDebug>
+#include "PooledBufferProvider.h"
 
-#include "unison/PooledBufferProvider.h"
-#include "unison/AudioBuffer.h"
-#include "unison/ControlBuffer.h"
+#include "AudioBuffer.h"
+#include "ControlBuffer.h"
+
+#include <QtCore/QDebug>
 
 namespace Unison {
 
@@ -41,16 +42,15 @@ PooledBufferProvider::PooledBufferProvider () :
 }
 
 
-SharedBufferPtr PooledBufferProvider::acquire (
-    PortType type, nframes_t nframes)
+SharedBufferPtr PooledBufferProvider::acquire (PortType type, nframes_t nframes)
 {
   Q_ASSERT(nframes == m_periodLength);
-  QStack<Buffer*>* stack;
+  QStack<Buffer *> *stack;
   switch (type) {
-    case AUDIO_PORT:
+    case AudioPort:
       stack = &m_audioBuffers;
       break;
-    case CONTROL_PORT:
+    case ControlPort:
       stack = &m_controlBuffers;
       break;
     default:
@@ -63,14 +63,14 @@ SharedBufferPtr PooledBufferProvider::acquire (
   }
 
   //TODO ensure we are not in processing thread
-  Buffer* buf;
+  Buffer *buf;
   switch (type) {
-    case AUDIO_PORT:
+    case AudioPort:
       qDebug() << "New Audio Buffer " << nframes << " frames.";
       buf = new AudioBuffer( *this, nframes );
       break;
 
-    case CONTROL_PORT:
+    case ControlPort:
       qDebug() << "New Control Buffer";
       buf = new ControlBuffer( *this );
       break;
@@ -93,16 +93,16 @@ void PooledBufferProvider::setBufferLength (nframes_t nframes)
   m_periodLength = nframes;
 
   qDebug() << "Buffersize changed to" << nframes << "stacksize" << m_audioBuffers.count();
-  //m_zeroBuffer = acquire( AUDIO_PORT, nframes );
+  //m_zeroBuffer = acquire( AudioPort, nframes );
   //Q_ASSERT(nframes == m_periodLength);
-  QStack<Buffer*>* stack;
+  QStack<Buffer *> *stack;
   stack = &m_audioBuffers;
 
   if (!stack->isEmpty()) {
     m_zeroBuffer = stack->pop();
   }
 
-  Buffer* buf;
+  Buffer *buf;
   qDebug() << "New Audio Buffer " << nframes << " frames.";
   buf = new AudioBuffer( *this, nframes );
 
@@ -117,10 +117,10 @@ nframes_t PooledBufferProvider::bufferLength ()
 }
 
 
-void PooledBufferProvider::release (Buffer* buf)
+void PooledBufferProvider::release (Buffer *buf)
 {
   switch (buf->type()) {
-    case AUDIO_PORT:
+    case AudioPort:
       if (((AudioBuffer*)buf)->length() != bufferLength()) {
         qWarning() << "Releasing buffer of wrong size.  Deleting buffer instead!";
         delete buf;
@@ -130,7 +130,7 @@ void PooledBufferProvider::release (Buffer* buf)
       }
       break;
 
-    case CONTROL_PORT:
+    case ControlPort:
       m_controlBuffers.push(buf);
       break;
 

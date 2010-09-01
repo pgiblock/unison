@@ -79,16 +79,16 @@ PortType Lv2Port::type () const
 {
   SLV2Plugin slv2Plugin = m_plugin->slv2Plugin();
   if (slv2_port_is_a( slv2Plugin, m_port, m_world.controlClass )) {
-    return CONTROL_PORT;
+    return ControlPort;
   }
   else if (slv2_port_is_a( slv2Plugin, m_port, m_world.audioClass )) {
-    return AUDIO_PORT;
+    return AudioPort;
   }
   else if (slv2_port_is_a( slv2Plugin, m_port, m_world.midiClass )) {
-    return MIDI_PORT;
+    return MidiPort;
   }
   else {
-    return UNKNOWN_PORT;
+    return UnknownPort;
   }
 }
 
@@ -97,10 +97,10 @@ PortDirection Lv2Port::direction () const
 {
   SLV2Plugin plugin = m_plugin->slv2Plugin();
   if (slv2_port_is_a( plugin, m_port, m_world.inputClass )) {
-    return INPUT;
+    return Input;
   }
   if (slv2_port_is_a( plugin, m_port, m_world.outputClass )) {
-    return OUTPUT;
+    return Output;
   }
   // TODO: Maybe have an UNDEFINED direction?
   qFatal("Port `%s' is neither input or output", qPrintable(name()));
@@ -155,11 +155,11 @@ void Lv2Port::connectToBuffer ()
 {
   BufferProvider *provider = m_plugin->bufferProvider();
   switch (direction()) {
-    case INPUT:
+    case Input:
       acquireInputBuffer(*provider, UNISON_BUFFER_LENGTH);
       break;
 
-    case OUTPUT:
+    case Output:
       acquireOutputBuffer(*provider, UNISON_BUFFER_LENGTH);
       break;
   }

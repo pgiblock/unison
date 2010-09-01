@@ -23,23 +23,24 @@
  */
 
 
-#ifndef UNISON_PATCH_H
-#define UNISON_PATCH_H
+#ifndef UNISON_PATCH_H_
+#define UNISON_PATCH_H_
 
-#include "unison/Processor.h"
+#include "Processor.h"
 
-namespace Unison
-{
+namespace Unison {
 
-class BufferProvider;
-class ProcessingContext;
-
+  class BufferProvider;
+  class ProcessingContext;
 
 /**
- * A processor that contains other processors and their connections. This
- * class allows for a processor which manages other processors.  This is used
- * as a base class for Unison's higher-level constructs such as FxLines and
- * Synths, etc. */
+ * A processor that contains other processors and their connections. This class allows for
+ * a processor which manages other processors.  This is used as a base class for Unison's
+ * higher-level constructs such as FxLines and Synths, etc.  Additionally, the root
+ * processor of a @c Backend is represented as a Patch.  Patch is optimized by compiling a
+ * proper traversal of the children when the graph is changed.  The @c Commander is used
+ * to allow us to use the new traversal in the rendering phrase in a RT safe manner.
+ */
 class Patch : public Processor
 {
   public:
@@ -50,49 +51,77 @@ class Patch : public Processor
 
     virtual QString name () const;
 
-    void add (Processor* processor);
-    void remove (Processor* processor);
+    /**
+     * Add @p processor to this Patch and parent the Processor.  Reparenting of processors
+     * is not yet supported and will cause the program to abort.
+     * @param processor The processor to add, but have no parent
+     */
+    void add (Processor *processor);
 
-    /** @return the total number of ports of all kinds */
+    /**
+     * Removes @p processor from this Patch if it is currently a child.  This function
+     * will set @p processor's parent to NULL and will disconnect all of the ports
+     * @param processor the processor to remove
+     */
+    void remove (Processor *processor);
+
     virtual int portCount () const;
 
-    virtual Port* port (int idx) const;
-    virtual Port* port (QString id) const;
+    virtual Port *port (int idx) const;
+    virtual Port *port (QString id) const;
 
     virtual void activate (BufferProvider *bp);
     virtual void deactivate ();
 
     virtual void setBufferLength (PortType type, nframes_t len);
 
-    virtual void process (const ProcessingContext& context);
+    virtual void process (const ProcessingContext &context);
 
-    const QSet<Node* const> dependencies () const;
-    const QSet<Node* const> dependents () const;
+    const QSet<Node * const> dependencies () const;
+    const QSet<Node * const> dependents () const;
 
     // Private API :: TODO: Move to D-ptr
 
+    /**
+     * A processor entry in the compiled list of Processors
+     * @internal
+     */
     struct CompiledProcessor {
-      Processor* processor;
+      Processor *processor;
     };
 
     /**
      * Compiles the given list of processors into a proper traversal for
-     * rendering.  Not reentrant. */
-    void compile (QList<CompiledProcessor>& output);
+     * rendering.  Not reentrant.
+     * @param output The resulting traversal
+     * @internal
+     */
+    void compile (QList<CompiledProcessor> &output);
 
-    void setCompiledProcessors(QList<CompiledProcessor>* processors)
+    /**
+     * Swap the list of compiled processors.  Must be called in the Backend's
+     * processing thread before or after rendering of the current period.
+     * @param processors The new list of processors to use
+     */
+    void setCompiledProcessors (QList<CompiledProcessor> *processors)
     {
       m_compiled = processors;
     }
 
-    QList<CompiledProcessor>* compiledProcessors() const
+    /**
+     * @returns the current rendering order used by this Patch
+     */
+    QList<CompiledProcessor> *compiledProcessors () const
     {
       return m_compiled;
     }
 
 
   protected:
-    virtual void registerPort()
+    /**
+     * Allow subclasses to register ProxyPorts
+     */
+    virtual void registerPort ()
     {};
 
   private:
@@ -100,104 +129,12 @@ class Patch : public Processor
     /**
      * A recursive walk into the dependencies of the node.  Processors
      * are appended to the output.  This uses the visited flag of
-     * Processor, therefore this function is not reentrant. */
-    void compileWalk (Node* n, QList<CompiledProcessor>& output);
+     * Processor, therefore this function is not reentrant.
+     */
+    void compileWalk (Node *n, QList<CompiledProcessor> &output);
 
-    QAtomicPointer< QList<CompiledProcessor> > m_compiled;
-    QList<Processor*> m_processors;
-};
-
-
-
-/**
- * Provides a proxy to a port internal to a Patch. The
- * Patch allows for implementations to registerPorts.  This
- * exposes an internal port as if it is a port of the Patch. */
-class PatchProxyPort : public Port
-{
-  protected:
-    /**
-     * Constructs a Port for a Patch.  Called by
-     * Patch itself.
-     * @param processor The parent processor
-     * @param port      The port to proxy */
-    PatchProxyPort (Patch* processor,
-                                 Port* port) :
-      m_port(port),
-      m_processor(processor)
-    {}
-
-    ~PatchProxyPort ()
-    {}
-
-    QString name () const
-    {
-      return m_port->name();
-    }
-
-    PortType type () const
-    {
-      return m_port->type();
-    }
-
-    PortDirection direction () const
-    {
-      return m_port->direction();
-    }
-
-    float value () const
-    {
-      return m_port->value();
-    }
-
-    void setValue (float value)
-    {
-      m_port->setValue(value);
-    }
-
-    float defaultValue () const
-    {
-      return m_port->defaultValue();
-    }
-
-    bool isBounded () const
-    {
-      return m_port->isBounded();
-    }
-
-    float minimum () const
-    {
-      return m_port->minimum();
-    }
-
-    float maximum () const
-    {
-      return m_port->maximum();
-    }
-
-    bool isToggled () const
-    {
-      return m_port->isToggled();
-    }
-
-    const QSet<Node* const> interfacedNodes () const
-    {
-      QSet<Node* const> p;
-      p.insert( m_processor );
-      return p;
-    }
-
-    void connectToBuffer ()
-    {
-      // TODO: Might need more logic here
-      m_port->connectToBuffer();
-    }
-
-  private:
-    Port* m_port;                    ///< The proxied port
-    Patch* m_processor; ///< The processor owning this port
-
-    friend class Patch;
+    QAtomicPointer< QList<CompiledProcessor> > m_compiled; ///< pointer to current order
+    QList<Processor *> m_processors; ///< our children
 };
 
 } // Unison

@@ -22,29 +22,29 @@
  *
  */
 
-#ifndef UNISON_BACKEND_H
-#define UNISON_BACKEND_H
+#ifndef UNISON_BACKEND_H_
+#define UNISON_BACKEND_H_
 
-#include <prg/Uncopyable.h>
+#include "types.h"
 
-#include <QObject>
-#include <unison/types.h>
+#include <QtCore/QObject>
 
 namespace Unison {
 
-class BackendPort;
-class Processor;
+  class BackendPort;
+  class Processor;
 
 /**
- * Backend encapsulates Audio-Interface compatibility.  There could
- * theoretically be multiple Interface classes (AsioBackend, for example),
- * but this requires us to implement missing features like connecting ports.
- * The primary functionality included is the processing entry-point and the
- * ability to register ports, query system ports, and make (external)
- * connections. */
-class Backend : public QObject, PRG::Uncopyable
+ * Backend encapsulates Audio-Interface compatibility.  There could theoretically be
+ * multiple Interface classes (AsioBackend, for example), but this requires us to
+ * implement missing features like connecting ports.  The primary functionality included
+ * is the processing entry-point and the ability to register ports, query system ports,
+ * and make (external) connections.
+ */
+class Backend : public QObject
 {
   Q_OBJECT
+  Q_DISABLE_COPY(Backend)
 
   public:
     Backend () :
@@ -54,44 +54,91 @@ class Backend : public QObject, PRG::Uncopyable
     virtual ~Backend () {};
 
     /**
-     * Returns the current buffer-length of the audio back-end */
+     * @returns the current buffer-length of the audio Backend
+     */
     virtual nframes_t bufferLength () const = 0;
 
     /**
-     * Returns the current sample-rate of the audio back-end */
+     * Returns the current sample-rate of the audio Backend
+     */
     virtual nframes_t sampleRate () const = 0;
 
     /**
-     * Returns whether or not the back-end is freewheeling.  Freewheeling is
-     * when we process frames as quickly as possible with no regard to physical
-     * time */
+     * Whether or not the Backend is freewheeling.  Freewheeling is when we process frames
+     * as quickly as possible with no regard to physical time
+     * @returns @c true if we are freewheeling
+     */
     virtual bool isFreewheeling () const = 0;
 
     /**
      * Register a port with Backend.
-     * @returns the newly registered port */
-    virtual BackendPort* registerPort (QString name, Unison::PortDirection direction) = 0;
+     * @param name the name (non-qualified id) of the port
+     * @param direction the direction of the port
+     * @returns the newly registered port
+     */
+    virtual BackendPort *registerPort (QString name, PortDirection direction) = 0;
 
     /**
      * Unregister a port.
-     * FIXME: Consider disconnecting ports when unregistering */
+     * FIXME: Consider disconnecting ports when unregistering
+     */
     virtual void unregisterPort (BackendPort *) = 0;
 
+    /**
+     * Perform any late initialization and place the Backend into a "running" state.
+     */
     virtual void activate () = 0;
-    virtual void deactivate () = 0;
-
-    virtual int portCount () const = 0;
-    virtual BackendPort* port (int index) const = 0;
-    virtual BackendPort* port (QString name) const = 0;
-
-    virtual int connect (const QString& source, const QString& dest) = 0;
-    virtual int disconnect (const QString& source, const QString& dest) = 0;
-    virtual int disconnect (BackendPort *) = 0;
 
     /**
-     * Set the root-processor used by this backend.  I think ideally, we would
-     * do this in the Engine. But, putting it in the Backend simplifies things
-     * for now */
+     * Remove the Backend from "running" state and cleanup any resources that are
+     * no longer needed.
+     */
+    virtual void deactivate () = 0;
+
+    /**
+     * The total number of Ports, for this particular Backend, in the system
+     * @return the total number of ports
+     */
+    virtual int portCount () const = 0;
+
+    /**
+     * @returns the Port at @p index
+     */
+    virtual BackendPort *port (int index) const = 0;
+
+    /**
+     * @returns the Port named @p name
+     */
+    virtual BackendPort *port (QString name) const = 0;
+
+    /**
+     * Create an intra-Backend connection between two ports.  A backend must support
+     * connections. At least, it must support connecting two ports that have been
+     * registered.  There is no requirement that non-Unison ports exist in the Backend.
+     * However, most Backends will have some ports not created by Unison, this allows us
+     * to actually input or output somewhere.  Examples are: hardware ports, other
+     * programs, storage, etc..
+     * @param source The port to behave as input
+     * @param source The port to behave as output
+     */
+    virtual int connect (const QString &source, const QString &dest) = 0;
+
+    /**
+     * Disconnect two ports.  The order should probably not matter.
+     * @param source one port to disconnect
+     * @param source theport to disconnect from
+     */
+    virtual int disconnect (const QString &source, const QString &dest) = 0;
+
+    /**
+     * Disconect all ports from @p port
+     */
+    virtual int disconnect (BackendPort *port) = 0;
+
+    /**
+     * Set the root-processor used by this backend.  I think ideally, we would do this in
+     * the Engine. But, putting it in the Backend simplifies things for now
+     */
     void setRootProcessor (Processor *processor)
     {
       m_rootPatch = processor;
@@ -103,7 +150,7 @@ class Backend : public QObject, PRG::Uncopyable
     }
 
   private:
-    Processor *m_rootPatch;
+    Processor *m_rootPatch;   ///< Pointer to the root patch/processor
 
 };
 

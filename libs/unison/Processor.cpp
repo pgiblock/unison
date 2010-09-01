@@ -22,9 +22,13 @@
  *
  */
 
-#include <QDebug>
+#include "Processor.h"
 
-#include "unison/Patch.h"
+#include "Patch.h"
+#include "Port.h"
+#include "types.h"
+
+#include <QDebug>
 
 namespace Unison {
 
@@ -52,13 +56,13 @@ void Processor::setBufferLength (PortType type, nframes_t len)
 }
 
 
-Node* Processor::parent () const
+Node *Processor::parent () const
 {
   return m_parent;
 }
 
 
-void Processor::setParent (Patch* parent)
+void Processor::setParent (Patch *parent)
 {
   Q_ASSERT(parent != NULL);
   // TODO-NOW: A bunch of assertions

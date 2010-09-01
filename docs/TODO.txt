@@ -1,6 +1,24 @@
 
 Immediate TODO:
 ===============
+
+  CLEANUP!!  (Just libunison first)
+    commit #1:
+      Fix #includes
+      Comments
+      whitespace
+    commit #2:
+      const-ness
+    commit #3:
+      exceptions assert qFatal
+      fix all warnings
+    commit #4:
+      pointer vs ref vs smart pointesrs
+  Copy to/from Jack or fix AudioBuffer "owns" Jack data relationship
+  PluginDescriptor => PluginInfo
+  ExtensionDescriptor => ExtensionInfo
+  QFlagify enums
+
 x TODOs
 - Movement of code from main.cpp:
 x   JackEngine and Callbacks

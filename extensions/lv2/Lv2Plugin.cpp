@@ -234,7 +234,7 @@ void Lv2Plugin::process (const ProcessingContext & context)
   int count = portCount();
   for (int i=0; i<count; ++i) {
     Port* p  = port(i);
-    if (p->direction() == INPUT && p->type() == CONTROL_PORT) {
+    if (p->direction() == Input && p->type() == ControlPort) {
 //      qDebug() << "Control Port" << p->name() << "has value" << ((float*)(p->buffer()->data()))[0] ;
     }
   }
@@ -248,7 +248,7 @@ const QSet<Node* const> Lv2Plugin::dependencies () const
   int count = portCount();
   for (int i=0; i<count; ++i) {
     Port* p  = port(i);
-    if (p->direction() == INPUT) {
+    if (p->direction() == Input) {
       n += p;
     }
   }
@@ -261,7 +261,7 @@ const QSet<Node* const> Lv2Plugin::dependents () const {
   int count = portCount();
   for (int i=0; i<count; ++i) {
     Port* p  = port(i);
-    if (p->direction() == OUTPUT) {
+    if (p->direction() == Output) {
       n += p;
     }
   }

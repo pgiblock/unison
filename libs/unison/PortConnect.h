@@ -23,15 +23,14 @@
  */
 
 
-#ifndef UNISON_PORT_CONNECT_H
-#define UNISON_PORT_CONNECT_H
+#ifndef UNISON_PORT_CONNECT_H_
+#define UNISON_PORT_CONNECT_H_
 
-#include "unison/Command.h"
-#include "unison/Port.h"
-#include "unison/Patch.h"
+#include "Command.h"
+#include "Patch.h"
 
 namespace Unison {
-  class ProcessingContext;
+  
   namespace Internal {
 
 class PortConnect : public Command
@@ -44,7 +43,7 @@ class PortConnect : public Command
   private:
     Port *m_producer, *m_consumer;
     Patch *m_patch;
-    QList<Patch::CompiledProcessor>* m_compiled;
+    QList<Patch::CompiledProcessor> *m_compiled;
 };
 
   } // Internal

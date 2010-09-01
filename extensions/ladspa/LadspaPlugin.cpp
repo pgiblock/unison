@@ -69,13 +69,13 @@ void LadspaPlugin::init ()
   for (int i = 0; i < count; ++i) {
     port = m_ports[i] = new LadspaPort( this, i );
     qDebug() << i << port->name();
-    if (port->type() == AUDIO_PORT) {
-      if (port->direction() == INPUT) {
+    if (port->type() == AudioPort) {
+      if (port->direction() == Input) {
         m_audioInPorts.insert(port);
       }
       else {
         // Ladspa specs says it must be either input or output
-        Q_ASSERT(port->direction() == OUTPUT);
+        Q_ASSERT(port->direction() == Output);
         m_audioOutPorts.insert(port);
       }
     }
@@ -209,7 +209,7 @@ const QSet<Node* const> LadspaPlugin::dependencies () const
   int count = portCount();
   for (int i=0; i<count; ++i) {
     Port* p  = port(i);
-    if (p->direction() == INPUT) {
+    if (p->direction() == Input) {
       n += p;
     }
   }
@@ -226,7 +226,7 @@ const QSet<Node* const> LadspaPlugin::dependents () const
   int count = portCount();
   for (int i=0; i<count; ++i) {
     Port* p  = port(i);
-    if (p->direction() == OUTPUT) {
+    if (p->direction() == Output) {
       n += p;
     }
   }

@@ -23,21 +23,22 @@
  */
 
 
-#include "unison/PortDisconnect.h"
-#include "unison/ProcessingContext.h"
+#include "PortDisconnect.h"
+
+#include "Port.h"
+#include "ProcessingContext.h"
 
 namespace Unison {
   namespace Internal {
 
 PortDisconnect::PortDisconnect (Port *port1, Port *port2) :
-  Command(),
+  Command(false),
   m_port1(port1),
   m_port2(port2),
   m_patch(NULL)
 {
-  m_blocking = false;
   m_compiled = new QList<Patch::CompiledProcessor>();
-  m_state = Command::Created;
+  setState(Command::Created);
 }
 
 

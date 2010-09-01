@@ -71,15 +71,15 @@ class JackPort : public Unison::BackendPort
     Unison::PortDirection direction() const
     {
       JackPortFlags flags = (JackPortFlags)jack_port_flags( m_port );
-      if (flags & JackPortIsInput)  { return Unison::OUTPUT;  }
-      if (flags & JackPortIsOutput) { return Unison::INPUT; }
+      if (flags & JackPortIsInput)  { return Unison::Output;  }
+      if (flags & JackPortIsOutput) { return Unison::Input; }
       Q_ASSERT_X(0, "JackPort", "direction is neither Input or Output.");
       return (Unison::PortDirection)0;
     }
 
     Unison::PortType type () const
     {
-      return Unison::AUDIO_PORT;
+      return Unison::AudioPort;
     }
 
     float value () const

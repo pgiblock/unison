@@ -22,37 +22,37 @@
  *
  */
 
+#include "PortConnect.h"
 
-#include "unison/PortConnect.h"
-#include "unison/ProcessingContext.h"
+#include "Port.h"
+#include "ProcessingContext.h"
 
 namespace Unison {
   namespace Internal {
 
 PortConnect::PortConnect (Port *port1, Port *port2) :
-  Command(),
+  Command(false),
   m_producer(NULL),
   m_consumer(NULL),
   m_patch(NULL)
 {
-  if (port1->direction() == OUTPUT) {
-    if (port2->direction() == OUTPUT) {
+  if (port1->direction() == Output) {
+    if (port2->direction() == Output) {
       qFatal("Cannot connect two output ports");
     }
     m_producer = port1;
     m_consumer = port2;
   }
   else {
-    if (port2->direction() == INPUT) {
+    if (port2->direction() == Input) {
       qFatal("Cannot connect two input ports");
     }
     m_consumer = port1;
     m_producer = port2;
   }
 
-  m_blocking = false;
   m_compiled = new QList<Patch::CompiledProcessor>();
-  m_state = Command::Created;
+  setState(Command::Created);
 }
 
 

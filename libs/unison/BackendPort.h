@@ -1,5 +1,5 @@
 /*
- * JackPort.h
+ * BackendPort.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,21 +22,30 @@
  *
  */
 
-#ifndef UNISON_BACKEND_PORT_H
-#define UNISON_BACKEND_PORT_H
+#ifndef UNISON_BACKEND_PORT_H_
+#define UNISON_BACKEND_PORT_H_
 
-#include <unison/Port.h>
-#include <unison/ProcessingContext.h>
+#include "Port.h"
 
 namespace Unison {
 
-class Backend;
+  class Backend;
 
-class BackendPort : public Unison::Port
+/**
+ * BackendPort is a Port that provides an interface for other Ports to utilize the
+ * Backend.  This is accomplished by implementing the Port interface.  A However, a
+ * BackendPort utilizes resources of a Backend.  Therefore, we must register a BackendPort
+ * from the Backend in order to create one.
+ */
+class BackendPort : public Port
 {
   public:
 
-    Unison::Node* parent () const
+    /**
+     * Backend ports do not participate in the graph's hierachial stucture.
+     * Although, it may make sense to do so at some point in the future.
+     */
+    Node *parent () const
     {
       return NULL;
     }

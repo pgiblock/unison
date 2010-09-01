@@ -22,64 +22,77 @@
  *
  */
 
-#ifndef UNISON_BUFFER_PROVIDER_H
-#define UNISON_BUFFER_PROVIDER_H
+#ifndef UNISON_BUFFER_PROVIDER_H_
+#define UNISON_BUFFER_PROVIDER_H_
+
+#include "Buffer.h"
 
 #include <QSharedPointer>
 
-#include "prg/Uncopyable.h"
-#include "unison/Buffer.h"
-#include "unison/types.h"
+namespace Unison {
+    
+  enum PortType;
+  class SharedBufferPtr;
 
-namespace Unison
+/**
+ * BufferProvider manages Buffer allocation and freeing.  All buffers used in Unison (at
+ * least by Ports) should be acquired through a BufferProvider.  The goal of
+ * BufferProvider is to remove buffer allocation from RT-critical code.  The secondary
+ * goal is to decrease the number of heap allocations.  Implementations are free to
+ * pre-allocate data, allocate on demand, defer freeing, just as long as everything is
+ * sane.
+ */
+class BufferProvider
 {
-
-class SharedBufferPtr;
-
-
-/** BufferProvider manages Buffer allocation and freeing.  All buffers used
- *  in Unison (at least by Ports) should be acquired through a BufferProvider.
- *  The goal of BufferProvider is to remove buffer allocation from RT-critical
- *  code.  The secondary goal is to decrease the number of heap allocations.
- *  Implementations are free to pre-allocate data, allocate on demand, defer
- *  freeing, just as long as everything is sane. */
-class BufferProvider : PRG::Uncopyable
-{
+  Q_DISABLE_COPY(BufferProvider)
   public:
+    BufferProvider ()
+    {};
+
     virtual ~BufferProvider ()
     {};
 
-    /** Aquire a buffer of requested type and size.  This function is expected
-     *  to succeed.  Calling this function may cause a heap allocation.  More
-     *  thought needs to go into calling acquire() from RT code.
-     *  @param type The type of buffer to acquire
-     *  @param nframes The (minimum) size of the buffer to acquire
-     *  @returns The newly allocated, or recycled, buffer */
+    /**
+     * Aquire a buffer of requested type and size.  This function is expected to succeed.
+     * Calling this function may cause a heap allocation.  More thought needs to go into
+     * calling acquire() from RT code.
+     * @param type The type of buffer to acquire
+     * @param nframes The (minimum) size of the buffer to acquire
+     * @returns The newly allocated, or recycled, buffer
+     */
     virtual SharedBufferPtr acquire (PortType type, nframes_t nframes) = 0;
 
-    /** "Zero" buffers are handy for unconnected input-ports.  A Shared
-     *  pointer to shared data is returned since a zero buffer always has
-     *  the same data (all silence)
-     *  @returns A buffer, for read only, with all values = 0.0f */
+    /**
+     * "Zero" buffers are handy for unconnected input-ports.  A Shared pointer to shared
+     * data is returned since a zero buffer always has the same data (all silence)
+     * @returns A buffer, for read only, with all values = 0.0f
+     */
     virtual SharedBufferPtr zeroAudioBuffer () const = 0;
 
   protected:
-    /** Releases the buffer, buf.  Visibility is protected since this function
-     *  should only be called by SharedBufferPtr when a buffer is no longer
-     *  referenced; in that case, the destructor of the buffer will be called.
-     *  @param buf The buffer to release */
-    virtual void release (Buffer* buf) = 0;
+    /**
+     * Releases the buffer, buf.  Visibility is protected since this function should only
+     * be called by SharedBufferPtr when a buffer is no longer referenced; in that case,
+     * the destructor of the buffer will be called.  Release implies that the buffer is
+     * either returned to the system or it is returned to the "free pool".  Of course if
+     * returning to the system is not RT-safe, then this operation will have to be
+     * deferred.
+     * @param buf The buffer to release
+     */
+    virtual void release (Buffer *buf) = 0;
 
     friend class SharedBufferPtr;
 };
 
 
 
-/** A Smart-pointer to a Buffer.  Provides a reference-counted pointer to a
- *  Buffer.  This allows multiple Ports to reference the same buffer without
- *  the complexity of ownership.  The Buffer is returned to the BufferProvider
- *  when no more references to this Buffer exist.
- *  @seealso BufferProvider::release() */
+/**
+ * A Smart-pointer to a Buffer.  Provides a reference-counted pointer to a Buffer.  This
+ * allows multiple Ports to reference the same buffer without the complexity of ownership.
+ * The Buffer is returned to the BufferProvider when no more references to this Buffer
+ * exist.
+ * @seealso BufferProvider::release()
+ */
 class SharedBufferPtr : public QSharedPointer<Buffer>
 {
   public:
@@ -91,7 +104,7 @@ class SharedBufferPtr : public QSharedPointer<Buffer>
       QSharedPointer<Buffer>( buf, SharedBufferPtr::deleter )
     {}
 
-  protected:
+  private:
     static void deleter (Buffer* buf)
     {
       if (buf) {

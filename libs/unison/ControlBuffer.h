@@ -22,59 +22,56 @@
  *
  */
 
-#ifndef UNISON_CONTROL_BUFFER_H
-#define UNISON_CONTROL_BUFFER_H
+#ifndef UNISON_CONTROL_BUFFER_H_
+#define UNISON_CONTROL_BUFFER_H_
 
-#include "unison/Buffer.h"
+#include "Buffer.h"
 
-namespace Unison
-{
+namespace Unison {
 
 /**
- * ControlBuffer represents a buffer used by Ports with type = CONTROL_PORT.
- * ControlBuffers have a fixed size of 1 value.  They can be used to
- * communicate control-port values across connections, but a Port must
- * still maintain a shadow of the current-value should the buffer ever be
- * reassigned.  Additionally, a currentValue is important for saving
- * non-controlled values to a project file. */
+ * ControlBuffer represents a buffer used by a @c Port with type ControlPort.
+ * ControlBuffers have a fixed size of 1 value.  They can be used to communicate
+ * control-port values across connections, but a Port must still maintain a shadow of the
+ * current-value should the buffer ever be reassigned.  Additionally, a current @c value
+ * is important for saving non-controlled values (from unconnected Ports) to a project
+ * file.
+ */
 class ControlBuffer : public Buffer
 {
   public:
     /**
-     * Construct a buffer under the specified provider.  This must be called
-     * by a BufferProvider to ensure proper memory management. */
-    ControlBuffer (BufferProvider& provider) :
-      Buffer(provider),
+     * Construct a buffer under the specified provider.  This must be called by a
+     * BufferProvider to ensure proper memory management.
+     */
+    ControlBuffer (BufferProvider &provider) :
+      Buffer(provider, ControlPort),
       m_data(0.0f)
     {}
 
     ~ControlBuffer()
     {}
 
-    /** @returns the type of buffer.  Always CONTROL_PORT. */
-    PortType type () const
-    {
-      return CONTROL_PORT;
-    }
-
-    void* data()
+    void *data()
     {
       return &m_data;
     }
 
-    const void* data() const
+    const void *data() const
     {
       return &m_data;
     }
 
-    /** @returns The data as a float value for convenience */
+    /**
+     * @returns The data as a float value for convenience
+     */
     float value() const
     {
       return m_data;
     }
 
   protected:
-    float m_data;
+    float m_data; ///< Current (shadowed) value
 };
 
 } // Unison

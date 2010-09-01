@@ -74,12 +74,12 @@ PortType LadspaPort::type () const
 {
   LADSPA_PortDescriptor desc = portDescriptor();
   if (LADSPA_IS_PORT_CONTROL(desc)) {
-    return CONTROL_PORT;
+    return ControlPort;
   }
   if (LADSPA_IS_PORT_AUDIO(desc)) {
-    return AUDIO_PORT;
+    return AudioPort;
   }
-  return UNKNOWN_PORT;
+  return UnknownPort;
 }
 
 
@@ -87,10 +87,10 @@ PortDirection LadspaPort::direction () const
 {
   LADSPA_PortDescriptor desc = portDescriptor();
   if (LADSPA_IS_PORT_INPUT(desc)) {
-    return INPUT;
+    return Input;
   }
   if (LADSPA_IS_PORT_OUTPUT(desc)) {
-    return OUTPUT;
+    return Output;
   }
   // TODO: Maybe have an UNDEFINED direction?
   qFatal("Port `%s' is neither input or output", qPrintable(name()));
@@ -306,11 +306,11 @@ void LadspaPort::connectToBuffer ()
 {
   BufferProvider *provider = m_plugin->bufferProvider();
   switch (direction()) {
-    case INPUT:
+    case Input:
       acquireInputBuffer(*provider, UNISON_BUFFER_LENGTH);
       break;
 
-    case OUTPUT:
+    case Output:
       acquireOutputBuffer(*provider, UNISON_BUFFER_LENGTH);
       break;
   }

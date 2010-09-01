@@ -22,8 +22,6 @@
  *
  */
 
-#include <QDebug>
-
 #include "Node.h"
 #include "Patch.h"
 
@@ -40,7 +38,7 @@ Patch *Node::parentPatch () const
       break;
     }
     // Is this a patch?
-    Patch *p = dynamic_cast<Patch*>(n);
+    Patch *p = dynamic_cast<Patch *>(n);
     if (p) {
       return p;
     }

@@ -22,16 +22,16 @@
  *
  */
 
-#ifndef UNISON_BUFFER_H
-#define UNISON_BUFFER_H
+#ifndef UNISON_BUFFER_H_
+#define UNISON_BUFFER_H_
 
-#include "prg/Uncopyable.h"
-#include "unison/types.h"
+#include "types.h"
 
-namespace Unison
-{
+#include <QtCore/QtGlobal>
 
-class BufferProvider;
+namespace Unison {
+
+  class BufferProvider;
 
 /**
  * The buffer class represents a data buffer used to communicate between two
@@ -43,34 +43,43 @@ class BufferProvider;
  * being a required feature, then the Buffer *could* call a new
  * BufferProvider.clone() function to duplicate the buffer. Clients must never
  * delete a buffer, they are automatically freed by the BufferProvider through
- * the SharedBufferPtr smart pointer. */
-class Buffer : PRG::Uncopyable
+ * the SharedBufferPtr smart pointer.
+ */
+class Buffer
 {
+  Q_DISABLE_COPY(Buffer)
   public:
     /**
-     * Construct a buffer and pass ownership to the specified BufferProvider.
-     * This constructor should generally only be called by BufferProvider */
-    Buffer (BufferProvider& provider) :
-      m_provider(provider)
+     * This constructor, at the moment, should generally only be called by BufferProvider
+     * @param provider The BufferProvider to pass ownership to
+     */
+    Buffer (BufferProvider &provider, PortType type) :
+      m_provider(provider),
+      m_type(type)
     {}
 
     virtual ~Buffer ()
     {};
 
     /**
-     * @returns the type of buffer.  Buffers are designed to only work with
-     * a particular kind of port and the PortType must match. */
-    virtual PortType type () const = 0;
+     * @returns the type of buffer.  Buffers are designed to only work with a particular
+     * kind of port and the PortType must match.
+     */
+    PortType type () const
+    {
+      return m_type;
+    }
 
     /**
-     * @returns raw data for this buffer.  Subclasses should provide more
-     * useful accessors, but this can be used to access the data in a
-     * generic way. */
-    virtual void* data () = 0;
-    virtual const void* data () const = 0;
+     * @returns raw data for this buffer.  Subclasses should provide more useful
+     * accessors, but this can be used to access the data in a generic way.
+     */
+    virtual void *data () = 0;
+    virtual const void *data () const = 0;
 
-  protected:
-    BufferProvider& m_provider;     ///< The owning BufferProvider
+  private:
+    BufferProvider &m_provider;     ///< The owning BufferProvider
+    PortType m_type;                ///< Fixed type of the buffer
 
     friend class SharedBufferPtr;
 };

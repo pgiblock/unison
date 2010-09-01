@@ -22,14 +22,14 @@
  *
  */
 
-#include "unison/Command.h"
+#include "Command.h"
 
 #include <QtCore/QtGlobal>
 
 namespace Unison {
 
-Command::Command () :
-  m_blocking(true),
+Command::Command (bool blocking) :
+  m_blocking(blocking),
   m_state(Invalid),
   m_errorCode(0)
 {}
@@ -37,7 +37,7 @@ Command::Command () :
 
 void Command::preExecute ()
 {
-  Q_ASSERT(m_state==Created);
+  Q_ASSERT(m_state == Created);
   m_state = PreExecuted;
 }
 
@@ -45,14 +45,14 @@ void Command::preExecute ()
 void Command::execute (ProcessingContext &ctx)
 {
   Q_UNUSED(ctx);
-  Q_ASSERT(m_state==PreExecuted);
+  Q_ASSERT(m_state == PreExecuted);
   m_state = Executed;
 }
 
 
 void Command::postExecute ()
 {
-  Q_ASSERT(m_state==Executed);
+  Q_ASSERT(m_state == Executed);
   m_state = PostExecuted;
 }
 
@@ -60,6 +60,12 @@ void Command::postExecute ()
 bool Command::isBlocking () const
 {
   return m_blocking;
+}
+
+
+void Command::setState (Command::State state)
+{
+  m_state = state;
 }
 
 
