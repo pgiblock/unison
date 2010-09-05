@@ -26,6 +26,7 @@
 #define UNISON_LADSPA_PLUGIN_H
 
 #include <unison/Plugin.h>
+#include <unison/PluginInfo.h>
 #include <unison/types.h>
 
 #include <QVarLengthArray>
@@ -109,11 +110,11 @@ class LadspaPlugin : public Unison::Plugin
 
 
 /** A description of a LADSPA plugin. */
-class LadspaPluginDescriptor : public Unison::PluginDescriptor
+class LadspaPluginInfo : public Unison::PluginInfo
 {
   public:
-    LadspaPluginDescriptor (const QString &path, const LADSPA_Descriptor *descriptor);
-    LadspaPluginDescriptor (const LadspaPluginDescriptor &descriptor);
+    LadspaPluginInfo (const QString &path, const LADSPA_Descriptor *descriptor);
+    LadspaPluginInfo (const LadspaPluginInfo &descriptor);
 
     Unison::PluginPtr createPlugin (Unison::nframes_t sampleRate) const;
 

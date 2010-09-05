@@ -26,6 +26,7 @@
 #define UNISON_LV2_PLUGIN_H
 
 #include <unison/Plugin.h>
+#include <unison/PluginInfo.h>
 #include <unison/types.h>
 
 #include <QVarLengthArray>
@@ -148,12 +149,12 @@ class Lv2Plugin : public Unison::Plugin
 
 /** A description of a LV2 plugin.  This descriptor allows us to query LV2
  *  plugins without actually instantiating them.  This can be abstracted
- *  into a PluginDescriptor if othe plugin types are ever needed. */
-class Lv2PluginDescriptor : public Unison::PluginDescriptor
+ *  into a PluginInfo if othe plugin types are ever needed. */
+class Lv2PluginInfo : public Unison::PluginInfo
 {
   public:
-    Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin);
-    Lv2PluginDescriptor (const Lv2PluginDescriptor& descriptor);
+    Lv2PluginInfo (Lv2World& world, SLV2Plugin plugin);
+    Lv2PluginInfo (const Lv2PluginInfo& descriptor);
 
     Unison::PluginPtr createPlugin (Unison::nframes_t sampleRate) const;
 

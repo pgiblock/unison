@@ -162,7 +162,7 @@ void CoreExtension::extensionsInitialized()
   int j = 0;
   for (int i = 0; i < plugins.size(); ++i) {
     QString plugin = plugins.at(i);
-    PluginDescriptorPtr desc = PluginManager::instance()->descriptor(plugin);
+    PluginInfoPtr desc = PluginManager::instance()->info(plugin);
     if (desc) {
       fxLine->addPlugin(desc, j++);
     }

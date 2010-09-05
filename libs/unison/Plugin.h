@@ -57,7 +57,7 @@ enum PluginType
  * accessors are virtual since some plugin types may be able to query the values directly
  * from the underlying resource.  TODO: Consider splitting Plugin from Processor. And
  * allow for Plugin to create a processor "instance". Or better, Move most of the
- * slv2_plugin functions from Lv2Plugin to PluginDescriptor instead?
+ * slv2_plugin functions from Lv2Plugin to PluginInfo instead?
  */
 class Plugin : public Processor
 {
@@ -117,93 +117,6 @@ class Plugin : public Processor
 //typedef QSharedPointer<Plugin> PluginPtr;
 typedef Plugin *PluginPtr;
 
-
-
-/**
- * PluginDescriptor represents the meta-data of a plugin and provides an
- * interface for instantiating Plugins.
- */
-class PluginDescriptor
-{
-  public:
-    PluginDescriptor () :
-      m_audioInputs(0),
-      m_audioOutputs(0)
-    {
-      // Not much sense initializing anything here since no defaults make
-      // sense and this class is abstract anyways.
-    }
-
-    PluginDescriptor (const PluginDescriptor &descriptor) :
-      m_uniqueId(descriptor.m_uniqueId),
-      m_author(descriptor.m_author),
-      m_name(descriptor.m_name),
-      m_type(descriptor.m_type),
-      m_audioInputs(descriptor.m_audioInputs),
-      m_audioOutputs(descriptor.m_audioOutputs)
-    {}
-
-    virtual ~PluginDescriptor()
-    {}
-
-    virtual PluginPtr createPlugin (nframes_t sampleRate) const = 0;
-
-    /**
-     * @returns the name of the plugin. Such as, "Triple Oscillator"
-     */
-    QString name () const
-    {
-      return m_name;
-    }
-
-    /**
-     * @returns a uniqueId to be used when saving references to the plugin
-     */
-    QString uniqueId () const
-    {
-      return m_uniqueId;
-    }
-
-    PluginType type () const
-    {
-      return m_type;
-    }
-
-    /**
-     * @returns the count of audio input channels. 2 for stereo, etc..
-     */
-    int audioInputCount () const
-    {
-      return m_audioInputs;
-    }
-
-    /**
-     * @returns the count of audio output channels. 2 for stereo, etc..
-     */
-    int audioOutputCount () const
-    {
-      return m_audioOutputs;
-    }
-
-    /**
-     * @returns the author, or company's name. Example "Paul Giblock".
-     */
-    QString authorName () const
-    {
-      return m_author;
-    }
-
-  private:
-    QString m_uniqueId;
-    QString m_author;
-    QString m_name;
-    PluginType m_type;
-    int m_audioInputs;
-    int m_audioOutputs;
-};
-
-/** A Safe pointer to a plugin descriptor. FIXME */
-typedef QSharedPointer<PluginDescriptor> PluginDescriptorPtr;
 
 } // Unison
 

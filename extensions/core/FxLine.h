@@ -27,7 +27,7 @@
 
 #include <QString>
 
-#include <unison/Plugin.h>
+#include <unison/PluginInfo.h>
 
 namespace Unison {
   class BackendPort;
@@ -55,8 +55,8 @@ namespace Core {
 class FxLine {
   protected:
     struct Entry {
-      QList<Unison::Port*> inputPorts;
-      QList<Unison::Port*> outputPorts;
+      QList<Unison::Port *> inputPorts;
+      QList<Unison::Port *> outputPorts;
       Unison::Plugin *plugin;
     };
 
@@ -73,20 +73,21 @@ class FxLine {
 
     /** Insert a plugin into the effects line at the given position.
      *
-     * @param descriptor PluginDescriptor of plugin
+     * @param info PluginInfo of plugin
      * @param pos The index of where plugin will be added
      */
-    void addPlugin (const Unison::PluginDescriptorPtr descriptor, int pos = -1);
+    void addPlugin (const Unison::PluginInfoPtr info, int pos = -1);
 
   private:
-    void collectPorts (Unison::Plugin *plugin, QList<Unison::Port*> *audioIn, QList<Unison::Port*> *audioOut) const;
+    void collectPorts (Unison::Plugin *plugin,
+        QList<Unison::Port *> *audioIn, QList<Unison::Port *> *audioOut) const;
 
     QString m_name;
-    Unison::Patch& m_parent;
+    Unison::Patch &m_parent;
     /// The 2 JACK audio in ports.
-    Unison::BackendPort* m_inPorts[2];
+    Unison::BackendPort *m_inPorts[2];
     /// The 2 JACK audio out ports.
-    Unison::BackendPort* m_outPorts[2];
+    Unison::BackendPort *m_outPorts[2];
 
     QList<Entry> m_entries;
 };

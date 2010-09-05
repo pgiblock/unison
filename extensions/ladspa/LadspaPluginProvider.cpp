@@ -44,11 +44,10 @@ namespace Ladspa {
   namespace Internal {
 
 LadspaPluginProvider::LadspaPluginProvider ()
-//  m_ladspaDescriptorMap()
 {
   qDebug( "Initializing LADSPA Plugin Provider" );
   discoverPlugins();
-  qDebug() << "Found" << m_descriptorMap.count() << "LADSPA plugins.";
+  qDebug() << "Found" << m_infoMap.count() << "LADSPA plugins.";
   qDebug( "Done initializing LADSPA Plugin Provider" );
 }
 
@@ -124,10 +123,10 @@ int LadspaPluginProvider::discoverFromLibrary (const QString &path)
       break; // Nothing left
     }
 
-    PluginDescriptorPtr desc(new LadspaPluginDescriptor(path, descriptor));
+    PluginInfoPtr info(new LadspaPluginInfo(path, descriptor));
 
     // TODO: Bitch if we overwrite an entry
-    m_descriptorMap.insert(descriptor->UniqueID, desc);
+    m_infoMap.insert(descriptor->UniqueID, info);
   }
   return i;
 }
@@ -138,7 +137,7 @@ LadspaPluginProvider::~LadspaPluginProvider ()
 {}
 
 
-PluginDescriptorPtr LadspaPluginProvider::descriptor (const QString uniqueId)
+PluginInfoPtr LadspaPluginProvider::info (const QString uniqueId)
 {
   unsigned long id;
   bool ok = false;
@@ -154,13 +153,13 @@ PluginDescriptorPtr LadspaPluginProvider::descriptor (const QString uniqueId)
 
   // Not a ladspa URI
   if (!ok) {
-    return PluginDescriptorPtr();
+    return PluginInfoPtr();
   }
 
   Q_ASSERT(id > 0 && id < 0x1000000);
 
   // returns null if not found
-  return m_descriptorMap.value( id );
+  return m_infoMap.value( id );
 }
 
 

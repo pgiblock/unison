@@ -270,57 +270,42 @@ const QSet<Node* const> Lv2Plugin::dependents () const {
 
 
 
-Lv2PluginDescriptor::Lv2PluginDescriptor (Lv2World& world, SLV2Plugin plugin) :
+Lv2PluginInfo::Lv2PluginInfo (Lv2World& world, SLV2Plugin plugin) :
+  PluginInfo(),
   m_world(world),
   m_plugin(plugin)
 {
 
   SLV2Value data;
 
-  m_uniqueId = QString( slv2_value_as_uri( slv2_plugin_get_uri( plugin ) ) );
+  setUniqueId( QString( slv2_value_as_uri( slv2_plugin_get_uri( plugin ) ) ) );
 
   data = slv2_plugin_get_name( plugin );
-  m_name = QString( slv2_value_as_string( data ) );
+  setName( QString( slv2_value_as_string( data ) ) );
   slv2_value_free( data );
 
   data = slv2_plugin_get_author_name( plugin );
   if (data) {
-    m_author = QString( slv2_value_as_string( data ) );
+    setAuthorName( QString( slv2_value_as_string( data ) ) );
     slv2_value_free( data );
   }
 
-  m_audioInputs = slv2_plugin_get_num_ports_of_class( plugin,
-          world.inputClass, world.audioClass, NULL );
+  setAudioInputCount( slv2_plugin_get_num_ports_of_class(
+        plugin, world.inputClass, world.audioClass, NULL ) );
 
-  m_audioOutputs = slv2_plugin_get_num_ports_of_class( plugin,
-          world.outputClass, world.audioClass, NULL );
-
-  // TODO: Are 'types' needed? if so, move to non-virtual Plugin function
-  if (m_audioInputs > 0) {
-    if (m_audioOutputs > 0) {
-      m_type = TRANSFER;
-    }
-    else {
-      m_type = SINK;
-    }
-  }
-  else if (m_audioOutputs > 0) {
-    m_type = SOURCE;
-  }
-  else {
-    m_type = OTHER;
-  }
+  setAudioOutputCount( slv2_plugin_get_num_ports_of_class( plugin,
+        world.outputClass, world.audioClass, NULL ) );
 }
 
 
-Lv2PluginDescriptor::Lv2PluginDescriptor (const Lv2PluginDescriptor& d) :
-  PluginDescriptor(d),
+Lv2PluginInfo::Lv2PluginInfo (const Lv2PluginInfo& d) :
+  PluginInfo(d),
   m_world(d.m_world),
   m_plugin(d.m_plugin)
 {}
 
 
-PluginPtr Lv2PluginDescriptor::createPlugin (nframes_t sampleRate) const
+PluginPtr Lv2PluginInfo::createPlugin (nframes_t sampleRate) const
 {
   return PluginPtr( new Lv2Plugin( m_world, m_plugin, sampleRate ) );
 }

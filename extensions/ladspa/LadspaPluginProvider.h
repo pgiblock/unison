@@ -50,17 +50,18 @@ class LadspaPluginProvider : public Core::IPluginProvider
 
     void discoverPlugins ();
 
-    /** Describes the requested plugin.  
-     *  @param plugin  The Name of the plugin to describe
-     *  @return The Plugin Descriptor */
-    Unison::PluginDescriptorPtr descriptor (const QString plugin);
+    Unison::PluginInfoPtr info (const QString plugin);
 
   private:
     void discoverFromDirectory (const QString &path);
     int discoverFromLibrary (const QString &path);
 
-    typedef QMap<long unsigned int, Unison::PluginDescriptorPtr> LadspaPluginDescriptorMap;
-    LadspaPluginDescriptorMap m_descriptorMap;
+    /* We just hold on to all Infos here. We will probably store our information in an SQL
+     * or RDF database later for quicker searching etc..  However, we will still need to
+     * keep a Map of all plugins loaded this session - at least to encourage reuse of the
+     * already constructed PluginInfos */
+    typedef QMap<long unsigned int, Unison::PluginInfoPtr> LadspaPluginInfoMap;
+    LadspaPluginInfoMap m_infoMap;
 };
 
   } // Internal

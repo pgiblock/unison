@@ -26,7 +26,7 @@
 #define UNISON_IPLUGIN_PROVIDER_H
 
 #include "Core_global.h"
-#include "unison/Plugin.h"
+#include "unison/PluginInfo.h"
 
 #include <QObject>
 
@@ -47,7 +47,11 @@ class CORE_EXPORT IPluginProvider : public QObject
     virtual ~IPluginProvider() {};
 
     virtual QString displayName() = 0;
-    virtual Unison::PluginDescriptorPtr descriptor(const QString uniqueId) = 0;
+
+    /** Describes the requested plugin.  
+     *  @param plugin  The Name of the plugin to describe
+     *  @return The Plugin info */
+    virtual Unison::PluginInfoPtr info(const QString uniqueId) = 0;
 };
 
 } // Core

@@ -42,7 +42,7 @@ LadspaPort::LadspaPort (LadspaPlugin *plugin, uint32_t index) :
   m_value(0)
 {
   Q_ASSERT(m_plugin);
-  Q_ASSERT(m_index < pluginDescriptor()->PortCount);
+  Q_ASSERT(m_index < pluginInfo()->PortCount);
   m_value = defaultValue();
 }
 
@@ -52,7 +52,7 @@ LadspaPort::~LadspaPort ()
 }
 
 
-const LADSPA_Descriptor *LadspaPort::pluginDescriptor() const
+const LADSPA_Descriptor *LadspaPort::pluginInfo() const
 {
   return m_plugin->ladspaDescriptor();
 }
@@ -60,13 +60,13 @@ const LADSPA_Descriptor *LadspaPort::pluginDescriptor() const
 
 const LADSPA_PortDescriptor LadspaPort::portDescriptor() const
 {
-  return pluginDescriptor()->PortDescriptors[m_index];
+  return pluginInfo()->PortDescriptors[m_index];
 }
 
 
 const LADSPA_PortRangeHint LadspaPort::portRangeHints() const
 {
-  return pluginDescriptor()->PortRangeHints[m_index];
+  return pluginInfo()->PortRangeHints[m_index];
 }
 
 
@@ -99,7 +99,7 @@ PortDirection LadspaPort::direction () const
 
 QString LadspaPort::name () const
 {
-  return QString::fromAscii( pluginDescriptor()->PortNames[m_index] );
+  return QString::fromAscii( pluginInfo()->PortNames[m_index] );
 }
 
 
@@ -314,7 +314,7 @@ void LadspaPort::connectToBuffer ()
       acquireOutputBuffer(*provider, UNISON_BUFFER_LENGTH);
       break;
   }
-  pluginDescriptor()->connect_port(m_plugin->ladspaHandle(),
+  pluginInfo()->connect_port(m_plugin->ladspaHandle(),
       m_index, (LADSPA_Data*)buffer()->data());
 }
 

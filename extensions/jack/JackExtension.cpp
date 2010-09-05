@@ -67,7 +67,7 @@ bool JackExtension::initialize(const QStringList &arguments, QString *errorMessa
 {
   Q_UNUSED(errorMessage)
   parseArguments(arguments);
-  addObject(new JackBackendProvider());
+  addAutoReleasedObject(new JackBackendProvider());
   return true;
 }
 

@@ -40,8 +40,8 @@ class PluginManager
 
     /** Describes the requested plugin.  
      *  @param plugin  The URI of the plugin to describe
-     *  @return The Plugin Descriptor */
-    Unison::PluginDescriptorPtr descriptor (const QString plugin);
+     *  @return The PluginInfo */
+    Unison::PluginInfoPtr info (const QString plugin);
 
     /** Creates our singleton instance.  Must be called during application
      *  boot. */

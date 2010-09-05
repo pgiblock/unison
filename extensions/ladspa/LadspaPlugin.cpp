@@ -236,37 +236,42 @@ const QSet<Node* const> LadspaPlugin::dependents () const
 }
 
 
-LadspaPluginDescriptor::LadspaPluginDescriptor (const QString &path, 
+LadspaPluginInfo::LadspaPluginInfo (const QString &path, 
     const LADSPA_Descriptor *desc) :
+  PluginInfo(),
   m_path(path),
   m_descriptor(desc)
 {
-  m_author = desc->Maker;
-  m_name = desc->Name;
-  m_uniqueId = QString("%1%2").arg(UriRoot, m_descriptor->UniqueID);
+  setName(desc->Name);
+  setAuthorName(desc->Maker);
+  setUniqueId(QString("%1%2").arg( UriRoot, m_descriptor->UniqueID ));
 
+  int inCnt = 0, outCnt = 0;
   for (int i=0; i < desc->PortCount; ++i) {
     LADSPA_PortDescriptor p = desc->PortDescriptors[i];
     if (LADSPA_IS_PORT_AUDIO(p)) {
       if (LADSPA_IS_PORT_INPUT(p)) {
-        ++m_audioInputs;
+        ++inCnt;
       }
       else if (LADSPA_IS_PORT_OUTPUT(p)) {
-        ++m_audioOutputs;
+        ++outCnt;
       }
     }
   }
+
+  setAudioInputCount(inCnt);
+  setAudioOutputCount(outCnt);
 }
 
 
-LadspaPluginDescriptor::LadspaPluginDescriptor (const LadspaPluginDescriptor& d) :
-  PluginDescriptor(d),
+LadspaPluginInfo::LadspaPluginInfo (const LadspaPluginInfo& d) :
+  PluginInfo(d),
   m_path(d.m_path),
   m_descriptor(d.m_descriptor)
 {}
 
 
-PluginPtr LadspaPluginDescriptor::createPlugin (nframes_t sampleRate) const
+PluginPtr LadspaPluginInfo::createPlugin (nframes_t sampleRate) const
 {
   return PluginPtr(new LadspaPlugin(m_descriptor, sampleRate ) );
 }

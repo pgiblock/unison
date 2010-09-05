@@ -114,7 +114,7 @@ void FxLine::collectPorts (Plugin *plugin, QList<Port*> *audioIn, QList<Port*> *
 /// pseudo-PortContainer here to represent the input and output ports
 /// Then, all adds/removals will be symetric
 /// ^^^: Or, just wrap Plugin and BackendPorts with a class that acts this way
-void FxLine::addPlugin(const PluginDescriptorPtr descriptor, int pos)
+void FxLine::addPlugin(const PluginInfoPtr info, int pos)
 {
   int idx = pos + 1;
   int pluginCnt = m_entries.length() - 2;
@@ -123,7 +123,7 @@ void FxLine::addPlugin(const PluginDescriptorPtr descriptor, int pos)
   Q_ASSERT(pos <= pluginCnt);
 
   // Create the plugin. TODO: Report error, not fatal
-  Plugin *plugin = descriptor->createPlugin(48000);
+  Plugin *plugin = info->createPlugin(48000);
   Q_ASSERT(plugin);
 
   plugin->activate(Engine::bufferProvider());
