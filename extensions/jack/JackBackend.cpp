@@ -41,7 +41,7 @@ using namespace Unison;
 namespace Jack {
   namespace Internal {
 
-Backend * JackBackendProvider::createBackend()
+Backend* JackBackendProvider::createBackend()
 {
   return new JackBackend();
 }
@@ -65,7 +65,7 @@ JackBackend::~JackBackend ()
 }
 
 
-void JackBackend::initClient()
+void JackBackend::initClient ()
 {
   QString name = tr("Unison Studio");
 
@@ -112,7 +112,7 @@ void JackBackend::deactivate ()
 }
 
 
-JackPort* JackBackend::registerPort (QString name, PortDirection direction)
+JackPort* JackBackend::registerPort (const QString& name, PortDirection direction)
 {
   // Build Jack flags, currently just direction. Which, is reversed since
   // our Ports' directions are relative to Unison's connections but
@@ -141,15 +141,15 @@ JackPort* JackBackend::registerPort (QString name, PortDirection direction)
 }
 
 
-void JackBackend::unregisterPort (BackendPort *port)
+void JackBackend::unregisterPort (BackendPort* port)
 {
-  JackPort *jackPort = dynamic_cast<JackPort*>(port);
+  JackPort* jackPort = dynamic_cast<JackPort*>(port);
   //Q_ASSERT_X(jackPort !=  NULL, "Jack Backend", "cannot unregister a non-Jack port");
   unregisterPort(jackPort);
 }
 
 
-void JackBackend::unregisterPort (JackPort *port)
+void JackBackend::unregisterPort (JackPort* port)
 {
   jack_port_unregister(client(), port->jackPort());
   delete port;
@@ -186,7 +186,7 @@ JackPort* JackBackend::port (int index) const
 }
 
 
-JackPort* JackBackend::port (QString name) const
+JackPort* JackBackend::port (const QString& name) const
 {
   return NULL; // TODO: implement
 }
@@ -204,7 +204,7 @@ int JackBackend::disconnect (const QString& source, const QString& dest)
 }
 
 
-int JackBackend::disconnect (Unison::BackendPort *)
+int JackBackend::disconnect (Unison::BackendPort* port)
 {
   return 0;
 }
@@ -261,12 +261,12 @@ int JackBackend::processCb (nframes_t nframes, void* a)
 
   // Aquire JACK buffers
   for (i=0; i<backend->portCount(); ++i) {
-    Port *port = backend->port(i);
+    Port* port = backend->port(i);
     port->connectToBuffer();
 
     // Re-acquire buffers on ports connected to JACK
     // Read note below:
-    foreach (Port *other, port->connectedPorts()) {
+    foreach (Port* other, port->connectedPorts()) {
       other->connectToBuffer();
     }
 

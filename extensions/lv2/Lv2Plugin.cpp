@@ -147,7 +147,7 @@ Port* Lv2Plugin::port (int idx) const
 }
 
 
-Port* Lv2Plugin::port (QString id) const
+Port* Lv2Plugin::port (const QString& id) const
 {
   for (int i=0; i<m_ports.count(); ++i) {
     if (m_ports[i]->id() == id) {

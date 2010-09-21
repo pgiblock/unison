@@ -31,10 +31,11 @@
 namespace Unison {
   namespace Internal {
 
-Commander *Commander::m_instance = static_cast<Commander *>(NULL);
+Commander* Commander::m_instance = static_cast<Commander*>(NULL);
 
 void Commander::initialize ()
 {
+  Q_ASSERT(m_instance == NULL);
   m_instance = new Commander();
 }
 
@@ -43,15 +44,12 @@ Commander::Commander () :
   m_writeLock(),
   m_blockWait(),
   m_buffer(COMMAND_BUFFER_LENGTH)
-{
-  //
-}
+{}
 
 
-void Commander::push (Command *command)
+void Commander::push (Command* command)
 {
   bool block = command->isBlocking();
-  size_t size = sizeof(command);
 
   QMutexLocker locker(&m_writeLock);
   command->preExecute();
@@ -62,7 +60,7 @@ void Commander::push (Command *command)
 } 
 
 
-void Commander::process (ProcessingContext &context)
+void Commander::process (ProcessingContext& context)
 {
   Command* commands[COMMANDS_PER_PROCESS];
   int cnt = m_buffer.read(commands, COMMANDS_PER_PROCESS);

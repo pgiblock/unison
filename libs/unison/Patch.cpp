@@ -43,25 +43,27 @@ int Patch::portCount () const
 }
 
 
-Port *Patch::port (int idx) const
+Port* Patch::port (int idx) const
 {
   Q_UNUSED(idx);
   // TODO: Implement registered-ports
+  qFatal("Patch::port not implemented");
   return NULL;
 }
 
 
-Port *Patch::port (QString id) const
+Port* Patch::port (const QString& id) const
 {
   Q_UNUSED(id);
   // TODO: Implement registered-ports
+  qFatal("Patch::port not implemented");
   return NULL;
 }
 
 
-void Patch::activate (BufferProvider *bp)
+void Patch::activate (BufferProvider* bp)
 {
-  foreach (Processor *p, m_processors) {
+  foreach (Processor* p, m_processors) {
     p->activate(bp);
   }
 }
@@ -69,7 +71,7 @@ void Patch::activate (BufferProvider *bp)
 
 void Patch::deactivate ()
 {
-  foreach (Processor *p, m_processors) {
+  foreach (Processor* p, m_processors) {
     p->deactivate();
   }
 }
@@ -77,13 +79,13 @@ void Patch::deactivate ()
 
 void Patch::setBufferLength (PortType type, nframes_t len)
 {
-  foreach (Processor *p, m_processors) {
+  foreach (Processor* p, m_processors) {
     p->setBufferLength(type, len);
   }
 }
 
 
-void Patch::process (const ProcessingContext & context)
+void Patch::process (const ProcessingContext& context)
 {
   foreach (CompiledProcessor cp, *m_compiled) {
     cp.processor->process(context);
@@ -91,12 +93,12 @@ void Patch::process (const ProcessingContext & context)
 }
 
 
-const QSet<Node * const> Patch::dependencies () const
+const QSet<Node* const> Patch::dependencies () const
 {
-  QSet<Node * const> n;
+  QSet<Node* const> n;
   int count = portCount();
   for (int i=0; i<count; ++i) {
-    Port *p  = port(i);
+    Port* p  = port(i);
     if (p->direction() == Input) {
       n += p;
     }
@@ -105,12 +107,12 @@ const QSet<Node * const> Patch::dependencies () const
 }
 
 
-const QSet<Node * const> Patch::dependents () const
+const QSet<Node*  const> Patch::dependents () const
 {
-  QSet<Node * const> n;
+  QSet<Node*  const> n;
   int count = portCount();
   for (int i=0; i<count; ++i) {
-    Port *p  = port(i);
+    Port* p  = port(i);
     if (p->direction() == Output) {
       n += p;
     }
@@ -121,11 +123,14 @@ const QSet<Node * const> Patch::dependents () const
 
 QString Patch::name () const
 {
+  // Don't translate me. If we want translations, then we must store the
+  // name in the patch, so the name won't magically change if the project
+  // is opened in a different locale
   return "Patch";
 }
 
 
-void Patch::add (Processor *processor)
+void Patch::add (Processor* processor)
 {
   Q_ASSERT(processor != NULL);
   if (processor->parent() == this ) {
@@ -141,7 +146,7 @@ void Patch::add (Processor *processor)
 }
 
 
-void Patch::remove (Processor *processor)
+void Patch::remove (Processor* processor)
 {
   Q_ASSERT(processor != NULL);
   Q_ASSERT(processor->parent() == this);
@@ -151,39 +156,19 @@ void Patch::remove (Processor *processor)
 }
 
 
-/**
- * Walks @n's parents and returns the parent closest to @_this.  If node @n
- * is not contained in @_this, then NULL is returned.  */
-Processor *findOutermostProcessor (Patch *_this, Node *n)
-{
-  Processor *outer = NULL;
-  while (n) {
-    if (n == _this) {
-      return outer;
-    }
-
-    if (Processor *p = dynamic_cast<Processor *>( n )) {
-      outer = p;
-    }
-
-    n = n->parent();
-  }
-  return NULL;
-}
-
 // 2 if child's dependency is sibling, nothing special - walk and visit
 // 3 if child's dependency is nested, then walk into the "nesting" sibling instead
-void Patch::compileWalk (Node *n, QList<CompiledProcessor> &output)
+void Patch::compileWalk (Node* n, QList<CompiledProcessor>& output)
 {
-  Processor *p;
+  Processor* p;
   bool pendingAddition = false;
 
-  if ((p = dynamic_cast<Processor *>(n)) && !p->isVisited()) {
+  if ((p = dynamic_cast<Processor*>(n)) && !p->isVisited()) {
     p->visit();
     pendingAddition = true;
   }
 
-  foreach (Node *dep, n->dependencies()) {
+  foreach (Node* dep, n->dependencies()) {
     compileWalk( dep, output );
   }
 
@@ -194,6 +179,7 @@ void Patch::compileWalk (Node *n, QList<CompiledProcessor> &output)
   }
 }
 
+
 /*
   Alternate compilation method:
   create set of all nodes - these are "un-traversed".
@@ -201,10 +187,10 @@ void Patch::compileWalk (Node *n, QList<CompiledProcessor> &output)
 */
 
 
-void Patch::compile (QList<CompiledProcessor> &output)
+void Patch::compile (QList<CompiledProcessor>& output)
 {
   // Mark everything as unvisited
-  QListIterator<Processor *> i( m_processors );
+  QListIterator<Processor*> i( m_processors );
   while (i.hasNext()) {
     i.next()->unvisit();
   }
@@ -212,7 +198,7 @@ void Patch::compile (QList<CompiledProcessor> &output)
   // Process nodes that are pure-sinks first
   i.toFront();
   while (i.hasNext()) {
-    Processor *proc = i.next();
+    Processor* proc = i.next();
 
     bool isSink = true;
     bool done = false;
@@ -221,13 +207,13 @@ void Patch::compile (QList<CompiledProcessor> &output)
 
     // For each output port
     for (int j = 0; j < proc->portCount() && !done; ++j) {
-      Port *port = proc->port(j);
+      Port* port = proc->port(j);
       if (port->direction() == Output) {
         // For all connected Ports.
-        QSetIterator<Node * const> k( port->dependents() );
+        QSetIterator<Node*  const> k( port->dependents() );
         while (k.hasNext()) {
           // All Processor dependents are Ports
-          Port *otherPort = static_cast<Port *>(k.next());
+          Port* otherPort = static_cast<Port*>(k.next());
 
           // Not a sink if a connected port has any dependents.
           if (otherPort->dependents().count() != 0) {
@@ -246,28 +232,28 @@ void Patch::compile (QList<CompiledProcessor> &output)
   }
 
   // Then compile everything else
-  QListIterator<Processor *> p( m_processors );
-  while (p.hasNext()) {
-    compileWalk( p.next(), output );
+  i.toFront();
+  while (i.hasNext()) {
+    compileWalk( i.next(), output );
   }
 }
 
 
 /*
-void Patch::compile (BufferProvider & bufferProvider) {
+void Patch::compile (BufferProvider&  bufferProvider) {
   Q_ASSERT(QAtomicPointer< QList<CompiledProcessor> >
                ::isFetchAndStoreNative());
 
   QList<CompiledProcessor>* compiledSwap = new QList<CompiledProcessor>();
   qDebug() << name() << "compiling.";
-  compile( m_processors, *compiledSwap );
+  compile( m_processors,* compiledSwap );
 
   //qDebug() << "Aquiring 'fixed' buffers";
   qDebug() << name() << "Compiled, sequence is:";
   foreach (CompiledProcessor cp, *compiledSwap) {
     qDebug() << "  " << cp.processor->name();
     for (int i=0; i<cp.processor->portCount(); ++i) {
-      Port *port = cp.processor->port(i);
+      Port* port = cp.processor->port(i);
       //qDebug() << "Next port: " << qPrintable(port->name());
       port->connectToBuffer(bufferProvider);
     }

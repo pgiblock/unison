@@ -100,7 +100,7 @@ class Lv2Plugin : public Unison::Plugin
     }
 
     Unison::Port* port (int idx) const;
-    Unison::Port* port (QString name) const;
+    Unison::Port* port (const QString& name) const;
 
     /** @returns The underlying SLV2Plugin */
     SLV2Plugin slv2Plugin() const

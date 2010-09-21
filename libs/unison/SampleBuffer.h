@@ -58,7 +58,7 @@ class SampleBuffer
      * Construct a SampleBuffer from an existing array of samples.  SampleBuffer does not
      * gain control of the original buffer, but copies it instead.
      */
-    SampleBuffer (float *buf, int frames, int channels, int samplerate);
+    SampleBuffer (float* buf, int frames, int channels, int samplerate);
 
     /**
      * Create a silent SampleBuffer with specified properties
@@ -72,7 +72,7 @@ class SampleBuffer
     /**
      * @return the raw sample data for this buffer
      */
-    inline const sample_t *samples () const
+    inline const sample_t* samples () const
     {
       return m_data;
     }
@@ -130,15 +130,15 @@ class SampleBuffer
      *        multipled by the number of channels
      * @param frames the number of frames to read from ptr
      */
-    int write (sample_t *ptr, nframes_t frames);
+    int write (sample_t* ptr, nframes_t frames);
 
   private:
-    sample_t *m_data;
+    sample_t* m_data;
     nframes_t m_frames;
     int       m_channels;
     nframes_t m_samplerate;
 
-    sample_t *m_pos;
+    sample_t* m_pos;
 };
 
 }

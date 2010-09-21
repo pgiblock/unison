@@ -25,10 +25,12 @@
 #ifndef CORE_ENGINE_H
 #define CORE_ENGINE_H
 
-#include <QObject>
-#include <prg/Uncopyable.h>
-#include <unison/types.h>
 #include "Core_global.h"
+
+#include <unison/types.h>
+#include <prg/Uncopyable.h>
+
+#include <QObject>
 
 namespace Unison {
   class Backend;
@@ -45,27 +47,29 @@ class CORE_EXPORT Engine : public QObject, public PRG::Uncopyable
     Engine () {};
     virtual ~Engine () {};
 
-    inline static Unison::Backend *backend ()
+    inline static Unison::Backend* backend ()
     {
       return m_backend;
     }
 
-    inline static Unison::BufferProvider *bufferProvider ()
+    inline static Unison::BufferProvider* bufferProvider ()
     {
       return m_bufferProvider;
     }
 
     /**
-     * Not public API - do not call */
+     * Not public API - do not call
+     */
     static void setBackend (Unison::Backend *backend);
 
     /**
-     * Not public API - do not call */
-    static void setBufferProvider(Unison::BufferProvider *bufferProvider);
+     * Not public API - do not call
+     */
+    static void setBufferProvider (Unison::BufferProvider* bufferProvider);
 
   private:
-    static Unison::Backend *m_backend;
-    static Unison::BufferProvider *m_bufferProvider;
+    static Unison::Backend* m_backend;
+    static Unison::BufferProvider* m_bufferProvider;
 };
 
 } // Core

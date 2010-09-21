@@ -44,7 +44,7 @@ class ControlBuffer : public Buffer
      * Construct a buffer under the specified provider.  This must be called by a
      * BufferProvider to ensure proper memory management.
      */
-    ControlBuffer (BufferProvider &provider) :
+    ControlBuffer (BufferProvider& provider) :
       Buffer(provider, ControlPort),
       m_data(0.0f)
     {}
@@ -52,12 +52,12 @@ class ControlBuffer : public Buffer
     ~ControlBuffer()
     {}
 
-    void *data()
+    void* data()
     {
       return &m_data;
     }
 
-    const void *data() const
+    const void* data() const
     {
       return &m_data;
     }
@@ -65,12 +65,12 @@ class ControlBuffer : public Buffer
     /**
      * @returns The data as a float value for convenience
      */
-    float value() const
+    inline float value() const
     {
       return m_data;
     }
 
-  protected:
+  private:
     float m_data; ///< Current (shadowed) value
 };
 

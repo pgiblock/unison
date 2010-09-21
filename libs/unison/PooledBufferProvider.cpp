@@ -45,7 +45,7 @@ PooledBufferProvider::PooledBufferProvider () :
 SharedBufferPtr PooledBufferProvider::acquire (PortType type, nframes_t nframes)
 {
   Q_ASSERT(nframes == m_periodLength);
-  QStack<Buffer *> *stack;
+  QStack<Buffer*>* stack;
   switch (type) {
     case AudioPort:
       stack = &m_audioBuffers;
@@ -63,7 +63,7 @@ SharedBufferPtr PooledBufferProvider::acquire (PortType type, nframes_t nframes)
   }
 
   //TODO ensure we are not in processing thread
-  Buffer *buf;
+  Buffer* buf;
   switch (type) {
     case AudioPort:
       qDebug() << "New Audio Buffer " << nframes << " frames.";
@@ -95,14 +95,14 @@ void PooledBufferProvider::setBufferLength (nframes_t nframes)
   qDebug() << "Buffersize changed to" << nframes << "stacksize" << m_audioBuffers.count();
   //m_zeroBuffer = acquire( AudioPort, nframes );
   //Q_ASSERT(nframes == m_periodLength);
-  QStack<Buffer *> *stack;
+  QStack<Buffer*>* stack;
   stack = &m_audioBuffers;
 
   if (!stack->isEmpty()) {
     m_zeroBuffer = stack->pop();
   }
 
-  Buffer *buf;
+  Buffer* buf;
   qDebug() << "New Audio Buffer " << nframes << " frames.";
   buf = new AudioBuffer( *this, nframes );
 
@@ -117,7 +117,7 @@ nframes_t PooledBufferProvider::bufferLength ()
 }
 
 
-void PooledBufferProvider::release (Buffer *buf)
+void PooledBufferProvider::release (Buffer* buf)
 {
   switch (buf->type()) {
     case AudioPort:

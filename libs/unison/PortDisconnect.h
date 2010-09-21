@@ -39,14 +39,15 @@ namespace Unison {
 class PortDisconnect : public Command
 {
   public:
-    PortDisconnect (Port *port1, Port *port2);
+    PortDisconnect (Port* port1, Port* port2);
     void preExecute ();
-    void execute (ProcessingContext &context);
+    void execute (ProcessingContext& context);
     void postExecute ();
   private:
-    Port *m_port1, *m_port2;
-    Patch *m_patch;
-    QList<Patch::CompiledProcessor> *m_compiled;
+    Port* m_port1;
+    Port* m_port2;
+    Patch* m_patch;
+    QList<Patch::CompiledProcessor>* m_compiled;
 };
 
   } // Internal

@@ -25,9 +25,9 @@
 #ifndef CORE_FXLINE_H
 #define CORE_FXLINE_H
 
-#include <QString>
-
 #include <unison/PluginInfo.h>
+
+#include <QString>
 
 namespace Unison {
   class BackendPort;
@@ -55,9 +55,9 @@ namespace Core {
 class FxLine {
   protected:
     struct Entry {
-      QList<Unison::Port *> inputPorts;
-      QList<Unison::Port *> outputPorts;
-      Unison::Plugin *plugin;
+      QList<Unison::Port*> inputPorts;
+      QList<Unison::Port*> outputPorts;
+      Unison::Plugin* plugin;
     };
 
   public:
@@ -65,7 +65,7 @@ class FxLine {
      *
      * When an FxLine object is first created, in1 is connected to out1 and 
      * in2 is connected to out2.*/
-    FxLine (Unison::Patch &parent, QString name);
+    FxLine (Unison::Patch& parent, const QString &name);
     ~FxLine ();
 
     QString name () const;
@@ -79,15 +79,15 @@ class FxLine {
     void addPlugin (const Unison::PluginInfoPtr info, int pos = -1);
 
   private:
-    void collectPorts (Unison::Plugin *plugin,
-        QList<Unison::Port *> *audioIn, QList<Unison::Port *> *audioOut) const;
+    void collectPorts (Unison::Plugin* plugin,
+        QList<Unison::Port*>* audioIn, QList<Unison::Port*>* audioOut) const;
 
     QString m_name;
-    Unison::Patch &m_parent;
+    Unison::Patch& m_parent;
     /// The 2 JACK audio in ports.
-    Unison::BackendPort *m_inPorts[2];
+    Unison::BackendPort* m_inPorts[2];
     /// The 2 JACK audio out ports.
-    Unison::BackendPort *m_outPorts[2];
+    Unison::BackendPort* m_outPorts[2];
 
     QList<Entry> m_entries;
 };

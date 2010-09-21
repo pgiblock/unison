@@ -53,7 +53,7 @@ class Buffer
      * This constructor, at the moment, should generally only be called by BufferProvider
      * @param provider The BufferProvider to pass ownership to
      */
-    Buffer (BufferProvider &provider, PortType type) :
+    Buffer (BufferProvider& provider, PortType type) :
       m_provider(provider),
       m_type(type)
     {}
@@ -74,11 +74,11 @@ class Buffer
      * @returns raw data for this buffer.  Subclasses should provide more useful
      * accessors, but this can be used to access the data in a generic way.
      */
-    virtual void *data () = 0;
-    virtual const void *data () const = 0;
+    virtual void* data () = 0;
+    virtual const void* data () const = 0;
 
   private:
-    BufferProvider &m_provider;     ///< The owning BufferProvider
+    BufferProvider& m_provider;     ///< The owning BufferProvider
     PortType m_type;                ///< Fixed type of the buffer
 
     friend class SharedBufferPtr;

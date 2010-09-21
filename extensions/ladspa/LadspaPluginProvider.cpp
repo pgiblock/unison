@@ -137,7 +137,7 @@ LadspaPluginProvider::~LadspaPluginProvider ()
 {}
 
 
-PluginInfoPtr LadspaPluginProvider::info (const QString uniqueId)
+PluginInfoPtr LadspaPluginProvider::info (const QString& uniqueId)
 {
   unsigned long id;
   bool ok = false;

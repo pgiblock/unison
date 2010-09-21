@@ -1,5 +1,5 @@
 /*
- * Lv2Manager.cpp
+ * PluginManager.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,9 +22,10 @@
  *
  */
 
-#include "extensionsystem/ExtensionManager.h"
-#include "IPluginProvider.h"
 #include "PluginManager.h"
+#include "IPluginProvider.h"
+
+#include <extensionsystem/ExtensionManager.h>
 
 using namespace Unison;
 using namespace ExtensionSystem;
@@ -44,9 +45,9 @@ PluginManager::~PluginManager ()
 {}
 
 
-PluginInfoPtr PluginManager::info (const QString uniqueId)
+PluginInfoPtr PluginManager::info (const QString& uniqueId)
 {
-  ExtensionManager * em = ExtensionManager::instance();
+  ExtensionManager* em = ExtensionManager::instance();
   QList<IPluginProvider*> providers = em->getObjects<IPluginProvider>();
 
   foreach(IPluginProvider* pp, providers) {

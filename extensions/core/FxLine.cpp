@@ -23,21 +23,22 @@
  *
  */
 
-#include <QDebug>
-
 #include "Engine.h"
 #include "FxLine.h"
 #include "PluginManager.h"
+
 #include <unison/Backend.h>
 #include <unison/BackendPort.h>
 #include <unison/Patch.h>
 #include <unison/Plugin.h>
 
+#include <QDebug>
+
 using namespace Unison;
 
 namespace Core {
 
-FxLine::FxLine (Patch& parent, QString name) :
+FxLine::FxLine (Patch& parent, const QString& name) :
   m_name(name),
   m_parent(parent),
   m_entries()
@@ -75,7 +76,7 @@ QString FxLine::name() const
 }
 
 
-void FxLine::collectPorts (Plugin *plugin, QList<Port*> *audioIn, QList<Port*> *audioOut) const
+void FxLine::collectPorts (Plugin* plugin, QList<Port*>* audioIn, QList<Port*>* audioOut) const
 {
   if (audioIn) {
     audioIn->empty();
@@ -85,7 +86,7 @@ void FxLine::collectPorts (Plugin *plugin, QList<Port*> *audioIn, QList<Port*> *
   }
   for (int i = 0; i < plugin->portCount(); i++)
   {
-    Port *p = plugin->port(i);
+    Port* p = plugin->port(i);
 
     if (p->type() == AudioPort)
     {
@@ -123,7 +124,7 @@ void FxLine::addPlugin(const PluginInfoPtr info, int pos)
   Q_ASSERT(pos <= pluginCnt);
 
   // Create the plugin. TODO: Report error, not fatal
-  Plugin *plugin = info->createPlugin(48000);
+  Plugin* plugin = info->createPlugin(48000);
   Q_ASSERT(plugin);
 
   plugin->activate(Engine::bufferProvider());
@@ -164,8 +165,8 @@ void FxLine::addPlugin(const PluginInfoPtr info, int pos)
 
     qWarning() << "FX LINE ADD producer port count:" << producer.outputPorts.count();
     for (int i=0; i<producer.outputPorts.count(); ++i) {
-      Port *producerPort = producer.outputPorts.at(i);
-      Port *consumerPort = consumer.inputPorts.at(i);
+      Port* producerPort = producer.outputPorts.at(i);
+      Port* consumerPort = consumer.inputPorts.at(i);
       
       // Work around:
       if (producerPort->parentPatch() == NULL && consumerPort->parentPatch() == NULL) {

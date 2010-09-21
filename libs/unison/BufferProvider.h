@@ -79,7 +79,7 @@ class BufferProvider
      * deferred.
      * @param buf The buffer to release
      */
-    virtual void release (Buffer *buf) = 0;
+    virtual void release (Buffer* buf) = 0;
 
     friend class SharedBufferPtr;
 };

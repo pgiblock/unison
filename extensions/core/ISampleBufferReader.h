@@ -41,15 +41,16 @@ namespace Core {
  * extensions wishing to implement this functionality must add their
  * implemenation to ExtensionManager with addObject(), the implementation will
  * then be used by PluginManager.
- * All ISampleBufferReader implementations MUST be reentrant.*/
+ * All ISampleBufferReader implementations MUST be reentrant.
+ */
 class CORE_EXPORT ISampleBufferReader : public QObject
 {
   Q_OBJECT
   public:
-    ISampleBufferReader(QObject *parent = 0) : QObject(parent) {};
-    virtual ~ISampleBufferReader() {};
+    ISampleBufferReader (QObject* parent = 0) : QObject(parent) {};
+    virtual ~ISampleBufferReader () {};
 
-    virtual QString displayName() = 0;
+    virtual QString displayName () = 0;
 
     /**
      * Read a SampleBuffer out of the given filename.  The function returns
@@ -57,10 +58,11 @@ class CORE_EXPORT ISampleBufferReader : public QObject
      * corrupt/improper data, IO error, etc.) 
      *
      * @param fileName the name of the file to attempt reading.
-     * @return non-zero pointer on success, null on failure */
-    virtual Unison::SampleBuffer *read(const QString &fileName) = 0;
+     * @return non-zero pointer on success, null on failure
+     */
+    virtual Unison::SampleBuffer* read (const QString& fileName) = 0;
 
-    //virtual Core::SampleBuffer *read(const QIODevice &io) = 0;
+    //virtual Core::SampleBuffer* read(const QIODevice& io) = 0;
     //virtual QStringList mimeTypes() const = 0;
 
 };

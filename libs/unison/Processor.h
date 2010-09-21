@@ -55,13 +55,13 @@ class Processor : public Node
      * @param idx The index of the port to find
      * @returns The port at index @p idx
      */
-    virtual Port *port (int idx) const = 0;
+    virtual Port* port (int idx) const = 0;
 
     /**
      * @param idx The (short) name of the port to find
      * @returns The port with name @p name, if any
      */
-    virtual Port *port (QString name) const = 0;
+    virtual Port* port (const QString& name) const = 0;
 
     /**
      * Activates the processor.  Basically, the processor must prepare for processing.
@@ -70,7 +70,7 @@ class Processor : public Node
      * although there is no guarantee that process() will be called any time soon.
      * @param bp the @c BufferProvider to use until we are deactivated
      */
-    virtual void activate (BufferProvider *bp) = 0;
+    virtual void activate (BufferProvider* bp) = 0;
 
     /**
      * Deactivates the processor. Allow the processor to free any resources that it no
@@ -86,7 +86,7 @@ class Processor : public Node
      * read values from the input ports and write to the output ports.
      * @param context The parameters of the current rendering period
      */
-    virtual void process (const ProcessingContext &context) = 0;
+    virtual void process (const ProcessingContext& context) = 0;
 
     /**
      * Change the bufferLength of the processor.  XXX: The contract of this function is
@@ -99,8 +99,8 @@ class Processor : public Node
 
     //// Connection oriented Stuff ////
 
-    Node *parent () const;
-    void setParent(Patch *parent);
+    Node* parent () const;
+    void setParent(Patch* parent);
 
     /**
      * Has this node been visited (traversed)?  While compiling and perhaps
@@ -133,7 +133,7 @@ class Processor : public Node
     };
 
   private:
-    Patch *m_parent;
+    Patch* m_parent;
     bool m_visited;
 };
 

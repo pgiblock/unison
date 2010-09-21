@@ -35,20 +35,21 @@ namespace Unison {
   namespace Internal {
 
 /**
- * Provides a proxy to a port internal to a Patch. The
- * Patch allows for implementations to registerPorts.  This
- * exposes an internal port as if it is a port of the Patch. */
+ * Internal class providing a proxy to a port internal to a Patch.  Patch provides support
+ * for registerPorts.  This allows for Patch to expose a Port of a child as a Port of the
+ * Patch.
+ */
 class PatchProxyPort : public Port
 {
   protected:
     /**
      * Constructs a Port for a Patch.  Called by
      * Patch itself.
-     * @param processor The parent processor
-     * @param port      The port to proxy */
-    PatchProxyPort (Patch *processor, Port *port) :
+     * @param patch     The parent processor
+     * @param port      The port to proxy* /
+    PatchProxyPort (Patch* patch, Port* port) :
       m_port(port),
-      m_processor(processor)
+      m_patch(patch)
     {}
 
     ~PatchProxyPort ()
@@ -104,10 +105,10 @@ class PatchProxyPort : public Port
       return m_port->isToggled();
     }
 
-    const QSet<Node * const> interfacedNodes () const
+    const QSet<Node*  const> interfacedNodes () const
     {
-      QSet<Node * const> p;
-      p.insert(m_processor);
+      QSet<Node*  const> p;
+      p.insert(m_patch);
       return p;
     }
 
@@ -118,8 +119,8 @@ class PatchProxyPort : public Port
     }
 
   private:
-    Port *m_port;       ///< The proxied port
-    Patch *m_processor; ///< The processor owning this port
+    Port* m_port;       ///< The proxied port
+    Patch* m_patch; ///< The processor owning this port
 
   friend class Patch;
 };

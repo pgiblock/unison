@@ -102,7 +102,7 @@ Port* LadspaPlugin::port (int idx) const
 }
 
 
-Port* LadspaPlugin::port (QString id) const
+Port* LadspaPlugin::port (const QString& id) const
 {
   for (int i=0; i<m_ports.count(); ++i) {
     if (m_ports[i]->id() == id) {
@@ -247,7 +247,7 @@ LadspaPluginInfo::LadspaPluginInfo (const QString &path,
   setUniqueId(QString("%1%2").arg( UriRoot, m_descriptor->UniqueID ));
 
   int inCnt = 0, outCnt = 0;
-  for (int i=0; i < desc->PortCount; ++i) {
+  for (unsigned long i=0; i < desc->PortCount; ++i) {
     LADSPA_PortDescriptor p = desc->PortDescriptors[i];
     if (LADSPA_IS_PORT_AUDIO(p)) {
       if (LADSPA_IS_PORT_INPUT(p)) {

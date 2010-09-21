@@ -33,7 +33,7 @@ const int SampleBuffer::DEFAULT_CHANNELS;
 const int SampleBuffer::LEFT_CHANNEL;
 const int SampleBuffer::RIGHT_CHANNEL;
 
-SampleBuffer::SampleBuffer (float *buf, int frames, int channels, int samplerate) :
+SampleBuffer::SampleBuffer (float* buf, int frames, int channels, int samplerate) :
   m_data(0),
   m_frames(frames),
   m_channels(channels),
@@ -89,14 +89,14 @@ int SampleBuffer::seek (nframes_t frame)
 }
 
 
-int SampleBuffer::write (sample_t *ptr, nframes_t frames)
+int SampleBuffer::write (sample_t* ptr, nframes_t frames)
 {
   size_t chunkSize = frames * m_channels;
   if (m_pos + chunkSize > (void*)m_frames) {
     return 0;
   }
 
-  std::memcpy(m_pos, ptr, frames*m_channels*sizeof(sample_t));
+  std::memcpy(m_pos, ptr, frames * m_channels * sizeof(sample_t));
   return frames;
 }
 

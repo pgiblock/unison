@@ -71,7 +71,7 @@ Lv2PluginProvider::~Lv2PluginProvider ()
 {}
 
 
-PluginInfoPtr Lv2PluginProvider::info (const QString uniqueId)
+PluginInfoPtr Lv2PluginProvider::info (const QString& uniqueId)
 {
   // returns null on fail
   return m_lv2InfoMap.value( uniqueId );

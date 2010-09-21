@@ -88,7 +88,7 @@ class RingBuffer
      * @param cnt the number of elements to read.
      * @return the number of elements read, which may range from 0 to cnt.
      */
-    int readChunk (T *dest, int cnt);
+    int readChunk (T* dest, int cnt);
 
     /**
      * Read data from the ringbuffer, wrapping when end of buffer is reached.  Like the
@@ -98,7 +98,7 @@ class RingBuffer
      * @param cnt the number of elements to read.
      * @return true if the buffer contains enough data to fulfill the request
      */
-    int read (T *dest, int cnt);
+    int read (T* dest, int cnt);
 
     /**
      * Read from the ringbuffer without moving the read pointer.  A convenient way to
@@ -109,7 +109,7 @@ class RingBuffer
      * @param cnt the number of elements to read.
      * @return the number of elements read, which may range from 0 to cnt.
      */
-    int peekChunk (T *dest, int cnt) const;
+    int peekChunk (T* dest, int cnt) const;
 
     /**
      * Read data from the ringbuffer, wrapping when end of buffer is reached.  Like the
@@ -119,7 +119,7 @@ class RingBuffer
      * @param cnt the number of elements to read.
      * @return true if the buffer contains enough data to fulfill the request
      */
-    int peek (T *dest, int cnt) const;
+    int peek (T* dest, int cnt) const;
 
     /* TODO: Non-copy peek (ala, jack_rb_get_read_vector() */
 
@@ -136,30 +136,27 @@ class RingBuffer
     /**
      * Write data to the ringbuffer. Writes at most cnt elements from src.
      *
-     * @param src a pointer to a buffer where data written to the ringbuffer
-     *            is read.
+     * @param src a pointer to a buffer where data written to the ringbuffer is read.
      * @param cnt the maximum number of elements to write.
      *
      * @return the actual count of elements copied
      */
-    int write (const T *src, int cnt);
+    int write (const T* src, int cnt);
 
   private:
     QAtomicInt m_writePtr;
     QAtomicInt m_readPtr;
 
     int m_size; ///< Size in elements
-    T *m_data;  ///< The buffer contents
+    T* m_data;  ///< The buffer contents
 };
 
 
 template<typename T>
 RingBuffer<T>::RingBuffer (const int size) :
   m_size(size),
-  m_data(reinterpret_cast<T *>( new char[size * sizeof(T)] ))
+  m_data(reinterpret_cast<T*>( new char[size * sizeof(T)] ))
 {
-  Q_CHECK_PTR(m_data);
-
   reset();
 }
 
@@ -167,13 +164,14 @@ RingBuffer<T>::RingBuffer (const int size) :
 template<typename T>
 RingBuffer<T>::~RingBuffer ()
 {
-  char *data = reinterpret_cast<char *>( m_data);
+  char* data = reinterpret_cast<char*>(m_data);
   delete[] data;
 }
 
 
 template<typename T>
-void RingBuffer<T>::reset () {
+void RingBuffer<T>::reset ()
+{
   m_writePtr = 0;
   m_readPtr = 0;
   Q_ASSERT(readSpace() == 0);
@@ -182,7 +180,8 @@ void RingBuffer<T>::reset () {
 
 
 template<typename T>
-int RingBuffer<T>::readSpace () const {
+int RingBuffer<T>::readSpace () const
+{
   const int w = m_writePtr;
   const int r = m_readPtr;
 
@@ -196,7 +195,8 @@ int RingBuffer<T>::readSpace () const {
 
 
 template<typename T>
-int RingBuffer<T>::writeSpace () const {
+int RingBuffer<T>::writeSpace () const
+{
   const int w = m_writePtr;
   const int r = m_readPtr;
 
@@ -213,7 +213,7 @@ int RingBuffer<T>::writeSpace () const {
 
 
 template<typename T>
-int RingBuffer<T>::readChunk (T *dest, int cnt)
+int RingBuffer<T>::readChunk (T* dest, int cnt)
 {
   const int readPtr = m_readPtr;
 
@@ -230,7 +230,7 @@ int RingBuffer<T>::readChunk (T *dest, int cnt)
 
 
 template<typename T>
-int RingBuffer<T>::read (T *dest, int cnt)
+int RingBuffer<T>::read (T* dest, int cnt)
 {
   cnt = std::min(cnt, readSpace());
 
@@ -247,7 +247,7 @@ int RingBuffer<T>::read (T *dest, int cnt)
 
 
 template<typename T>
-int RingBuffer<T>::peekChunk (T *dest, int cnt) const
+int RingBuffer<T>::peekChunk (T* dest, int cnt) const
 {
   const int readPtr = m_readPtr;
 
@@ -262,7 +262,7 @@ int RingBuffer<T>::peekChunk (T *dest, int cnt) const
 
 
 template<typename T>
-int RingBuffer<T>::peek (T *dest, int cnt) const
+int RingBuffer<T>::peek (T* dest, int cnt) const
 {
   cnt = std::min(cnt, readSpace());
 
@@ -294,7 +294,7 @@ bool RingBuffer<T>::skip (int cnt)
 
 // XXX: Inline??
 template<typename T>
-int RingBuffer<T>::write(const T *src, int cnt)
+int RingBuffer<T>::write(const T* src, int cnt)
 {
   const int writePtr = m_writePtr;
 

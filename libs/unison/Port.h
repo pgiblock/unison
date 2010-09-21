@@ -61,12 +61,12 @@ class Port : public Node
      * TODO: Return an set of types instead???
      * @returns the type of port
      */
-    virtual PortType type() const = 0;
+    virtual PortType type () const = 0;
 
     /**
      * @returns true if this port is an input port
      */
-    virtual PortDirection direction() const = 0;
+    virtual PortDirection direction () const = 0;
 
     /**
      * @returns the current value of a port.
@@ -124,10 +124,10 @@ class Port : public Node
     }
 
     // Connection stuff TODO: reconsider how this behaves with Patch
-    void connect (Port *other);
-    void disconnect (Port *other);
-    bool isConnected (Port *other) const;
-    QSet<Port * const> connectedPorts () const
+    void connect (Port* other);
+    void disconnect (Port* other);
+    bool isConnected (Port* other) const;
+    QSet<Port* const> connectedPorts () const
     {
       return m_connectedPorts;
     }
@@ -136,16 +136,16 @@ class Port : public Node
      * @returns Either the connected Nodes or the interfaced Nodes depending on the
      * direction of the port
      */
-    const QSet<Node * const> dependencies () const;
+    const QSet<Node*  const> dependencies () const;
 
     /**
      * @returns Either the connected Nodes or the interfaced Nodes depending on the
      * direction of the port
      */
-    const QSet<Node * const> dependents () const;
+    const QSet<Node* const> dependents () const;
 
     // Private API :: TODO: Move to D-ptr
-    QSet<Port * const> *_connectedPorts ()
+    QSet<Port* const>* _connectedPorts ()
     {
       return &m_connectedPorts;
     }
@@ -157,7 +157,7 @@ class Port : public Node
      *        This provider will typically belong to the port's parent.
      * @param len size of the buffer to acquire
      */
-    void acquireInputBuffer (BufferProvider &provider, nframes_t len);
+    void acquireInputBuffer (BufferProvider& provider, nframes_t len);
 
     /**
      * Utility function to help subclasses implement connectToBuffer.
@@ -165,7 +165,7 @@ class Port : public Node
      *        This provider will typically belong to the port's parent.
      * @param len size of the buffer to acquire
      */
-    void acquireOutputBuffer (BufferProvider &provider, nframes_t len);
+    void acquireOutputBuffer (BufferProvider& provider, nframes_t len);
 
     /**
      * Update the buffer's data with the currently shadowed data. Ports are expected to
@@ -182,13 +182,13 @@ class Port : public Node
      * (like in the case of JACK connections).  @returns the set of nodes
      * interfaced by this Port.
      */
-    virtual const QSet<Node * const> interfacedNodes () const = 0;
+    virtual const QSet<Node* const> interfacedNodes () const = 0;
 
   protected:
     SharedBufferPtr m_buffer; ///< The Buffer in use by this port
 
   private:
-    QSet<Port * const> m_connectedPorts; ///< Ports we are connected to (leakage from Patch)
+    QSet<Port* const> m_connectedPorts; ///< Ports we are connected to (leakage from Patch)
 };
 
 } // Unison

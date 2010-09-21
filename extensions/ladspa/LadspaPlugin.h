@@ -64,7 +64,7 @@ class LadspaPlugin : public Unison::Plugin
     }
 
     Unison::Port* port (int idx) const;
-    Unison::Port* port (QString name) const;
+    Unison::Port* port (const QString& name) const;
 
     // Exposing some innards for LadspaPort
 

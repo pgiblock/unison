@@ -81,7 +81,7 @@ CoreExtension::~CoreExtension()
 }
 
 
-void CoreExtension::parseArguments(const QStringList &arguments)
+void CoreExtension::parseArguments(const QStringList& arguments)
 {
   Q_UNUSED(arguments)
   /*
@@ -96,12 +96,12 @@ void CoreExtension::parseArguments(const QStringList &arguments)
 }
 
 
-bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessage)
+bool CoreExtension::initialize(const QStringList& arguments, QString* errorMessage)
 {
   Q_UNUSED(errorMessage);
   parseArguments(arguments);
 
-  PooledBufferProvider *bufProvider = new PooledBufferProvider();
+  PooledBufferProvider* bufProvider = new PooledBufferProvider();
   bufProvider->setBufferLength(1024);
   Engine::setBufferProvider(bufProvider);
 
@@ -112,7 +112,7 @@ bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessa
   /*
   const bool success = m_mainWindow->init(errorMessage);
   if (success) {
-    EditorManager *editorManager = m_mainWindow->editorManager();
+    EditorManager* editorManager = m_mainWindow->editorManager();
     m_editMode = new EditMode(editorManager);
     addObject(m_editMode);
 
@@ -127,7 +127,7 @@ bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessa
 
 void CoreExtension::extensionsInitialized()
 {
-  ExtensionManager *extMgr = ExtensionManager::instance();
+  ExtensionManager* extMgr = ExtensionManager::instance();
 
   // Loading a mix of LADSPA and LV2
   QStringList plugins;
@@ -136,28 +136,28 @@ void CoreExtension::extensionsInitialized()
           << "http://calf.sourceforge.net/plugins/Phaser";
 
   // Find backends, load the first one
-  QList<IBackendProvider *> backends = extMgr->getObjects<IBackendProvider>();
+  QList<IBackendProvider*> backends = extMgr->getObjects<IBackendProvider>();
   
   if (backends.count() == 0) {
     qWarning("No backends found, I guess we aren't doing anything");
     return;
   }
   qDebug("Found Backends:");
-  foreach (IBackendProvider *bep, backends) {
+  foreach (IBackendProvider* bep, backends) {
     qDebug() << bep->displayName();
   }
 
   // We gain control of created backends
-  Backend *backend = backends.at(0)->createBackend();
+  Backend* backend = backends.at(0)->createBackend();
 
-  Patch *root = new Patch();
+  Patch* root = new Patch();
   backend->setRootProcessor(root);
 
   Engine::setBackend(backend);
 
   backend->activate();
 
-  FxLine *fxLine = new FxLine(*root, "Super Duper Fx-Line");
+  FxLine* fxLine = new FxLine(*root, "Super Duper Fx-Line");
 
   int j = 0;
   for (int i = 0; i < plugins.size(); ++i) {
@@ -175,7 +175,7 @@ void CoreExtension::extensionsInitialized()
 }
 
 
-void CoreExtension::remoteCommand(const QStringList &options, const QStringList &args)
+void CoreExtension::remoteCommand(const QStringList& options, const QStringList& args)
 {
   Q_UNUSED(options)
   Q_UNUSED(args)
@@ -184,7 +184,7 @@ void CoreExtension::remoteCommand(const QStringList &options, const QStringList 
 }
 
 /*
-void CoreExtension::fileOpenRequest(const QString &f)
+void CoreExtension::fileOpenRequest(const QString& f)
 {
   remoteCommand(QStringList(), QStringList(f));
 }

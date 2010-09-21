@@ -30,7 +30,7 @@
 namespace Unison {
   namespace Internal {
 
-PortConnect::PortConnect (Port *port1, Port *port2) :
+PortConnect::PortConnect (Port* port1, Port* port2) :
   Command(false),
   m_producer(NULL),
   m_consumer(NULL),
@@ -79,7 +79,7 @@ void PortConnect::preExecute ()
 }
 
 
-void PortConnect::execute (ProcessingContext &context)
+void PortConnect::execute (ProcessingContext& context)
 {
   // Connect Consumer first, to clear out any silence buffer
   m_consumer->connectToBuffer();

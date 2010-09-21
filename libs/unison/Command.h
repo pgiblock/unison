@@ -69,7 +69,7 @@ class Command
      * are executed at the beginning of the Backend's processing function.  This allows
      * for a chance to synchronize the changes influenced by the Command.
      */
-    virtual void execute (ProcessingContext &context);
+    virtual void execute (ProcessingContext& context);
 
     /**
      * postExecute is where the Command can cleanup after itself.  It is invoked after

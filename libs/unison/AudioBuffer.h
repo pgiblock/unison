@@ -43,10 +43,11 @@ class AudioBuffer : public Buffer
      * Construct a new AudioBuffer and pass ownership to the specified BufferProvider.
      * This constructor should only be called by the BufferProvider when the pool
      * underruns.  This function itself is not RT-safe since malloc is called immediately.
+     * The buffer is initialized to silence (all zero).
      * @param provider The BufferProvider to own this Buffer
      * @param length The length, in frames, of the Buffer
      */
-    AudioBuffer (BufferProvider &provider, nframes_t length) :
+    AudioBuffer (BufferProvider& provider, nframes_t length) :
       Buffer(provider, AudioPort),
       m_length(length),
       m_ownsData(true)
@@ -69,12 +70,12 @@ class AudioBuffer : public Buffer
      * @param data pointer to the data
      * @deprecated
      */
-    AudioBuffer (BufferProvider &provider, nframes_t length, void *data) :
+    AudioBuffer (BufferProvider& provider, nframes_t length, void* data) :
       Buffer(provider, AudioPort),
       m_length(length),
       m_ownsData(false)
     {
-      m_data = static_cast<float *>(data);
+      m_data = static_cast<float*>(data);
     }
 
 
@@ -109,20 +110,20 @@ class AudioBuffer : public Buffer
     }
 
 
-    void *data ()
+    void* data ()
     {
       return m_data;
     }
 
 
-    const void *data () const
+    const void* data () const
     {
       return m_data;
     }
 
   private:
     int m_length;       ///< The length of the data buffer
-    float *m_data;      ///< Pointer to actual data
+    float* m_data;      ///< Pointer to actual data
     bool m_ownsData;    ///< true if we are responsible for freeing data
 };
 

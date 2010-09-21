@@ -56,29 +56,29 @@ class Patch : public Processor
      * is not yet supported and will cause the program to abort.
      * @param processor The processor to add, but have no parent
      */
-    void add (Processor *processor);
+    void add (Processor* processor);
 
     /**
      * Removes @p processor from this Patch if it is currently a child.  This function
      * will set @p processor's parent to NULL and will disconnect all of the ports
      * @param processor the processor to remove
      */
-    void remove (Processor *processor);
+    void remove (Processor* processor);
 
     virtual int portCount () const;
 
-    virtual Port *port (int idx) const;
-    virtual Port *port (QString id) const;
+    virtual Port* port (int idx) const;
+    virtual Port* port (const QString& id) const;
 
-    virtual void activate (BufferProvider *bp);
+    virtual void activate (BufferProvider* bp);
     virtual void deactivate ();
 
     virtual void setBufferLength (PortType type, nframes_t len);
 
-    virtual void process (const ProcessingContext &context);
+    virtual void process (const ProcessingContext& context);
 
-    const QSet<Node * const> dependencies () const;
-    const QSet<Node * const> dependents () const;
+    const QSet<Node* const> dependencies () const;
+    const QSet<Node* const> dependents () const;
 
     // Private API :: TODO: Move to D-ptr
 
@@ -87,7 +87,7 @@ class Patch : public Processor
      * @internal
      */
     struct CompiledProcessor {
-      Processor *processor;
+      Processor* processor;
     };
 
     /**
@@ -96,14 +96,14 @@ class Patch : public Processor
      * @param output The resulting traversal
      * @internal
      */
-    void compile (QList<CompiledProcessor> &output);
+    void compile (QList<CompiledProcessor>& output);
 
     /**
      * Swap the list of compiled processors.  Must be called in the Backend's
      * processing thread before or after rendering of the current period.
      * @param processors The new list of processors to use
      */
-    void setCompiledProcessors (QList<CompiledProcessor> *processors)
+    void setCompiledProcessors (QList<CompiledProcessor>* processors)
     {
       m_compiled = processors;
     }
@@ -111,7 +111,7 @@ class Patch : public Processor
     /**
      * @returns the current rendering order used by this Patch
      */
-    QList<CompiledProcessor> *compiledProcessors () const
+    QList<CompiledProcessor>* compiledProcessors () const
     {
       return m_compiled;
     }
@@ -127,14 +127,14 @@ class Patch : public Processor
   private:
 
     /**
-     * A recursive walk into the dependencies of the node.  Processors
-     * are appended to the output.  This uses the visited flag of
-     * Processor, therefore this function is not reentrant.
+     * A recursive walk into the dependencies of the node.  Processors are appended to the
+     * output.  This uses the visited flag of Processor, therefore this function is not
+     * reentrant (and not const either).
      */
-    void compileWalk (Node *n, QList<CompiledProcessor> &output);
+    void compileWalk (Node* n, QList<CompiledProcessor>& output);
 
     QAtomicPointer< QList<CompiledProcessor> > m_compiled; ///< pointer to current order
-    QList<Processor *> m_processors; ///< our children
+    QList<Processor*> m_processors; ///< our children
 };
 
 } // Unison

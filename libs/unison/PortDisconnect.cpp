@@ -31,7 +31,7 @@
 namespace Unison {
   namespace Internal {
 
-PortDisconnect::PortDisconnect (Port *port1, Port *port2) :
+PortDisconnect::PortDisconnect (Port* port1, Port* port2) :
   Command(false),
   m_port1(port1),
   m_port2(port2),
@@ -64,7 +64,7 @@ void PortDisconnect::preExecute ()
 }
 
 
-void PortDisconnect::execute (ProcessingContext &context)
+void PortDisconnect::execute (ProcessingContext& context)
 {
   m_port1->connectToBuffer();
   m_port2->connectToBuffer();

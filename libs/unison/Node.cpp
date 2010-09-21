@@ -27,18 +27,14 @@
 
 namespace Unison {
 
-Patch *Node::parentPatch () const
+Patch* Node::parentPatch () const
 {
-  Node *n = parent();
+  Node* n = parent();
 
   // While non-patch parents exist
-  forever {
-    // Graph isn't contained in a patch yet
-    if (n == NULL) {
-      break;
-    }
+  while (n != NULL) {
     // Is this a patch?
-    Patch *p = dynamic_cast<Patch *>(n);
+    Patch* p = dynamic_cast<Patch*>(n);
     if (p) {
       return p;
     }

@@ -39,7 +39,7 @@ namespace Unison {
  * Interface for all things that participate in the processing graph. Unison
  * organizes all processing components into a hierarchial graph structure.
  * Not only are the objects in a directed graph, but there is also a
- * parent-child relationship.  The directed graph structure is to determine
+ * parent-child relationship.  The directed graph structure is to determine a
  * proper rendering traversal of dependencies.  The hierarchial stucture is to
  * manage object ownership as well as possible optimizations down the road
  * such as culling and delegating to slaves.
@@ -60,7 +60,7 @@ class Node
      * @f parent and subclasses should just static_cast to the expected type
      * @returns This Node's parent Node
      */
-    virtual Node *parent () const = 0;
+    virtual Node* parent () const = 0;
 
     /**
      * Walk the parents and find the first Patch.  This is useful primarily
@@ -69,7 +69,7 @@ class Node
      * we may not require this function anymore
      * @returns The closest parent, @c NULL if the node is not owned
      */
-    Patch *parentPatch () const;
+    Patch* parentPatch () const;
 
     /**
      * Dependencies are nodes that are directly "connected", that must
@@ -83,7 +83,7 @@ class Node
      * called while processing.
      * @returns the set of Nodes required by this Node
      */
-    virtual const QSet<Node * const> dependencies () const = 0;
+    virtual const QSet<Node* const> dependencies () const = 0;
 
 
     /**
@@ -96,7 +96,7 @@ class Node
      * called while processing.
      * @returns the set of Nodes directly requiring this Node
      */
-    virtual const QSet<Node * const> dependents () const = 0;
+    virtual const QSet<Node* const> dependents () const = 0;
 
     /**
      * @returns a name for this node, suitable for storing in projects. The

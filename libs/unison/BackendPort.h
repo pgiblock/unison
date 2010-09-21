@@ -45,7 +45,7 @@ class BackendPort : public Port
      * Backend ports do not participate in the graph's hierachial stucture.
      * Although, it may make sense to do so at some point in the future.
      */
-    Node *parent () const
+    Node* parent () const
     {
       return NULL;
     }

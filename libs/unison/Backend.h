@@ -76,13 +76,13 @@ class Backend : public QObject
      * @param direction the direction of the port
      * @returns the newly registered port
      */
-    virtual BackendPort *registerPort (QString name, PortDirection direction) = 0;
+    virtual BackendPort* registerPort (const QString& name, PortDirection direction) = 0;
 
     /**
      * Unregister a port.
      * FIXME: Consider disconnecting ports when unregistering
      */
-    virtual void unregisterPort (BackendPort *) = 0;
+    virtual void unregisterPort (BackendPort*) = 0;
 
     /**
      * Perform any late initialization and place the Backend into a "running" state.
@@ -104,12 +104,12 @@ class Backend : public QObject
     /**
      * @returns the Port at @p index
      */
-    virtual BackendPort *port (int index) const = 0;
+    virtual BackendPort* port (int index) const = 0;
 
     /**
      * @returns the Port named @p name
      */
-    virtual BackendPort *port (QString name) const = 0;
+    virtual BackendPort* port (const QString& name) const = 0;
 
     /**
      * Create an intra-Backend connection between two ports.  A backend must support
@@ -121,36 +121,36 @@ class Backend : public QObject
      * @param source The port to behave as input
      * @param source The port to behave as output
      */
-    virtual int connect (const QString &source, const QString &dest) = 0;
+    virtual int connect (const QString& source, const QString& dest) = 0;
 
     /**
      * Disconnect two ports.  The order should probably not matter.
      * @param source one port to disconnect
      * @param source theport to disconnect from
      */
-    virtual int disconnect (const QString &source, const QString &dest) = 0;
+    virtual int disconnect (const QString& source, const QString& dest) = 0;
 
     /**
      * Disconect all ports from @p port
      */
-    virtual int disconnect (BackendPort *port) = 0;
+    virtual int disconnect (BackendPort* port) = 0;
 
     /**
      * Set the root-processor used by this backend.  I think ideally, we would do this in
      * the Engine. But, putting it in the Backend simplifies things for now
      */
-    void setRootProcessor (Processor *processor)
+    void setRootProcessor (Processor* processor)
     {
       m_rootPatch = processor;
     }
 
-    Processor *rootPatch () const
+    Processor* rootPatch () const
     {
       return m_rootPatch;
     }
 
   private:
-    Processor *m_rootPatch;   ///< Pointer to the root patch/processor
+    Processor* m_rootPatch;   ///< Pointer to the root patch/processor
 
 };
 

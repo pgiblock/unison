@@ -68,8 +68,8 @@ class PooledBufferProvider : public BufferProvider
 
   private:
     // TODO: Use something RT-safe, instead of QStack
-    QStack<Buffer *> m_audioBuffers;
-    QStack<Buffer *> m_controlBuffers;
+    QStack<Buffer*> m_audioBuffers;
+    QStack<Buffer*> m_controlBuffers;
     SharedBufferPtr m_zeroBuffer;
     nframes_t m_periodLength;
     int m_next;

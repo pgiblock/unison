@@ -64,7 +64,7 @@ class Lv2PluginProvider : public Core::IPluginProvider
       return tr("Lv2 Plugin Provider");
     }
 
-    Unison::PluginInfoPtr info (const QString plugin);
+    Unison::PluginInfoPtr info (const QString& plugin);
 
   private:
     void addLv2Plugin (SLV2Plugin _plugin);

@@ -89,7 +89,7 @@ class JackBackend : public Unison::Backend
     /**
      * Register a port with Jack.
      * @returns the newly registered port */
-    JackPort* registerPort (QString name, Unison::PortDirection direction);
+    JackPort* registerPort (const QString& name, Unison::PortDirection direction);
 
     /**
      * Unregister a port with Jack.
@@ -102,7 +102,7 @@ class JackBackend : public Unison::Backend
 
     int portCount () const;
     JackPort* port (int index) const;
-    JackPort* port (QString name) const;
+    JackPort* port (const QString& name) const;
 
     int connect (const QString& source, const QString& dest);
     int disconnect (const QString& source, const QString& dest);

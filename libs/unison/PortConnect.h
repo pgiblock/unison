@@ -36,14 +36,14 @@ namespace Unison {
 class PortConnect : public Command
 {
   public:
-    PortConnect (Port *port1, Port *port2);
+    PortConnect (Port* port1, Port* port2);
     void preExecute ();
-    void execute (ProcessingContext &context);
+    void execute (ProcessingContext& context);
     void postExecute ();
   private:
-    Port *m_producer, *m_consumer;
-    Patch *m_patch;
-    QList<Patch::CompiledProcessor> *m_compiled;
+    Port* m_producer, *m_consumer;
+    Patch* m_patch;
+    QList<Patch::CompiledProcessor>* m_compiled;
 };
 
   } // Internal

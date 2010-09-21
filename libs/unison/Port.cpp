@@ -47,33 +47,33 @@ void Port::setBufferLength (nframes_t len)
 }
 
 
-void Port::connect (Port *other)
+void Port::connect (Port* other)
 {
-  Command *cmd = new Internal::PortConnect(this, other);
+  Command* cmd = new Internal::PortConnect(this, other);
   Internal::Commander::instance()->push(cmd);
 }
 
 
-void Port::disconnect (Port *other)
+void Port::disconnect (Port* other)
 {
-  Command *cmd = new Internal::PortDisconnect(this, other);
+  Command* cmd = new Internal::PortDisconnect(this, other);
   Internal::Commander::instance()->push(cmd);
 }
 
 
-bool Port::isConnected (Port *other) const
+bool Port::isConnected (Port* other) const
 {
   return m_connectedPorts.contains(other);
 }
 
 
-const QSet<Node * const> Port::dependencies () const
+const QSet<Node* const> Port::dependencies () const
 {
   switch (direction()) {
     case Input:
     {
-      QSet<Node * const> p;
-      for (QSet<Port * const>::const_iterator i = m_connectedPorts.begin();
+      QSet<Node* const> p;
+      for (QSet<Port* const>::const_iterator i = m_connectedPorts.begin();
            i != m_connectedPorts.end(); ++i) {
         p.insert(*i);
       }
@@ -89,7 +89,7 @@ const QSet<Node * const> Port::dependencies () const
 
 
 
-const QSet<Node * const> Port::dependents () const {
+const QSet<Node* const> Port::dependents () const {
   switch (direction()) {
     case Input:
     {
@@ -98,8 +98,8 @@ const QSet<Node * const> Port::dependents () const {
 
     case Output:
     {
-      QSet<Node * const> p;
-      for (QSet<Port * const>::const_iterator i = m_connectedPorts.begin();
+      QSet<Node* const> p;
+      for (QSet<Port* const>::const_iterator i = m_connectedPorts.begin();
            i != m_connectedPorts.end(); ++i) {
         p.insert(*i);
       }
@@ -109,7 +109,7 @@ const QSet<Node * const> Port::dependents () const {
 }
 
 
-void Port::acquireInputBuffer (BufferProvider &provider, nframes_t len)
+void Port::acquireInputBuffer (BufferProvider& provider, nframes_t len)
 {
   int numConnections = dependencies().count();
   switch (numConnections) {
@@ -124,7 +124,7 @@ void Port::acquireInputBuffer (BufferProvider &provider, nframes_t len)
     {
       // Use the other port's buffer
       // type should match due to validation on connect
-      Port *other = static_cast<Port *>( *(dependencies().begin()) );
+      Port* other = static_cast<Port*>( *(dependencies().begin()) );
       m_buffer = other->buffer();
       break;
     }
@@ -141,12 +141,12 @@ void Port::acquireInputBuffer (BufferProvider &provider, nframes_t len)
 }
 
 
-void Port::acquireOutputBuffer (BufferProvider &provider, nframes_t len)
+void Port::acquireOutputBuffer (BufferProvider& provider, nframes_t len)
 {
   int numConnections = dependents().count();
   if (numConnections == 1) {
     // Use the other port's buffer
-    Port *other = static_cast<Port *>( *(dependents().begin()) );
+    Port* other = static_cast<Port*>( *(dependents().begin()) );
     m_buffer = other->buffer();
   }
   else if (numConnections == 2) {
@@ -164,7 +164,7 @@ void Port::updateBufferValue ()
   qDebug() << "Updating value of private buffer for port" << name();
   if (buffer() && type() == ControlPort) {
     // Verified ControlPort, so data must be a single float
-    float *data = static_cast<float *>( buffer()->data() );
+    float* data = static_cast<float*>( buffer()->data() );
     data[0] = value();
   }
 }

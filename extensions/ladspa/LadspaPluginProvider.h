@@ -50,7 +50,7 @@ class LadspaPluginProvider : public Core::IPluginProvider
 
     void discoverPlugins ();
 
-    Unison::PluginInfoPtr info (const QString plugin);
+    Unison::PluginInfoPtr info (const QString &plugin);
 
   private:
     void discoverFromDirectory (const QString &path);

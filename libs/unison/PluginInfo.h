@@ -47,7 +47,7 @@ class PluginInfo
       // sense and this class is abstract anyways.
     }
 
-    PluginInfo (const PluginInfo &info) :
+    PluginInfo (const PluginInfo& info) :
       m_uniqueId(info.m_uniqueId),
       m_author(info.m_author),
       m_name(info.m_name),
@@ -123,12 +123,12 @@ class PluginInfo
 
   protected:
 
-    void setName (const QString &name)
+    void setName (const QString& name)
     {
       m_name = name;
     }
 
-    void setUniqueId (const QString &uniqueId)
+    void setUniqueId (const QString& uniqueId)
     {
       m_uniqueId = uniqueId;
     }
@@ -143,7 +143,7 @@ class PluginInfo
       m_audioOutputs = audioOutputCount;
     }
 
-    void setAuthorName (const QString &authorName)
+    void setAuthorName (const QString& authorName)
     {
       m_author = authorName;
     }

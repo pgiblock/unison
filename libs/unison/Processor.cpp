@@ -48,7 +48,7 @@ Processor::~Processor ()
 void Processor::setBufferLength (PortType type, nframes_t len)
 {
   for (int n = 0; n < portCount(); ++n) {
-    Port *p = port(n);
+    Port* p = port(n);
     if (p->type() == type) {
       p->setBufferLength(len);
     }
@@ -56,13 +56,13 @@ void Processor::setBufferLength (PortType type, nframes_t len)
 }
 
 
-Node *Processor::parent () const
+Node* Processor::parent () const
 {
   return m_parent;
 }
 
 
-void Processor::setParent (Patch *parent)
+void Processor::setParent (Patch* parent)
 {
   Q_ASSERT(parent != NULL);
   // TODO-NOW: A bunch of assertions

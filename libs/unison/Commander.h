@@ -58,7 +58,7 @@ class Commander
      * Get the static Commander instance.
      * @return the static Commander instnace
      */
-    static Commander *instance()
+    static Commander* instance()
     {
       Q_ASSERT(m_instance);
       return m_instance;
@@ -68,11 +68,11 @@ class Commander
      * Push a command for later execution.  The Command's preExecute function will be
      * called from a normal context. Later, the Command's execute will fire at the
      * beginning of the processing thread's process function.  postExecute will be called
-     * eventually.  This function will block until the Command is postExecuted if the
-     * Command has isBlocking=true.
+     * eventually.  Finally, the  Command is deleted.  This function will block until the
+     * Command is postExecuted if the Command has isBlocking=true.
      * @param command The command to enqueue
      */
-    void push (Command *command);
+    void push (Command* command);
 
     /**
      * Releases the block (counting semaphore).  This function must only be called from
@@ -90,7 +90,7 @@ class Commander
      * This function will probably only ever be called by Backend's processing logic.
      * @param context The current processing context
      */
-    void process (ProcessingContext &context);
+    void process (ProcessingContext& context);
 
   protected:
     /**
@@ -101,13 +101,13 @@ class Commander
   private:
     enum {
       COMMAND_BUFFER_LENGTH = 16,   ///< How big is our buffer?
-      COMMANDS_PER_PROCESS = 2      ///< How many comands to process per period
+      COMMANDS_PER_PROCESS = 2      ///< How many commands to process per period
     };
 
-    static Commander *m_instance;   ///< The instance
+    static Commander* m_instance;   ///< The instance
     QMutex m_writeLock;             ///< Protect us from affinity issues
     QSemaphore m_blockWait;         ///< Blocking for blocking Commands
-    RingBuffer<Command *> m_buffer; ///< Storage for queued Commands
+    RingBuffer<Command*> m_buffer; ///< Storage for queued Commands
 };
 
   } // Internal

@@ -42,7 +42,7 @@ void Command::preExecute ()
 }
 
 
-void Command::execute (ProcessingContext &ctx)
+void Command::execute (ProcessingContext& ctx)
 {
   Q_UNUSED(ctx);
   Q_ASSERT(m_state == PreExecuted);
