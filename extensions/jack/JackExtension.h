@@ -39,13 +39,13 @@ public:
   JackExtension();
   ~JackExtension();
 
-  virtual bool initialize(const QStringList &arguments, QString *errorMessage = 0);
+  virtual bool initialize(const QStringList& arguments, QString* errorMessage = 0);
   virtual void extensionsInitialized();
   virtual void shutdown();
-  virtual void remoteCommand(const QStringList &options, const QStringList &args);
+  virtual void remoteCommand(const QStringList& options, const QStringList& args);
 
 private:
-  void parseArguments(const QStringList &arguments);
+  void parseArguments(const QStringList& arguments);
 };
 
   } // namespace Internal

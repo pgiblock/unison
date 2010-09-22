@@ -138,7 +138,7 @@ bool JackBackend::reconnectToJack ()
   initClient();
 
   for (int i=0; i<portCount(); ++i) {
-    JackPort *p = port(i);
+    JackPort* p = port(i);
 
     // This is kind of dirty, the port should be already registered,
     // but the jack_port_t is dangling since we are disconnected.
@@ -176,7 +176,7 @@ bool JackBackend::disconnectFromJack ()
 
 JackPort* JackBackend::registerPort (const QString& name, PortDirection direction)
 {
-  JackPort * myPort = new JackPort( *this, name, direction);
+  JackPort* myPort = new JackPort( *this, name, direction);
 
   if (!myPort->registerPort()) {
     qWarning() << "Jack port registration failed for port: " << name;

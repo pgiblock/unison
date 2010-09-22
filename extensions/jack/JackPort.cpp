@@ -43,7 +43,7 @@ JackBufferProvider* JackPort::m_jackBufferProvider =
     new JackBufferProvider();
 
 
-JackPort::JackPort (JackBackend & backend, QString name,
+JackPort::JackPort (JackBackend& backend, const QString& name,
                     PortDirection direction) :
   BackendPort(),
   m_backend(backend),
@@ -105,7 +105,6 @@ Unison::PortDirection JackPort::directionFromFlags (JackPortFlags flags)
 
 JackPortFlags JackPort::flagsFromDirection (Unison::PortDirection dir)
 {
-  JackPortFlags flag;
   switch (dir) {
     case Unison::Input:
       return JackPortIsOutput;

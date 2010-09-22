@@ -29,9 +29,10 @@
 
 #include <unison/Backend.h>
 #include <core/IBackendProvider.h>
-#include <jack/jack.h>
+
 #include <QObject>
 #include <QVarLengthArray>
+#include <jack/jack.h>
 
 namespace Jack {
   namespace Internal {
@@ -40,7 +41,7 @@ class JackBackendProvider : public Core::IBackendProvider
 {
   Q_OBJECT
   public:
-    JackBackendProvider (QObject *parent = 0) :
+    JackBackendProvider (QObject* parent = 0) :
       Core::IBackendProvider(parent)
     {};
 
@@ -52,19 +53,19 @@ class JackBackendProvider : public Core::IBackendProvider
       return "jack";
     };
 
-    Unison::Backend * createBackend();
+    Unison::Backend* createBackend();
 };
 
 
 
 /**
- * JackBackend encapsulates JACK compatibility.  There could theoretically be
- * multiple Backend classes (AsioBackend, for example), but this requires
- * us to implement missing features like connecting ports.  Therefore, right
- * now we are only targeting Jack, with the knowledge that this class may be
- * generalized.  The primary functionality included is the processing
- * entry-point and the ability to register ports, query system ports, and make
- * (external) connections. */
+ * JackBackend encapsulates JACK compatibility.  There could theoretically be multiple
+ * Backend classes (AsioBackend, for example), but this requires us to implement missing
+ * features like connecting ports.  Therefore, right now we are only targeting Jack, with
+ * the knowledge that this class may be generalized.  The primary functionality included
+ * is the processing entry-point and the ability to register ports, query system ports,
+ * and make (external) connections.
+ */
 class JackBackend : public Unison::Backend
 {
   Q_OBJECT
@@ -74,28 +75,32 @@ class JackBackend : public Unison::Backend
     virtual ~JackBackend ();
 
     /**
-     * @returns the underlying Jack client. */
+     * @returns the underlying Jack client.
+     */
     jack_client_t* client () const
     {
       return m_client;
     }
 
     /**
-     * FIXME: BufferLength change support is currently lacking. */
+     * FIXME: BufferLength change support is currently lacking.
+     */
     Unison::nframes_t bufferLength () const;
     Unison::nframes_t sampleRate () const;
     bool isFreewheeling () const;
 
     /**
      * Register a port with Jack.
-     * @returns the newly registered port */
+     * @returns the newly registered port
+     */
     JackPort* registerPort (const QString& name, Unison::PortDirection direction);
 
     /**
      * Unregister a port with Jack.
-     * FIXME: Consider disconnecting ports when unregistering */
-    void unregisterPort (JackPort *);
-    void unregisterPort (Unison::BackendPort *);
+     * FIXME: Consider disconnecting ports when unregistering
+     */
+    void unregisterPort (JackPort*);
+    void unregisterPort (Unison::BackendPort*);
 
     bool activate ();
     bool deactivate ();
@@ -128,12 +133,12 @@ class JackBackend : public Unison::Backend
                             jack_position_t*, int, void* backend);
     static int xrunCb (void* backend);
 
-    jack_client_t* m_client;
-    QVarLengthArray<JackPort*> m_myPorts;
-    Unison::nframes_t m_bufferLength;
-    Unison::nframes_t m_sampleRate;
-    bool m_freewheeling;
-    bool m_running;
+    jack_client_t* m_client;                ///< The actual jack client handle
+    QVarLengthArray<JackPort*> m_myPorts;   ///< Collection of ports we have registered
+    Unison::nframes_t m_bufferLength;       ///< Current audio buffer length
+    Unison::nframes_t m_sampleRate;         ///< Current sampling rate
+    bool m_freewheeling;                    ///< True if we are freewheeling
+    bool m_running;                         ///< True if activated and still running
 };
 
   } // Internal

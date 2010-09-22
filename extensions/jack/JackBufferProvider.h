@@ -25,9 +25,9 @@
 #ifndef JACK_BUFFER_PROVIDER_H
 #define JACK_BUFFER_PROVIDER_H
 
-#include <jack/jack.h>
-
 #include "unison/BufferProvider.h"
+
+#include <jack/jack.h>
 
 namespace Jack {
   namespace Internal {
@@ -35,10 +35,10 @@ namespace Jack {
 class JackPort;
 
 /**
- * JackBufferProvider acquires buffers that backed by memory managed by Jack.
- * A new acquire() function is used to return these special Buffers.  Calling
- * the overloaded acquire() function is an error.
-  */
+ * JackBufferProvider acquires buffers that backed by memory managed by Jack.  A new
+ * acquire() function is used to return these special Buffers.  Calling the overloaded
+ * acquire() function is an error.
+ */
 class JackBufferProvider : public Unison::BufferProvider
 {
   public:
@@ -49,23 +49,26 @@ class JackBufferProvider : public Unison::BufferProvider
     {}
 
     /**
-     * Called by Jack's process callback to connect JackPorts to the
-     * appropriate buffer.  This must be called in the processing thread.
-     * @returns wrapped buffer provided by Jack for the given port */
-    Unison::SharedBufferPtr acquire (const JackPort * port, Unison::nframes_t nframes);
+     * Called by Jack's process callback to connect JackPorts to the appropriate buffer.
+     * This must be called in the processing thread.
+     * @returns wrapped buffer provided by Jack for the given port
+     */
+    Unison::SharedBufferPtr acquire (const JackPort* port, Unison::nframes_t nframes);
 
     /**
-     * Results in an error as JackBufferProvider must not be used by Ports
-     * other than JackPort */
+     * Results in an error as JackBufferProvider must not be used by Ports other than
+     * JackPort
+     */
     Unison::SharedBufferPtr acquire (Unison::PortType, Unison::nframes_t);
 
     /**
-     * Results in an error as JackBufferProvider must not be used by Ports
-     * other than JackPort */
+     * Results in an error as JackBufferProvider must not be used by Ports other than
+     * JackPort
+     */
     Unison::SharedBufferPtr zeroAudioBuffer () const;
 
   protected:
-    void release (Unison::Buffer * buf)
+    void release (Unison::Buffer* buf)
     {
       delete buf;
     }

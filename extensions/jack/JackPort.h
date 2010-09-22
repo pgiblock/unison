@@ -27,6 +27,7 @@
 
 #include <unison/BackendPort.h>
 #include <unison/ProcessingContext.h>
+
 #include <jack/jack.h>
 
 namespace Jack {
@@ -40,8 +41,7 @@ class JackBackend;
 class JackPort : public Unison::BackendPort
 {
   public:
-    JackPort (JackBackend & backend, QString name, 
-              Unison::PortDirection direction);
+    JackPort (JackBackend& backend, const QString &name, Unison::PortDirection direction);
 
     bool registerPort ();
 
@@ -50,12 +50,12 @@ class JackPort : public Unison::BackendPort
       return m_port;
     }
 
-    Unison::Node *parent () const
+    Unison::Node* parent () const
     {
       return NULL;
     }
 
-    JackBackend &backend () const
+    JackBackend& backend () const
     {
       return m_backend;
     }
@@ -140,7 +140,7 @@ class JackPort : public Unison::BackendPort
     QString m_id;
     Unison::PortDirection m_direction;
 
-    static JackBufferProvider * m_jackBufferProvider;
+    static JackBufferProvider* m_jackBufferProvider;
 };
 
   } // Internal

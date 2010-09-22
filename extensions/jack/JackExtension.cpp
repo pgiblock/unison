@@ -60,13 +60,13 @@ JackExtension::~JackExtension()
 }
 
 
-void JackExtension::parseArguments(const QStringList &arguments)
+void JackExtension::parseArguments(const QStringList& arguments)
 {
   Q_UNUSED(arguments)
 }
 
 
-bool JackExtension::initialize(const QStringList &arguments, QString *errorMessage)
+bool JackExtension::initialize(const QStringList& arguments, QString* errorMessage)
 {
   Q_UNUSED(errorMessage)
   parseArguments(arguments);
@@ -80,7 +80,7 @@ void JackExtension::extensionsInitialized()
 }
 
 
-void JackExtension::remoteCommand(const QStringList &options, const QStringList &args)
+void JackExtension::remoteCommand(const QStringList& options, const QStringList& args)
 {
   Q_UNUSED(options)
   Q_UNUSED(args)
