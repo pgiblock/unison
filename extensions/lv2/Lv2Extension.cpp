@@ -40,6 +40,7 @@ Lv2Extension::Lv2Extension()
 
 Lv2Extension::~Lv2Extension()
 {
+  qDebug() << "LV2 dtor";
   removeObject(m_pluginProvider);
   delete m_pluginProvider;
 }
@@ -73,6 +74,7 @@ void Lv2Extension::remoteCommand(const QStringList &options, const QStringList &
 
 void Lv2Extension::shutdown()
 {
+  qDebug() << "LV2 shutdown";
 }
 
 EXPORT_EXTENSION(Lv2Extension)

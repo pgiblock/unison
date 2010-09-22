@@ -244,7 +244,7 @@ LadspaPluginInfo::LadspaPluginInfo (const QString &path,
 {
   setName(desc->Name);
   setAuthorName(desc->Maker);
-  setUniqueId(QString("%1%2").arg( UriRoot, m_descriptor->UniqueID ));
+  setUniqueId(QString("%1%2").arg( UriRoot ).arg( m_descriptor->UniqueID ));
 
   int inCnt = 0, outCnt = 0;
   for (unsigned long i=0; i < desc->PortCount; ++i) {

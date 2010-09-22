@@ -28,6 +28,7 @@
 #include <unison/Processor.h>
 
 #include <QDebug>
+#include <QWaitCondition>
 #include <jack/jack.h>
 
 // For connect-and-copy hackfest in processCb
@@ -71,12 +72,12 @@ void JackBackend::initClient ()
 
   // JACK stuff
   m_client = jack_client_open(name.toLatin1(), JackNullOption, NULL);
+  m_running = false;
   if (!m_client) {
-    // TODO-NOW: Fail more gracefully
-    qFatal("Failed to connect to JACK.");
+    qWarning("Failed to connect to JACK.");
   }
   else {
-    qDebug() << "Connected to JACK.\n";
+    qDebug("Connected to JACK.");
   }
 
   m_bufferLength = jack_get_buffer_size(m_client);
@@ -97,47 +98,96 @@ void JackBackend::initClient ()
 }
 
 
-void JackBackend::activate ()
+bool JackBackend::activate ()
 {
-  if (!m_running) {
-    m_running = jack_activate(m_client) == 0;
+  if (!m_client) {
+    qWarning("JACK backend cannot be activated while disconnected");
+    return false;
   }
+
+  if (!m_running) {
+    m_running = (jack_activate(m_client) == 0);
+  }
+
+  return m_running;
 }
 
 
-void JackBackend::deactivate ()
+bool JackBackend::deactivate ()
 {
-  jack_deactivate(m_client);
+  if (m_client) {
+    jack_deactivate(m_client);
+    m_running = false;
+  }
+  return !m_running;
+}
+
+
+bool JackBackend::reconnectToJack ()
+{
+  if (m_client) {
+    disconnectFromJack();
+    
+    // wait 1/4 of a second for JACK to breathe
+    QMutex dummy;
+    dummy.lock();
+    QWaitCondition sleep;
+    sleep.wait(&dummy, 250);
+  }
+
+  initClient();
+
+  for (int i=0; i<portCount(); ++i) {
+    JackPort *p = port(i);
+
+    // This is kind of dirty, the port should be already registered,
+    // but the jack_port_t is dangling since we are disconnected.
+    // so it is safe to overwrite it.
+    // TODO: Instead check if it is in a zombie-state as set in disconnectFromJack
+    if (p->isRegistered()) {
+      if (p->registerPort()) {
+        qDebug() << "Jack port re-registered: " << p->id();
+      }
+      else {
+        qWarning() << "Jack port re-registration failed for port: " << p->id();
+      }
+    }
+  }
+
+  // TODO: return a proper return code
+  return true;
+}
+
+
+bool JackBackend::disconnectFromJack ()
+{
+  if (m_client) {
+    jack_client_close(m_client);
+    m_client = NULL;
+  }
+
+  // TODO: Put ports in some zombie state
+
   m_running = false;
+  // Return true if we are disconnected
+  return true;
 }
 
 
 JackPort* JackBackend::registerPort (const QString& name, PortDirection direction)
 {
-  // Build Jack flags, currently just direction. Which, is reversed since
-  // our Ports' directions are relative to Unison's connections but
-  // jack_port_t's direction is relative to Jack's graph.
-  JackPortFlags flag;
-  switch (direction) {
-    case Input:
-      flag = JackPortIsOutput;
-      break;
-    case Output:
-    default:
-      flag = JackPortIsInput;
-      break;
-  }
+  JackPort * myPort = new JackPort( *this, name, direction);
 
-  jack_port_t* port = jack_port_register(
-      client(), name.toLatin1(), JACK_DEFAULT_AUDIO_TYPE, flag, 0 );
-  if (port) {
-    JackPort* myPort = new JackPort( *this, port );
-    m_myPorts.append( myPort );
+  if (!myPort->registerPort()) {
+    qWarning() << "Jack port registration failed for port: " << name;
+    delete myPort;
+    return NULL;
+  }
+  else {
     qDebug() << "Jack port registered: " << myPort->name();
+    m_myPorts.append( myPort );
     return myPort;
   }
-  qWarning() << "Jack port registration failed for port: " << name;
-  return NULL;
 }
 
 

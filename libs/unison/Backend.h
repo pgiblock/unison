@@ -85,15 +85,19 @@ class Backend : public QObject
     virtual void unregisterPort (BackendPort*) = 0;
 
     /**
-     * Perform any late initialization and place the Backend into a "running" state.
-     */
-    virtual void activate () = 0;
+     * Activate the backend - This should cause the backend to complete any
+     * pending initialization and to begin running.  That is, the root-
+     * processor will start to process().
+     * @returns false if the backend could not be activated */
+    virtual bool activate () = 0;
 
     /**
-     * Remove the Backend from "running" state and cleanup any resources that are
-     * no longer needed.
-     */
-    virtual void deactivate () = 0;
+     * Deactive the backend - The backend should stop calling process() within
+     * a reasonable amount of time.  The backend is free to do any cleanup, but
+     * must not be destroyed.
+     * @returns true if the backend is deactivated (regardless of whether the
+     *          backend was running or not before calling this function */
+    virtual bool deactivate () = 0;
 
     /**
      * The total number of Ports, for this particular Backend, in the system

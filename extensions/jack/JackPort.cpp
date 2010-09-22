@@ -42,6 +42,28 @@ namespace Jack {
 JackBufferProvider* JackPort::m_jackBufferProvider =
     new JackBufferProvider();
 
+
+JackPort::JackPort (JackBackend & backend, QString name,
+                    PortDirection direction) :
+  BackendPort(),
+  m_backend(backend),
+  m_port(NULL),
+  m_id(name),
+  m_direction(direction)
+{}
+
+
+bool JackPort::registerPort ()
+{
+  JackPortFlags flags = JackPort::flagsFromDirection(m_direction);
+
+  m_port = jack_port_register(m_backend.client(),
+      m_id.toLatin1(), JACK_DEFAULT_AUDIO_TYPE, flags, 0 );
+
+  return isRegistered();
+}
+
+
 const QSet<Node* const> JackPort::interfacedNodes() const
 {
   const char** name = jack_port_get_connections( m_port );
@@ -66,6 +88,33 @@ void JackPort::connectToBuffer ()
 {
   m_buffer = m_jackBufferProvider->acquire(this, backend().bufferLength());
 }
+
+
+Unison::PortDirection JackPort::directionFromFlags (JackPortFlags flags)
+{
+  if (flags & JackPortIsInput) {
+    return Unison::Output;
+  }
+  if (flags & JackPortIsOutput) {
+    return Unison::Input;
+  }
+  Q_ASSERT_X(0, "JackPort", "direction is neither Input or Output.");
+  return (Unison::PortDirection)0;
+}
+
+
+JackPortFlags JackPort::flagsFromDirection (Unison::PortDirection dir)
+{
+  JackPortFlags flag;
+  switch (dir) {
+    case Unison::Input:
+      return JackPortIsOutput;
+    case Unison::Output:
+    default:
+      return JackPortIsInput;
+  }
+}
+
 
   } // Internal
 } // Jack

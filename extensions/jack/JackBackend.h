@@ -97,8 +97,8 @@ class JackBackend : public Unison::Backend
     void unregisterPort (JackPort *);
     void unregisterPort (Unison::BackendPort *);
 
-    void activate ();
-    void deactivate ();
+    bool activate ();
+    bool deactivate ();
 
     int portCount () const;
     JackPort* port (int index) const;
@@ -109,7 +109,12 @@ class JackBackend : public Unison::Backend
     int disconnect (Unison::BackendPort *);
 
   private:
-    void initClient();
+    void initClient ();
+
+    bool reconnectToJack ();
+    bool disconnectFromJack ();
+
+    static JackPortFlags portFlagsForDirection (Unison::PortDirection direction);
 
     static void shutdown (void* backend);
     static int bufferSizeCb (Unison::nframes_t nframes, void* backend);
@@ -119,7 +124,8 @@ class JackBackend : public Unison::Backend
     static int sampleRateCb (Unison::nframes_t nframes, void* backend);
     static int syncCb (jack_transport_state_t, jack_position_t*, void* eng);
     static void threadInitCb (void* backend);
-    static void timebaseCb (jack_transport_state_t, Unison::nframes_t, jack_position_t*, int, void*);
+    static void timebaseCb (jack_transport_state_t, Unison::nframes_t,
+                            jack_position_t*, int, void* backend);
     static int xrunCb (void* backend);
 
     jack_client_t* m_client;

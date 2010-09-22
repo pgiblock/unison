@@ -27,6 +27,8 @@
 
 #include <extensionsystem/ExtensionManager.h>
 
+#include <QDebug>
+
 namespace Ladspa {
   namespace Internal {
 
@@ -37,6 +39,7 @@ LadspaExtension::LadspaExtension() :
 
 LadspaExtension::~LadspaExtension()
 {
+  qDebug() << "LADSPA dtor";
   if (m_pluginProvider) {
     removeObject(m_pluginProvider);
     delete m_pluginProvider;
@@ -75,6 +78,7 @@ void LadspaExtension::remoteCommand(const QStringList &options, const QStringLis
 
 void LadspaExtension::shutdown()
 {
+  qDebug() << "LADSPA shutdown";
 }
 
 EXPORT_EXTENSION(LadspaExtension)

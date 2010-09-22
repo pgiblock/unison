@@ -125,6 +125,8 @@ int LadspaPluginProvider::discoverFromLibrary (const QString &path)
 
     PluginInfoPtr info(new LadspaPluginInfo(path, descriptor));
 
+    qDebug() << "Plugin:" << descriptor->UniqueID << "is" << info->uniqueId();
+
     // TODO: Bitch if we overwrite an entry
     m_infoMap.insert(descriptor->UniqueID, info);
   }

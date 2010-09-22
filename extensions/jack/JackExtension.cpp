@@ -28,6 +28,7 @@
 #include <extensionsystem/ExtensionManager.h>
 
 #include <QtPlugin>
+#include <QtDebug>
 
 /*!
     \namespace Jack
@@ -54,6 +55,8 @@ JackExtension::JackExtension()
 
 JackExtension::~JackExtension()
 {
+  qDebug() << "JACK dtor";
+  // BackendProvider is auto-released
 }
 
 
@@ -86,6 +89,7 @@ void JackExtension::remoteCommand(const QStringList &options, const QStringList 
 
 void JackExtension::shutdown()
 {
+  qDebug() << "JACK shutdown";
 }
 
 EXPORT_EXTENSION(JackExtension)
