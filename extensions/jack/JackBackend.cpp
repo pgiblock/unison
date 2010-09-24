@@ -115,11 +115,12 @@ bool JackBackend::activate ()
 
 bool JackBackend::deactivate ()
 {
-  if (m_client) {
-    jack_deactivate(m_client);
+  if (m_client && m_running) {
     m_running = false;
+    // TODO: Destroy ports!
+    jack_deactivate(m_client);
   }
-  return !m_running;
+  return true;
 }
 
 
@@ -303,6 +304,10 @@ int JackBackend::processCb (nframes_t nframes, void* a)
   JackBackend* backend = static_cast<JackBackend*>(a);
   JackBufferProvider nullProvider;
   int i;
+
+  if (!(backend->m_running)) {
+    return 0;
+  }
 
   ProcessingContext context( nframes );
 

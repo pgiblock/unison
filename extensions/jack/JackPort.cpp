@@ -67,19 +67,24 @@ bool JackPort::registerPort ()
 const QSet<Node* const> JackPort::interfacedNodes() const
 {
   const char** name = jack_port_get_connections( m_port );
-  uint32_t count = m_backend.portCount();
-
   QSet<Node* const> dependencies;
-  // Within all connected ports
-  while (name != NULL) {
-    // See if we own the port
-    for (uint32_t i = 0; i < count; ++i) {
-      JackPort* port = m_backend.port(i);
-      if (port->name() == *name) {
-        dependencies += port;
+
+  // Actually have something connected
+  if (name != NULL) {
+    uint32_t count = m_backend.portCount();
+    // Within all connected ports
+    for (; *name != NULL; name++) {
+      // See if we own the port
+      for (uint32_t i = 0; i < count; ++i) {
+        JackPort* port = m_backend.port(i);
+        if (port->name() == *name) {
+          dependencies += port;
+        }
       }
+      //jack_free(*name);
     }
   }
+
   return dependencies;
 }
 
