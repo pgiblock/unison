@@ -74,4 +74,12 @@ install(TARGETS unison LIBRARY
 install(FILES ${UNISON_INCLUDES}
         DESTINATION include/unison/)
 
+# build the tests
+if(COMPILE_TESTS)
+  add_subdirectory(tests)
+endif(COMPILE_TESTS)
+
+# add the tests
+add_test(NAME TestRingBuffer COMMAND tests/TestRingBuffer)
+
 # vim: tw=90 ts=8 sw=2 sts=2 et sta noai

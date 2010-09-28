@@ -131,7 +131,7 @@ int main (int argc, char **argv)
   QScopedPointer<QCoreApplication> app(appPtr);
   appPtr = NULL;
 
-  QTimer::singleShot(10000, qApp, SLOT(quit()));
+  QTimer::singleShot(3000, qApp, SLOT(quit()));
 
   app->setApplicationName( "Unison" );
   app->setOrganizationDomain( "unison.sourceforge.net" );

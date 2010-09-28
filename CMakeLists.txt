@@ -47,6 +47,8 @@ option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend ext
 option(WANT_LADSPA_EXTENSION "Include LADSPA plugin support extension" ON)
 option(WANT_LV2_EXTENSION "Include LV2 plugin support extension" ON)
 
+option(COMPILE_TESTS "Compile unit-tests" OFF)
+
 ## Find required dependencies ########
 
 find_package(Qt4 4.6.0 COMPONENTS QtCore QtGui QtXml QtNetwork) # REQUIRED)
