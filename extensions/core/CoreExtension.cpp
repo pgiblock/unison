@@ -41,8 +41,10 @@
 
 #include <extensionsystem/ExtensionManager.h>
 
-#include <QtPlugin>
 #include <QtDebug>
+#include <QtPlugin>
+#include <QApplication>
+#include <QTimer>
 
 using namespace ExtensionSystem;
 using namespace Unison;
@@ -83,16 +85,16 @@ CoreExtension::~CoreExtension()
 
 void CoreExtension::parseArguments(const QStringList& arguments)
 {
-  Q_UNUSED(arguments)
-  /*
   for (int i = 0; i < arguments.size() - 1; i++) {
-    if (arguments.at(i) == QLatin1String("-color")) {
-      const QString colorcode(arguments.at(i + 1));
-      m_mainWindow->setOverrideColor(QColor(colorcode));
-      i++; // skip the argument
+    if (arguments.at(i) == QLatin1String("--seconds")) {
+      bool ok;
+      float timeout = arguments.at(i + 1).toFloat(&ok);
+      if (ok) {
+        QTimer::singleShot(timeout * 1000, qApp, SLOT(quit()));
+      }
+      i++; // skip the value
     }
   }
-  */
 }
 
 
@@ -137,7 +139,7 @@ void CoreExtension::extensionsInitialized()
 
   // Find backends, load the first one
   QList<IBackendProvider*> backends = extMgr->getObjects<IBackendProvider>();
-  
+
   if (backends.count() == 0) {
     qWarning("No backends found, I guess we aren't doing anything");
     return;

@@ -22,18 +22,17 @@
  *
  */
 
+#include "extensionsystem/ExtensionManager.h"
+#include "extensionsystem/ExtensionInfo.h"
+#include "extensionsystem/IExtension.h"
+
 #include <QDir>
 #include <QDebug>
 #include <QSettings>
-#include <QTimer>
 
 #include <QtNetwork/QNetworkProxyFactory>
 
 #include <QApplication>
-
-#include "extensionsystem/ExtensionManager.h"
-#include "extensionsystem/ExtensionInfo.h"
-#include "extensionsystem/IExtension.h"
 
 //using namespace Unison;
 
@@ -130,8 +129,6 @@ int main (int argc, char **argv)
   }
   QScopedPointer<QCoreApplication> app(appPtr);
   appPtr = NULL;
-
-  QTimer::singleShot(3000, qApp, SLOT(quit()));
 
   app->setApplicationName( "Unison" );
   app->setOrganizationDomain( "unison.sourceforge.net" );

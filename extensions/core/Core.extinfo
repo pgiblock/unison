@@ -17,4 +17,7 @@ this softawre. If not, see http://www.gnu.org/licenses/.
     </license>
     <description>Required core features</description>
     <url>http://www.unisonstudio.org</url>
+    <argumentList>
+        <argument name="--seconds" parameter="duration">How long to run, in seconds</argument>
+    </argumentList>
 </extension>
