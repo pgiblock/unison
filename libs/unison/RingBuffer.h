@@ -297,8 +297,12 @@ template<typename T>
 int RingBuffer<T>::write(const T* src, int cnt)
 {
   const int writePtr = m_writePtr;
+  const int freeCnt = writeSpace();
+  if (freeCnt == 0) {
+    return 0;
+  }
 
-  cnt = std::min(cnt, m_size);
+  cnt = std::min(cnt, freeCnt);
 
   // Simple case, no wrap-around
   if (writePtr + cnt <= m_size) {
@@ -308,8 +312,8 @@ int RingBuffer<T>::write(const T* src, int cnt)
   }
   else {
     const size_t writable = m_size - writePtr;
-    memcpy(&m_data[writePtr], src, writable*sizeof(T));
-    memcpy(m_data, src+writable, cnt - writable*sizeof(T));
+    memcpy(&m_data[writePtr], src, writable * sizeof(T));
+    memcpy(m_data, src+writable, (cnt - writable) * sizeof(T));
     m_writePtr = cnt - writable;
   }
   return cnt;
