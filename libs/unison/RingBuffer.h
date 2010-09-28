@@ -308,7 +308,7 @@ int RingBuffer<T>::write(const T* src, int cnt)
   if (writePtr + cnt <= m_size) {
     memcpy(&m_data[writePtr], src, cnt*sizeof(T));
     // Must do modulo here since the write pointer may wrap back to position 0
-    m_writePtr = writePtr + cnt % m_size;
+    m_writePtr = (writePtr + cnt) % m_size;
   }
   else {
     const size_t writable = m_size - writePtr;
