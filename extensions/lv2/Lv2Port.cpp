@@ -1,5 +1,5 @@
 /*
- * Lv2Port.h
+ * Lv2Port.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *

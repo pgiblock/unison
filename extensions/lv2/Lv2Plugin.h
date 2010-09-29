@@ -114,7 +114,7 @@ class Lv2Plugin : public Unison::Plugin
       return m_instance;
     }
 
-    void activate (Unison::BufferProvider *bp);
+    void activate (Unison::BufferProvider* bp);
     void deactivate ();
 
     void process(const Unison::ProcessingContext &context);
@@ -124,7 +124,7 @@ class Lv2Plugin : public Unison::Plugin
 
     // TODO: loadState and saveState
 
-    Unison::BufferProvider *bufferProvider ();
+    Unison::BufferProvider* bufferProvider ();
 
   private:
     Lv2World&         m_world;
@@ -140,7 +140,7 @@ class Lv2Plugin : public Unison::Plugin
     bool              m_activated;
     Unison::nframes_t m_sampleRate;
     QVarLengthArray<Unison::Port*, 16> m_ports;
-    Unison::BufferProvider *m_bufferProvider;
+    Unison::BufferProvider* m_bufferProvider;
 
     void init ();
 };

@@ -43,6 +43,7 @@ Lv2PluginProvider::Lv2PluginProvider() :
   m_lv2InfoMap()
 {
   qDebug( "Initializing Lv2 Plugin Provider" );
+
   if (m_lv2World.world == NULL) {
     qWarning(  "Failed to Initialize slv2_world" );
     return;

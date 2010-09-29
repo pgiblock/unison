@@ -41,18 +41,18 @@ public:
   Lv2Extension();
   ~Lv2Extension();
 
-  virtual bool initialize(const QStringList &arguments, QString *errorMessage = 0);
+  virtual bool initialize(const QStringList& arguments, QString* errorMessage = 0);
   virtual void extensionsInitialized();
   virtual void shutdown();
-  virtual void remoteCommand(const QStringList &options, const QStringList &args);
+  virtual void remoteCommand(const QStringList& options, const QStringList& args);
 
 //public slots:
 //    void fileOpenRequest(const QString&);
 
 private:
-  void parseArguments(const QStringList &arguments);
+  void parseArguments(const QStringList& arguments);
 
-  Lv2PluginProvider *m_pluginProvider;
+  Lv2PluginProvider* m_pluginProvider;
 };
 
   } // namespace Internal

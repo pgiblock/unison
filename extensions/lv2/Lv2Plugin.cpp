@@ -37,7 +37,7 @@ namespace Lv2 {
 
 Lv2World::Lv2World ()
 {
-  world=slv2_world_new();
+  world = slv2_world_new();
   Q_ASSERT(world);
   slv2_world_load_all( world );
 
@@ -51,10 +51,8 @@ Lv2World::Lv2World ()
   integer =      slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "integer" );
   toggled =      slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "toggled" );
   sampleRate =   slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "sampleRate" );
-  inPlaceBroken =
-      slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "inPlaceBroken" );
-  gtkGui =
-      slv2_value_new_uri( world, "http://lv2plug.in/ns/extensions/ui#GtkUI" );
+  inPlaceBroken =slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "inPlaceBroken" );
+  gtkGui =       slv2_value_new_uri( world, "http://lv2plug.in/ns/extensions/ui#GtkUI" );
 
   qDebug() << "Created Lv2World.";
 }
@@ -78,8 +76,7 @@ Lv2World::~Lv2World ()
 }
 
 
-Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin,
-                      nframes_t sampleRate) :
+Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframes_t sampleRate) :
   Plugin(),
   m_world(world),
   m_plugin(plugin),
@@ -133,7 +130,7 @@ Lv2Plugin::~Lv2Plugin () {
   slv2_value_free( m_authorName );
   slv2_value_free( m_authorEmail );
   slv2_value_free( m_authorHomepage );
-  for (int i=0; i<m_ports.count(); ++i) {
+  for (int i=0; i < m_ports.count(); ++i) {
     delete m_ports[i];
   }
 
@@ -159,13 +156,13 @@ Port* Lv2Plugin::port (const QString& id) const
 }
 
 
-BufferProvider *Lv2Plugin::bufferProvider ()
+BufferProvider* Lv2Plugin::bufferProvider ()
 {
   return m_bufferProvider;
 }
 
 
-void Lv2Plugin::activate (BufferProvider *bp)
+void Lv2Plugin::activate (BufferProvider* bp)
 {
   if (!m_activated) {
     qDebug() << "Activating plugin" << name();
@@ -229,7 +226,7 @@ QString Lv2Plugin::copyright () const
 }
 
 
-void Lv2Plugin::process (const ProcessingContext & context)
+void Lv2Plugin::process (const ProcessingContext& context)
 {
   int count = portCount();
   for (int i=0; i<count; ++i) {
