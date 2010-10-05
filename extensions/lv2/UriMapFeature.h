@@ -22,6 +22,9 @@
  *
  */
 
+#ifndef UNISON_LV2_URI_MAP_FEATURE_H
+#define UNISON_LV2_URI_MAP_FEATURE_H
+
 #include "Feature.h"
 
 #include <lv2/uri-map.lv2/uri-map.h>
@@ -51,5 +54,7 @@ class UriMapFeature : public Feature
 
   } // Internal
 } // Lv2
+
+#endif
 
 // vim: tw=90 ts=8 sw=2 sts=2 et sta noai

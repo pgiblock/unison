@@ -155,6 +155,14 @@ class FeatureSet
      * @param feature The feature to add */
     void insert (Feature* feature);
 
+    /**
+     * Get a read-only list of features.  For Lv2World to clean-up features.
+     * @return the list */
+    const QList<Feature*> list() const
+    {
+      return m_features;
+    }
+
   private:
     QList<Feature*> m_features; ///< Our features
 

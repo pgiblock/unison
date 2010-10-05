@@ -22,6 +22,9 @@
  *
  */
 
+#ifndef UNISON_LV2_INSTANCE_ACCESS_FEATURE_H
+#define UNISON_LV2_INSTANCE_ACCESS_FEATURE_H
+
 #include "Feature.h"
 #include "Lv2Plugin.h"
 
@@ -59,5 +62,7 @@ class InstanceAccessFeature : public Feature
 
   } // Internal
 } // Lv2
+
+#endif
 
 // vim: tw=90 ts=8 sw=2 sts=2 et sta noai

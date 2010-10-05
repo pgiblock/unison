@@ -81,7 +81,9 @@ Lv2World::~Lv2World ()
 
   slv2_world_free( world );
 
-  // TODO: Yikes! leaking features
+  foreach (Feature* feature, features.list()) {
+    delete feature;
+  }
 }
 
   } // Internal
