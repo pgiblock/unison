@@ -58,7 +58,8 @@ Lv2Plugin::Lv2Plugin (const Lv2Plugin& other) :
 void Lv2Plugin::init ()
 {
   m_activated = false;
-  m_instance = slv2_plugin_instantiate( m_plugin, m_sampleRate, NULL );
+  m_features = m_world.features.array();
+  m_instance = slv2_plugin_instantiate( m_plugin, m_sampleRate, m_features->get() );
   Q_ASSERT(m_instance);
 
   m_name = slv2_plugin_get_name( m_plugin );
@@ -73,10 +74,11 @@ void Lv2Plugin::init ()
     qDebug() << i << m_ports[i]->name();
   }
 
-
   m_authorName     = slv2_plugin_get_author_name( m_plugin );
   m_authorEmail    = slv2_plugin_get_author_email( m_plugin );
   m_authorHomepage = slv2_plugin_get_author_homepage( m_plugin );
+
+  m_features->initialize( *this );
 
   qDebug() << "Instantiated Lv2Plugin:" << m_name;
 }

@@ -23,31 +23,16 @@
  */
 
 #include "Lv2World.h"
+#include "UriMapFeature.h"
 
 #include <QDebug>
 
 namespace Lv2 {
   namespace Internal {
 
-// Init features
- /*
-void lv2World_initFeatures ()
-{
-  UriMapFeature *uriMapFeature = new UriMapFeature(&uriMap);
-  m_featureVector.insert(uriMapFeature);
-
-  LV2Feature *features = new LV2Feature[2];
-  LV2Feature *uriMapFeature
-
-  LV2_URI_Map_Feature *uriMapData = 
-
-
-
-}
-*/
-
 
 Lv2World::Lv2World () :
+  uriMap(),
   features()
 {
   world = slv2_world_new();
@@ -66,6 +51,9 @@ Lv2World::Lv2World () :
   sampleRate =   slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "sampleRate" );
   inPlaceBroken =slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "inPlaceBroken" );
   gtkGui =       slv2_value_new_uri( world, "http://lv2plug.in/ns/extensions/ui#GtkUI" );
+
+  // Add the features
+  features.insert( new UriMapFeature(&uriMap) );
 
   qDebug() << "Created Lv2World.";
 }
@@ -86,6 +74,8 @@ Lv2World::~Lv2World ()
   slv2_value_free( gtkGui );
 
   slv2_world_free( world );
+
+  // TODO: Yikes! leaking features
 }
 
   } // Internal

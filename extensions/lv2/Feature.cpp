@@ -40,7 +40,7 @@ FeatureArray::FeatureArray (QList<Feature*> features) :
 {
   m_array = new LV2_Feature*[features.count()+1];
   int i=0;
-  foreach (const Feature* f, m_features) {
+  foreach (Feature* f, m_features) {
     m_array[i++] = f->lv2Feature();
   }
   m_array[i] = NULL;
@@ -83,7 +83,7 @@ Feature* FeatureSet::feature (const QString& uri) const
 }
 
 
-QSharedPointer<FeatureArray> FeatureSet::featureArray () const
+QSharedPointer<FeatureArray> FeatureSet::array () const
 {
   return QSharedPointer<FeatureArray>( new FeatureArray(m_features) );
 }

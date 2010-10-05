@@ -60,7 +60,7 @@ class Feature
      * returned value may or may not be shared.  The cleanup() function of this Feature
      * must be called with the LV2_Feature.
      * @return An LV2_Feature appropriate for a new Plugin  */
-    virtual LV2_Feature* lv2Feature () const = 0;
+    virtual LV2_Feature* lv2Feature () = 0;
 
     /**
      * Initialize feature if a reference to LV2_Handle is needed.  Some LV2 Features
@@ -117,7 +117,7 @@ class FeatureArray
     /**
      * The LV2_Features in an array for LV2 api.
      * @return an array with the LV@_Features */
-    LV2_Feature** array ()
+    const LV2_Feature* const * get ()
     {
       return m_array;
     }
@@ -146,7 +146,7 @@ class FeatureSet
     /**
      * Get an array of supported features.
      * @return an array of features */
-    QSharedPointer<FeatureArray> featureArray () const;
+    QSharedPointer<FeatureArray> array () const;
 
   protected:
     /**

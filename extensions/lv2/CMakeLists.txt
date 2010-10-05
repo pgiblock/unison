@@ -37,6 +37,8 @@ set(LV2_SRCS
     Lv2PluginProvider.cpp
     Lv2Port.cpp
     Lv2World.cpp
+    UriMap.cpp
+    UriMapFeature.cpp
 )
 
 set(LV2_MOC_HEADERS

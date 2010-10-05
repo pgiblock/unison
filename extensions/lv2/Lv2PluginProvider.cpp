@@ -22,6 +22,9 @@
  *
  */
 
+#include "Lv2PluginProvider.h"
+#include "Lv2PluginInfo.h"
+
 #include <QDir>
 #include <QFileInfo>
 #include <QLibrary>
@@ -30,8 +33,6 @@
 #include <QtDebug>
 
 #include <math.h>
-
-#include "Lv2PluginProvider.h"
   
 using namespace Unison;
 

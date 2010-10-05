@@ -69,6 +69,10 @@ class Lv2PluginProvider : public Core::IPluginProvider
   private:
     void addLv2Plugin (SLV2Plugin _plugin);
 
+    /**
+     * the lv2World. If we want to provide Lv2-support to other Extensions, then we
+     * will need to make expose lv2World
+     */
     Lv2World m_lv2World;
 
     /* We just hold on to all Infos here. We will probably store our information in an SQL

@@ -31,6 +31,7 @@
 #include <unison/PluginInfo.h>
 #include <unison/types.h>
 
+#include <QSharedPointer>
 #include <QVarLengthArray>
 #include <slv2/slv2.h>
 
@@ -116,6 +117,8 @@ class Lv2Plugin : public Unison::Plugin
     Unison::nframes_t m_sampleRate;
     QVarLengthArray<Unison::Port*, 16> m_ports;
     Unison::BufferProvider* m_bufferProvider;
+
+    QSharedPointer<FeatureArray> m_features;
 
     void init ();
 };
