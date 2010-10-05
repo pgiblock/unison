@@ -21,7 +21,7 @@
 # Boston, MA 02110-1301 USA.
 #
 
-configure_file(Lv2.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+configure_file(Lv2.extinfo ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 add_definitions(-DLV2_EXTENSION)
 
@@ -30,10 +30,13 @@ set(UNISON_BUFFER_LENGTH "1024" CACHE STRING
 
 
 set(LV2_SRCS
+    Feature.cpp
     Lv2Extension.cpp
     Lv2Plugin.cpp
+    Lv2PluginInfo.cpp
     Lv2PluginProvider.cpp
     Lv2Port.cpp
+    Lv2World.cpp
 )
 
 set(LV2_MOC_HEADERS

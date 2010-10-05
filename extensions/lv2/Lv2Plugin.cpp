@@ -35,47 +35,6 @@ using namespace Unison;
 namespace Lv2 {
   namespace Internal {
 
-Lv2World::Lv2World ()
-{
-  world = slv2_world_new();
-  Q_ASSERT(world);
-  slv2_world_load_all( world );
-
-  // Hold on to these classes for performance
-  inputClass =   slv2_value_new_uri( world, SLV2_PORT_CLASS_INPUT );
-  outputClass =  slv2_value_new_uri( world, SLV2_PORT_CLASS_OUTPUT );
-  controlClass = slv2_value_new_uri( world, SLV2_PORT_CLASS_CONTROL );
-  audioClass =   slv2_value_new_uri( world, SLV2_PORT_CLASS_AUDIO );
-  eventClass =   slv2_value_new_uri( world, SLV2_PORT_CLASS_EVENT );
-  midiClass =    slv2_value_new_uri( world, SLV2_EVENT_CLASS_MIDI );
-  integer =      slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "integer" );
-  toggled =      slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "toggled" );
-  sampleRate =   slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "sampleRate" );
-  inPlaceBroken =slv2_value_new_uri( world, SLV2_NAMESPACE_LV2 "inPlaceBroken" );
-  gtkGui =       slv2_value_new_uri( world, "http://lv2plug.in/ns/extensions/ui#GtkUI" );
-
-  qDebug() << "Created Lv2World.";
-}
-
-
-Lv2World::~Lv2World ()
-{
-  slv2_value_free( inputClass );
-  slv2_value_free( outputClass );
-  slv2_value_free( controlClass );
-  slv2_value_free( audioClass );
-  slv2_value_free( eventClass );
-  slv2_value_free( midiClass );
-  slv2_value_free( inPlaceBroken );
-  slv2_value_free( integer );
-  slv2_value_free( toggled );
-  slv2_value_free( sampleRate );
-  slv2_value_free( gtkGui );
-
-  slv2_world_free( world );
-}
-
-
 Lv2Plugin::Lv2Plugin (Lv2World& world, SLV2Plugin plugin, nframes_t sampleRate) :
   Plugin(),
   m_world(world),
@@ -265,47 +224,6 @@ const QSet<Node* const> Lv2Plugin::dependents () const {
   return n;
 }
 
-
-
-Lv2PluginInfo::Lv2PluginInfo (Lv2World& world, SLV2Plugin plugin) :
-  PluginInfo(),
-  m_world(world),
-  m_plugin(plugin)
-{
-
-  SLV2Value data;
-
-  setUniqueId( QString( slv2_value_as_uri( slv2_plugin_get_uri( plugin ) ) ) );
-
-  data = slv2_plugin_get_name( plugin );
-  setName( QString( slv2_value_as_string( data ) ) );
-  slv2_value_free( data );
-
-  data = slv2_plugin_get_author_name( plugin );
-  if (data) {
-    setAuthorName( QString( slv2_value_as_string( data ) ) );
-    slv2_value_free( data );
-  }
-
-  setAudioInputCount( slv2_plugin_get_num_ports_of_class(
-        plugin, world.inputClass, world.audioClass, NULL ) );
-
-  setAudioOutputCount( slv2_plugin_get_num_ports_of_class( plugin,
-        world.outputClass, world.audioClass, NULL ) );
-}
-
-
-Lv2PluginInfo::Lv2PluginInfo (const Lv2PluginInfo& d) :
-  PluginInfo(d),
-  m_world(d.m_world),
-  m_plugin(d.m_plugin)
-{}
-
-
-PluginPtr Lv2PluginInfo::createPlugin (nframes_t sampleRate) const
-{
-  return PluginPtr( new Lv2Plugin( m_world, m_plugin, sampleRate ) );
-}
 
   } // Internal
 } // Lv2
