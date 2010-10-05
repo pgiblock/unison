@@ -23,6 +23,7 @@
  */
 
 #include "Lv2World.h"
+#include "InstanceAccessFeature.h"
 #include "UriMapFeature.h"
 
 #include <QDebug>
@@ -53,6 +54,7 @@ Lv2World::Lv2World () :
   gtkGui =       slv2_value_new_uri( world, "http://lv2plug.in/ns/extensions/ui#GtkUI" );
 
   // Add the features
+  features.insert( new InstanceAccessFeature() );
   features.insert( new UriMapFeature(&uriMap) );
 
   qDebug() << "Created Lv2World.";
