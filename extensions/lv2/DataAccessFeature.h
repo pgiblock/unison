@@ -37,7 +37,7 @@ class DataAccessFeature : public Feature
 {
   public:
     DataAccessFeature () :
-      Feature(LV2_DATA_ACCESS_URI)
+      Feature(LV2_DATA_ACCESS_URI, UI_FEATURE)
     {};
 
     LV2_Feature* lv2Feature ()

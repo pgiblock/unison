@@ -37,7 +37,7 @@ class InstanceAccessFeature : public Feature
 {
   public:
     InstanceAccessFeature () :
-      Feature(LV2_INSTANCE_ACCESS_URI)
+      Feature(LV2_INSTANCE_ACCESS_URI, UI_FEATURE)
     {};
 
     LV2_Feature* lv2Feature ()

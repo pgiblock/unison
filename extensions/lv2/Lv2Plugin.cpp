@@ -59,7 +59,11 @@ void Lv2Plugin::init ()
 {
   m_activated = false;
   m_features = m_world.features.array();
-  m_instance = slv2_plugin_instantiate( m_plugin, m_sampleRate, m_features->get() );
+  m_instance = slv2_plugin_instantiate(
+      m_plugin, 
+      m_sampleRate,
+      m_features->get(Feature::PLUGIN_FEATURE) );
+  
   Q_ASSERT(m_instance);
 
   m_name = slv2_plugin_get_name( m_plugin );

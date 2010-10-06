@@ -30,18 +30,26 @@
 namespace Lv2 {
   namespace Internal {
 
-Feature::Feature (const QString& uri) :
-  m_uri( uri )
+Feature::Feature (const QString& uri, FeatureType type) :
+  m_uri( uri ),
+  m_type( type )
 {}
 
 
 FeatureArray::FeatureArray (QList<Feature*> features) :
-  m_features( features )
+  m_features( features ),
+  m_uiFeatureCount( 0 )
 {
   m_array = new LV2_Feature*[features.count()+1];
+
   int i=0;
   foreach (Feature* f, m_features) {
     m_array[i++] = f->lv2Feature();
+    
+    // Hold a count of the number of UI-features
+    if (f->type() == Feature::UI_FEATURE) {
+      m_uiFeatureCount = i;
+    }
   }
   m_array[i] = NULL;
 }
@@ -72,6 +80,19 @@ void FeatureArray::initialize (const Lv2Plugin& plugin)
 }
 
 
+const LV2_Feature* const * FeatureArray::get (Feature::FeatureType type)
+{
+  switch (type) {
+    case Feature::UI_FEATURE:
+      return m_array;
+
+    case Feature::PLUGIN_FEATURE:
+    default:
+      return &m_array[m_uiFeatureCount];
+  }
+}
+
+
 Feature* FeatureSet::feature (const QString& uri) const
 {
   foreach (Feature* f, m_features) {
@@ -94,7 +115,12 @@ void FeatureSet::insert (Feature* feature)
   Feature *exists = this->feature(feature->uri());
   if (!exists) {
     // Causes a COW, so old FeatureArrays will still have the old (proper) lists
-    m_features.append(feature);
+    if (feature->type() == Feature::UI_FEATURE) {
+      m_features.prepend(feature);
+    }
+    else {
+      m_features.append(feature);
+    }
   }
 }
 

@@ -32,7 +32,7 @@ namespace Lv2 {
 
 
 UriMapFeature::UriMapFeature (UriMap* uriMap) :
-  Feature(LV2_URI_MAP_URI),
+  Feature(LV2_URI_MAP_URI, PLUGIN_FEATURE),
   m_uriMap(uriMap)
 {
   m_feature.URI = LV2_URI_MAP_URI;

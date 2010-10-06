@@ -45,7 +45,12 @@ class Lv2World;
 class Feature
 {
   public:
-    Feature (const QString& uri);
+    enum FeatureType {
+      PLUGIN_FEATURE, ///< Feature is suitable for plugin and UI use
+      UI_FEATURE      ///< Feature is only suitable for UI use
+    };
+
+    Feature (const QString& uri, FeatureType type);
 
     /**
      * The URI of the Feature.
@@ -53,6 +58,14 @@ class Feature
     QString uri () const
     {
       return m_uri;
+    }
+
+    /**
+     * Some features are only needed for UI
+     * @return True if this feature is only for UIs */
+    FeatureType type () const
+    {
+      return m_type;
     }
 
     /**
@@ -81,6 +94,7 @@ class Feature
 
   private:
     QString m_uri;
+    FeatureType m_type;
 };
 
 
@@ -116,15 +130,14 @@ class FeatureArray
 
     /**
      * The LV2_Features in an array for LV2 api.
+     * @param  set to true if UI features should be returned as well
      * @return an array with the LV@_Features */
-    const LV2_Feature* const * get ()
-    {
-      return m_array;
-    }
+    const LV2_Feature* const * get (Feature::FeatureType type);
 
   private:
     LV2_Feature** m_array;
     QList<Feature*> m_features;
+    bool m_uiFeatureCount;
 };
 
 
