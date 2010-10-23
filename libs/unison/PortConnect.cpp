@@ -26,6 +26,7 @@
 
 #include "Port.h"
 #include "ProcessingContext.h"
+#include "Scheduler.h"
 
 namespace Unison {
   namespace Internal {
@@ -51,7 +52,7 @@ PortConnect::PortConnect (Port* port1, Port* port2) :
     m_producer = port2;
   }
 
-  m_compiled = new QList<Patch::CompiledProcessor>();
+  m_compiled = new Schedule();
   setState(Command::Created);
 }
 
@@ -73,7 +74,7 @@ void PortConnect::preExecute ()
   *m_producer->_connectedPorts() += m_consumer;
   *m_consumer->_connectedPorts() += m_producer;
   
-  m_patch->compile(*m_compiled);
+  m_patch->compileSchedule(*m_compiled);
   
   Command::preExecute();
 }
@@ -85,7 +86,7 @@ void PortConnect::execute (ProcessingContext& context)
   m_consumer->connectToBuffer();
   m_producer->connectToBuffer();
   // FIXME: Leaking m_patch->compiledProcessors();
-  m_patch->setCompiledProcessors(m_compiled);
+  m_patch->setSchedule(m_compiled);
   Command::execute(context);
 }
 

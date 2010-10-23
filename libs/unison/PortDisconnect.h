@@ -36,6 +36,8 @@ namespace Unison {
 
   namespace Internal {
 
+    class Schedule;
+
 class PortDisconnect : public Command
 {
   public:
@@ -47,7 +49,7 @@ class PortDisconnect : public Command
     Port* m_port1;
     Port* m_port2;
     Patch* m_patch;
-    QList<Patch::CompiledProcessor>* m_compiled;
+    Schedule* m_compiled;
 };
 
   } // Internal

@@ -1,5 +1,5 @@
 /*
- * PortConnect.h
+ * SpinLock.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,36 +22,69 @@
  *
  */
 
-
-#ifndef UNISON_PORT_CONNECT_H_
-#define UNISON_PORT_CONNECT_H_
-
-#include "Command.h"
-#include "Patch.h"
+#include "SpinLock.h"
 
 namespace Unison {
-  
-  namespace Internal {
-    
-    class Schedule;
 
-class PortConnect : public Command
+
+SpinLock::SpinLock ()
 {
-  public:
-    PortConnect (Port* port1, Port* port2);
-    void preExecute ();
-    void execute (ProcessingContext& context);
-    void postExecute ();
-  private:
-    Port* m_producer;
-    Port* m_consumer;
-    Patch* m_patch;
-    Schedule* m_compiled;
-};
+  release();
+}
 
-  } // Internal
-} // Unison
 
+void SpinLock::lock ()
+{
+  int count;
+  const int maxspin = 2048;
+
+  if (!acquire()) {
+    count = 0;
+    do {
+      do {
+        pause();
+
+        if (++count >= maxspin) {
+          /* let the OS reschedule every once in a while */
+          yield();
+          count = 0;
+        }
+      }
+      while (m_lock != 0);
+    }
+    while (!acquire());
+  }
+}
+
+
+bool SpinLock::tryLock ()
+{
+  return acquire();
+}
+
+
+void SpinLock::unlock ()
+{
+     release();
+}
+
+
+void SpinLock::pause ()
+{
+#if defined __i386__ || defined __x86_64
+    __asm__("pause");
+#else
+# error SpinLock::pause undefined on this platform
 #endif
+}
+
+
+void SpinLock::yield ()
+{
+  // Could yield to OS if we deem it safe.
+}
+
+
+} // Unison
 
 // vim: tw=90 ts=8 sw=2 sts=2 et sta noai

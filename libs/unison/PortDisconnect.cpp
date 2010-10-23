@@ -27,6 +27,7 @@
 
 #include "Port.h"
 #include "ProcessingContext.h"
+#include "Scheduler.h"
 
 namespace Unison {
   namespace Internal {
@@ -37,7 +38,7 @@ PortDisconnect::PortDisconnect (Port* port1, Port* port2) :
   m_port2(port2),
   m_patch(NULL)
 {
-  m_compiled = new QList<Patch::CompiledProcessor>();
+  m_compiled = new Schedule();
   setState(Command::Created);
 }
 
@@ -58,7 +59,7 @@ void PortDisconnect::preExecute ()
   *m_port1->_connectedPorts() -= m_port2;
   *m_port2->_connectedPorts() -= m_port1;
   
-  m_patch->compile(*m_compiled);
+  m_patch->compileSchedule(*m_compiled);
   
   Command::preExecute();
 }
@@ -69,7 +70,7 @@ void PortDisconnect::execute (ProcessingContext& context)
   m_port1->connectToBuffer();
   m_port2->connectToBuffer();
   // FIXME: Leaking m_patch->compiledProcessors();
-  m_patch->setCompiledProcessors(m_compiled);
+  m_patch->setSchedule(m_compiled);
   Command::execute(context);
 }
 

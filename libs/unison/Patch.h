@@ -27,6 +27,7 @@
 #define UNISON_PATCH_H_
 
 #include "Processor.h"
+#include "Scheduler.h"
 
 namespace Unison {
 
@@ -80,42 +81,19 @@ class Patch : public Processor
     const QSet<Node* const> dependencies () const;
     const QSet<Node* const> dependents () const;
 
-    // Private API :: TODO: Move to D-ptr
+    // Begin private API :: TODO: Move to D-ptr
 
-    /**
-     * A processor entry in the compiled list of Processors
-     * @internal
-     */
-    struct CompiledProcessor {
-      Processor* processor;
-    };
+    void compileSchedule (Internal::Schedule& output);
 
-    /**
-     * Compiles the given list of processors into a proper traversal for
-     * rendering.  Not reentrant.
-     * @param output The resulting traversal
-     * @internal
-     */
-    void compile (QList<CompiledProcessor>& output);
-
-    /**
-     * Swap the list of compiled processors.  Must be called in the Backend's
-     * processing thread before or after rendering of the current period.
-     * @param processors The new list of processors to use
-     */
-    void setCompiledProcessors (QList<CompiledProcessor>* processors)
+    void setSchedule (Internal::Schedule* schedule)
     {
-      m_compiled = processors;
+      m_schedule = schedule;
     }
 
-    /**
-     * @returns the current rendering order used by this Patch
-     */
-    QList<CompiledProcessor>* compiledProcessors () const
+    Internal::Schedule* schedule () const
     {
-      return m_compiled;
+      return m_schedule;
     }
-
 
   protected:
     /**
@@ -125,15 +103,7 @@ class Patch : public Processor
     {};
 
   private:
-
-    /**
-     * A recursive walk into the dependencies of the node.  Processors are appended to the
-     * output.  This uses the visited flag of Processor, therefore this function is not
-     * reentrant (and not const either).
-     */
-    void compileWalk (Node* n, QList<CompiledProcessor>& output);
-
-    QAtomicPointer< QList<CompiledProcessor> > m_compiled; ///< pointer to current order
+    QAtomicPointer<Internal::Schedule> m_schedule; // current schedule
     QList<Processor*> m_processors; ///< our children
 };
 

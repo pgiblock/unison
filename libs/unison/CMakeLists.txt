@@ -32,6 +32,8 @@ set(UNISON_SRCS
     PortDisconnect.cpp
     Processor.cpp
     SampleBuffer.cpp
+    Scheduler.cpp
+    SpinLock.cpp
 )
 
 set(UNISON_MOC_HEADERS
@@ -46,6 +48,7 @@ set(UNISON_INCLUDES
     BufferProvider.h
     Command.h
     ControlBuffer.h
+    FastRandom.h
     Node.h
     Patch.h
     Plugin.h
@@ -55,6 +58,7 @@ set(UNISON_INCLUDES
     Processor.h
     RingBuffer.h
     SampleBuffer.h
+    SpinLock.h
     types.h
 )
 
