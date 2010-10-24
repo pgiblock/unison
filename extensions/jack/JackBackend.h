@@ -32,6 +32,7 @@
 #include <core/IBackendProvider.h>
 
 #include <QObject>
+#include <QSemaphore>
 #include <QVarLengthArray>
 #include <jack/jack.h>
 
@@ -142,6 +143,8 @@ class JackBackend : public Unison::Backend
     bool m_running;                         ///< True if activated and still running
 
     Unison::Internal::WorkerGroup m_workers;
+    QSemaphore m_workersDone;
+    QVarLengthArray<void*> m_workerThreads; ///< FIXME: Hack!!
 };
 
   } // Internal

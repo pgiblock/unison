@@ -31,8 +31,11 @@
 
 #include <QAtomicInt>
 #include <QSemaphore>
+#include <QThread> // for debugging
 
 #include <stdlib.h> // for rand
+
+#define ENABLE_STEALING
 
 namespace Unison {
   namespace Internal {
@@ -131,7 +134,6 @@ class Worker
     
     bool runOnce (const ProcessingContext& ctx)
     {
-      printf("Run ...\n");
       // Look at us
       lock();
       WorkUnit* unit = m_readyList.pop();
@@ -139,6 +141,7 @@ class Worker
 
       // Stealing
       if (!unit) {
+        //printf("Stealing ...\n");
 #ifdef ENABLE_STEALING
         unit = stealRandomly();
         if (!unit) {
@@ -148,39 +151,45 @@ class Worker
         return false;
 #endif // ENABLE_STALING
       }
+      //printf("Running ...\n");
 
       // Processing
-      printf("Processing `%s`\n", qPrintable(unit->processor->name()));
+      printf("%d: Processing `%s`\n", QThread::currentThreadId(), qPrintable(unit->processor->name()));
       Processor* p = unit->processor;
       p->process(ctx);
 
-      if (m_group.workLeft.fetchAndAddOrdered(-1) == 1) {
-        return false;
-      }
+      int foo;
 
       // Readying dependents
       lock();
       for (WorkUnit** dp = unit->dependents; *dp; ++dp) {
         WorkUnit *u = *dp;
-        printf("decr: %llx  pre: %d\n", (unsigned long long)u, (int)u->wait);
+        //printf("decr: %llx  pre: %d\n", (unsigned long long)u, (int)u->wait);
         // Decrement the wait. if the old value was 1, then we are at 0 and done.
         if (u->wait.fetchAndAddOrdered(-1) == 1) {
-          printf("push: %llx \n", (unsigned long long)u);
+          //printf("push: %llx \n", (unsigned long long)u);
           // TODO: Can optimize by not pushing, then popping right back
-          m_group.workLeft.fetchAndAddOrdered(1);
+          foo = m_group.workLeft.fetchAndAddOrdered(1);
+          //printf("FOO +1: %d\n", (int)foo);
           m_readyList.push(u);
         }
       }
       unlock();
+
+      foo = m_group.workLeft.fetchAndAddOrdered(-1);
+      //printf("FOO -1: %d\n", (int)foo);
+      if (foo == 1) {
+        m_group.workLeft.fetchAndStoreOrdered(-1); // Special case: -1 done
+        return false;
+      }
+
 
       return true;
     }
 
     inline void run (const ProcessingContext& ctx)
     {
-      printf("Running ...\n");
-      while (runOnce(ctx)) {}
-      printf("Running Done.\n");
+      while (runOnce(ctx) && (int)m_group.workLeft >= 0) {}
     }
 
     inline WorkUnit* trySteal ()
@@ -188,7 +197,7 @@ class Worker
       WorkUnit* u = NULL;
       if (tryLock()) {
         u = m_readyList.steal();
-        lock();
+        unlock();
       }
       return u;
     }
@@ -218,8 +227,10 @@ class Worker
       Worker* victim = m_group.workers[n];
       // Can't steal from self.  TODO: Avoid this instead of working around it
       if (victim == this) {
-        victim = m_group.workers[(n+1) % m_group.workerCount];
+        n = (n+1) % m_group.workerCount;
       }
+      //printf("Going to steal from workers[%d]!\n", n);
+      victim = m_group.workers[n];
 
       // Now check if there is any point in stealing (avoid locking)
       if (!canStealFrom(victim)) {

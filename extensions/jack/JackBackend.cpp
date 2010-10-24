@@ -28,6 +28,7 @@
 #include <unison/Processor.h>
 
 #include <QDebug>
+#include <QThread>
 #include <QWaitCondition>
 #include <jack/jack.h>
 
@@ -43,6 +44,50 @@ using namespace Unison;
 
 namespace Jack {
   namespace Internal {
+
+class JackWorkerThread : public QThread
+{
+  public:
+    JackWorkerThread (Unison::Internal::Worker* w, QSemaphore& done);
+    void run ();
+
+    void run (ProcessingContext& ctx);
+
+  protected:
+    Unison::Internal::Worker* m_worker;
+    QSemaphore m_wait;
+    // Shared state:
+    QSemaphore& m_done;
+    ProcessingContext* m_context;
+};
+
+JackWorkerThread::JackWorkerThread (Unison::Internal::Worker* w, QSemaphore& done) :
+  m_worker(w),
+  m_wait(),
+  m_done(done)
+{}
+
+void JackWorkerThread::run ()
+{
+  while (true) {
+    printf("JWT: waiting...\n");
+    m_wait.acquire();
+
+    printf("JWT: running!\n");
+    m_worker->run(*m_context);
+
+    printf("JWT: done!\n");
+    m_done.release(1);
+  }
+  // exec(); We don't want event handling
+}
+
+void JackWorkerThread::run (ProcessingContext& ctx)
+{
+  m_context = &ctx;
+  m_wait.release();
+}
+
 
 Backend* JackBackendProvider::createBackend()
 {
@@ -60,9 +105,13 @@ JackBackend::JackBackend () :
 {
   initClient();
 
-  m_workers.workers = new Unison::Internal::Worker*[1];
-  m_workers.workerCount = 1;
-  m_workers.workers[0] = new Unison::Internal::Worker(m_workers);
+  m_workers.workers = new Unison::Internal::Worker*[2];
+  m_workers.workerCount = 2;
+  m_workers.workers[0] = new Unison::Internal::Worker(m_workers); // JackCB
+  m_workers.workers[1] = new Unison::Internal::Worker(m_workers); // Thread
+
+  m_workerThreads.append(new JackWorkerThread(m_workers.workers[1], m_workersDone));
+  ((JackWorkerThread*)m_workerThreads[0])->start();
 }
 
 
@@ -317,8 +366,16 @@ int JackBackend::processCb (nframes_t nframes, void* a)
 
   ProcessingContext context( nframes );
 
+  // Process commands
   Unison::Internal::Commander::instance()->process(context);
 
+  Unison::Internal::Worker** workers = backend->m_workers.workers;
+  Unison::Internal::Schedule* s = backend->rootPatch()->schedule();
+
+  // TODO: Remove this check, it is rather a hack
+  if (s->readyWorkCount==0) {
+    return 0;
+  }
 
   // Aquire JACK buffers
   for (i=0; i<backend->portCount(); ++i) {
@@ -339,15 +396,18 @@ int JackBackend::processCb (nframes_t nframes, void* a)
     // us remove JackBufferProvider and silly calls to connectToBuffer()...
   }
 
-  // Run our only worker
-  Unison::Internal::Worker* worker = backend->m_workers.workers[0];
 
-  Unison::Internal::Schedule* s = backend->rootPatch()->schedule();
-  worker->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
-  worker->run(context);
+  printf("Initializing work with: %d units\n", s->readyWorkCount);
+  backend->m_workers.workLeft = s->readyWorkCount;
 
-  //Q_ASSERT(backend->rootPatch());
-  //backend->rootPatch()->process(context);
+  // workers[1] is on workerThreads[0]
+  ((JackWorkerThread*)backend->m_workerThreads[0])->run(context); // unblock slave
+
+  workers[0]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
+  workers[0]->run(context);
+
+  // join with slaves TODO: spin on a count?
+  backend->m_workersDone.acquire(1);
 
   return 0;
 }

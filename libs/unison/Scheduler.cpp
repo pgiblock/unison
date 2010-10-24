@@ -70,11 +70,15 @@ WorkUnit* WorkQueue::pop ()
 
 WorkUnit* WorkQueue::steal ()
 {
-  Q_ASSERT(m_tail);
+  if (!m_tail) {
+    return NULL;
+  }
   WorkUnit* r = m_tail;
   m_tail = m_tail->prev;
-  m_tail->next = NULL;
-  if (!m_tail) {
+  if (m_tail) {
+    m_tail->next = NULL;
+  }
+  else {
     m_head = NULL;
   }
   return r;
