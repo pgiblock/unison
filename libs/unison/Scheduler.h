@@ -52,7 +52,7 @@ class Worker;
  * Worker). The WorkUnit only exists in a single list, so this restriction is fine. */
 struct WorkUnit
 {
-  //Q_DISSSABLE_COPY(WorkUnit)
+  //Q_DISABLE_COPY(WorkUnit)
 
   // Work unit definition 
   Processor* processor;   ///< The processor to run
@@ -105,6 +105,7 @@ class WorkQueue
 
 class WorkerGroup
 {
+  public: // Temporary full-public
   Worker** workers;
   int workerCount;
 
@@ -130,22 +131,26 @@ class Worker
     
     bool runOnce (const ProcessingContext& ctx)
     {
+      printf("Run ...\n");
       // Look at us
       lock();
       WorkUnit* unit = m_readyList.pop();
       unlock();
 
       // Stealing
-#ifdef ENABLE_STEALING
       if (!unit) {
+#ifdef ENABLE_STEALING
         unit = stealRandomly();
         if (!unit) {
-          return;
+          return true;
         }
+#else  // ENABLE_STEALING
+        return false;
+#endif // ENABLE_STALING
       }
-#endif // ENABLE_STEALING
 
       // Processing
+      printf("Processing `%s`\n", qPrintable(unit->processor->name()));
       Processor* p = unit->processor;
       p->process(ctx);
 
@@ -154,17 +159,17 @@ class Worker
       }
 
       // Readying dependents
-      WorkUnit** d = unit->dependents;
       lock();
-      while (d) {
-        WorkUnit* u = *d;
+      for (WorkUnit** dp = unit->dependents; *dp; ++dp) {
+        WorkUnit *u = *dp;
+        printf("decr: %llx  pre: %d\n", (unsigned long long)u, (int)u->wait);
         // Decrement the wait. if the old value was 1, then we are at 0 and done.
         if (u->wait.fetchAndAddOrdered(-1) == 1) {
+          printf("push: %llx \n", (unsigned long long)u);
           // TODO: Can optimize by not pushing, then popping right back
           m_group.workLeft.fetchAndAddOrdered(1);
           m_readyList.push(u);
         }
-        d++;
       }
       unlock();
 
@@ -173,7 +178,9 @@ class Worker
 
     inline void run (const ProcessingContext& ctx)
     {
+      printf("Running ...\n");
       while (runOnce(ctx)) {}
+      printf("Running Done.\n");
     }
 
     inline WorkUnit* trySteal ()
@@ -184,6 +191,16 @@ class Worker
         lock();
       }
       return u;
+    }
+
+    /**
+     * Pushes the null-terminated list onto the queue. No locking occurs since this
+     * function would run while any other workers are blocked */
+    inline void pushReadyWorkUnsafe (WorkUnit* units, int count)
+    {
+      for (int i=0; i<count; ++i) {
+        m_readyList.push(&units[i]);
+      }
     }
 
   private:
@@ -248,6 +265,9 @@ class Schedule
   //  * The initial queue of ready work. This queue is technically invalid at all times.
   //  * It is only used to initialize the Queue used by the Worker itself. */
   // const WorkQueue queue;
+
+  WorkUnit* readyWork;
+  int readyWorkCount;
 
   /**
    * All the units, for resource management.

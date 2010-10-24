@@ -54,11 +54,15 @@ void WorkQueue::push (WorkUnit* u)
 
 WorkUnit* WorkQueue::pop ()
 {
-  Q_ASSERT(m_head);
+  if (!m_head) {
+    return NULL;
+  }
   WorkUnit* r = m_head;
   m_head = m_head->next;
-  m_head->prev = NULL;
-  if (!m_head) {
+  if (m_head) {
+    m_head->prev = NULL;
+  }
+  else {
     m_tail = NULL;
   }
   return r;

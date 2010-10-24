@@ -28,6 +28,7 @@
 #include "JackPort.h"
 
 #include <unison/Backend.h>
+#include <unison/Scheduler.h> // For Internal::WorkerGroup
 #include <core/IBackendProvider.h>
 
 #include <QObject>
@@ -139,6 +140,8 @@ class JackBackend : public Unison::Backend
     Unison::nframes_t m_sampleRate;         ///< Current sampling rate
     bool m_freewheeling;                    ///< True if we are freewheeling
     bool m_running;                         ///< True if activated and still running
+
+    Unison::Internal::WorkerGroup m_workers;
 };
 
   } // Internal

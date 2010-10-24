@@ -35,6 +35,8 @@
 #include <core/Engine.h>
 #include <unison/AudioBuffer.h>
 #include <unison/Commander.h>
+#include <unison/Patch.h>
+#include <unison/Scheduler.h>
 #include "JackBufferProvider.h"
 
 using namespace Unison;
@@ -57,6 +59,10 @@ JackBackend::JackBackend () :
   m_running(false)
 {
   initClient();
+
+  m_workers.workers = new Unison::Internal::Worker*[1];
+  m_workers.workerCount = 1;
+  m_workers.workers[0] = new Unison::Internal::Worker(m_workers);
 }
 
 
@@ -333,8 +339,15 @@ int JackBackend::processCb (nframes_t nframes, void* a)
     // us remove JackBufferProvider and silly calls to connectToBuffer()...
   }
 
-  Q_ASSERT(backend->rootPatch());
-  backend->rootPatch()->process(context);
+  // Run our only worker
+  Unison::Internal::Worker* worker = backend->m_workers.workers[0];
+
+  Unison::Internal::Schedule* s = backend->rootPatch()->schedule();
+  worker->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
+  worker->run(context);
+
+  //Q_ASSERT(backend->rootPatch());
+  //backend->rootPatch()->process(context);
 
   return 0;
 }

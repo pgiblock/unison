@@ -32,7 +32,7 @@
 namespace Unison {
 
   class BackendPort;
-  class Processor;
+  class Patch;
 
 /**
  * Backend encapsulates Audio-Interface compatibility.  There could theoretically be
@@ -143,18 +143,18 @@ class Backend : public QObject
      * Set the root-processor used by this backend.  I think ideally, we would do this in
      * the Engine. But, putting it in the Backend simplifies things for now
      */
-    void setRootProcessor (Processor* processor)
+    void setRootProcessor (Patch* processor)
     {
       m_rootPatch = processor;
     }
 
-    Processor* rootPatch () const
+    Patch* rootPatch () const
     {
       return m_rootPatch;
     }
 
   private:
-    Processor* m_rootPatch;   ///< Pointer to the root patch/processor
+    Patch* m_rootPatch;   ///< Pointer to the root patch/processor
 
 };
 

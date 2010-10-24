@@ -91,8 +91,13 @@ void Patch::setBufferLength (PortType type, nframes_t len)
 void Patch::process (const ProcessingContext& context)
 {
   Q_UNUSED(context);
+
   // We don't actually need to do anything, scheduler will
   // pull in our children as dependents
+  for (int i=0; i<m_schedule->workCount; ++i) {
+    Unison::Internal::WorkUnit& w = m_schedule->work[i];
+    w.wait = w.initialWait;
+  } 
 }
 
 
@@ -161,9 +166,14 @@ void Patch::remove (Processor* processor)
 
 void Patch::compileSchedule (Internal::Schedule& output)
 {
+  qDebug() << "Compiling schedule for" << name()
+           << "with" << m_processors.count() << "children.";
   // FIXME: this is not threadsafe, lock m_processors.
   output.workCount = m_processors.count();
   output.work = new Internal::WorkUnit[output.workCount];
+
+  output.readyWorkCount = 1;
+  output.readyWork = new Internal::WorkUnit[output.readyWorkCount];
   
   QListIterator<Processor*> i( m_processors );
   for (int wc=0; i.hasNext(); ++wc) {
@@ -203,6 +213,16 @@ void Patch::compileSchedule (Internal::Schedule& output)
     }
     output.work[wc].dependents[dc] = NULL; // NULL termination
   }
+
+  // Now prepare the Patch gwork
+  output.readyWork[0].processor = this;
+  output.readyWork[0].initialWait = 0;
+  output.readyWork[0].dependents = new Internal::WorkUnit*[output.workCount+1];
+  int dc=0;
+  for (; dc < output.workCount; ++dc) {
+    output.readyWork[0].dependents[dc] = &output.work[dc];
+  }
+  output.readyWork[0].dependents[dc] = NULL; // NULL termination
 }
 
 
