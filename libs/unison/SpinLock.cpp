@@ -23,6 +23,7 @@
  */
 
 #include "SpinLock.h"
+#include <QThread>
 
 namespace Unison {
 
@@ -36,7 +37,7 @@ SpinLock::SpinLock ()
 void SpinLock::lock ()
 {
   int count;
-  const int maxspin = 2048;
+  const int maxspin = 1048;
 
   if (!acquire()) {
     count = 0;
@@ -82,6 +83,7 @@ void SpinLock::pause ()
 void SpinLock::yield ()
 {
   // Could yield to OS if we deem it safe.
+  QThread::yieldCurrentThread();
 }
 
 

@@ -40,6 +40,9 @@
 #include <unison/Scheduler.h>
 #include "JackBufferProvider.h"
 
+// For pthread hack - abstract to platform-agnostic utils
+#include <pthread.h>
+
 using namespace Unison;
 
 namespace Jack {
@@ -54,6 +57,8 @@ class JackWorkerThread : public QThread
     void run (ProcessingContext& ctx);
 
   protected:
+    void setSchedulingPriority (int policy, unsigned int priority);
+
     Unison::Internal::Worker* m_worker;
     QSemaphore m_wait;
     // Shared state:
@@ -67,16 +72,52 @@ JackWorkerThread::JackWorkerThread (Unison::Internal::Worker* w, QSemaphore& don
   m_done(done)
 {}
 
+
+void JackWorkerThread::setSchedulingPriority (int policy, unsigned int priority)
+{
+  sched_param sp;
+  sp.sched_priority = priority;
+  pthread_t thread = pthread_self();
+  int result = pthread_setschedparam(thread, policy, &sp);
+  if (!result) {
+    printf("Setting JWT scheduling policy: ");
+    switch (policy) {
+      case SCHED_FIFO:  printf("SCHED_FIFO");  break;
+      case SCHED_RR:    printf("SCHED_RR");    break;
+      case SCHED_OTHER: printf("SCHED_OTHER"); break;
+#ifdef SCHED_BATCH
+      case SCHED_BATCH: printf("SCHED_BATCH"); break;
+#endif
+      default:          printf("Unknown");     break;
+    }
+    printf(" and priority: %u\n", sp.sched_priority);
+  }
+  else {
+    printf("Unable to set scheduling policy\n");
+  }
+}
+
+
 void JackWorkerThread::run ()
 {
+  /*
+  struct sched_param sparam;
+  sparam.sched_priority = ( sched_get_priority_max( SCHED_FIFO ) +
+                            sched_get_priority_min( SCHED_FIFO ) ) / 2;
+  if (sched_setscheduler( 0, SCHED_FIFO, &sparam ) == -1 ) {
+    printf( "Notice: could not set realtime priority.\n" );
+  }*/
+  printf("JWT: started!\n");
+  setSchedulingPriority(SCHED_FIFO, 40);
+
   while (true) {
-    printf("JWT: waiting...\n");
+    //printf("JWT: waiting...\n");
     m_wait.acquire();
 
-    printf("JWT: running!\n");
+    //printf("JWT: running!\n");
     m_worker->run(*m_context);
 
-    printf("JWT: done!\n");
+    //printf("JWT: done!\n");
     m_done.release(1);
   }
   // exec(); We don't want event handling
@@ -397,7 +438,7 @@ int JackBackend::processCb (nframes_t nframes, void* a)
   }
 
 
-  printf("Initializing work with: %d units\n", s->readyWorkCount);
+  //printf("Initializing work with: %d units\n", s->readyWorkCount);
   backend->m_workers.workLeft = s->readyWorkCount;
 
   // workers[1] is on workerThreads[0]

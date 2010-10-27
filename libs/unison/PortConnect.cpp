@@ -74,6 +74,7 @@ void PortConnect::preExecute ()
   *m_producer->_connectedPorts() += m_consumer;
   *m_consumer->_connectedPorts() += m_producer;
   
+  printf("Compiling for PortConnect (%x)\n", this);
   m_patch->compileSchedule(*m_compiled);
   
   Command::preExecute();
@@ -82,10 +83,11 @@ void PortConnect::preExecute ()
 
 void PortConnect::execute (ProcessingContext& context)
 {
+  printf("Executing PortConnect (%x)\n", this);
   // Connect Consumer first, to clear out any silence buffer
   m_consumer->connectToBuffer();
   m_producer->connectToBuffer();
-  // FIXME: Leaking m_patch->compiledProcessors();
+  // FIXME: Leaking m_patch->schedule();
   m_patch->setSchedule(m_compiled);
   Command::execute(context);
 }

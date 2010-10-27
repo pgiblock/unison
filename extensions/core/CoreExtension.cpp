@@ -133,7 +133,7 @@ void CoreExtension::extensionsInitialized()
 
   // Loading a mix of LADSPA and LV2
   QStringList plugins;
-  plugins << "http://ladspa.org/plugins/2143"
+  plugins //<< "http://ladspa.org/plugins/2143"
           << "http://calf.sourceforge.net/plugins/Reverb"
           << "http://calf.sourceforge.net/plugins/Phaser";
 
@@ -159,7 +159,7 @@ void CoreExtension::extensionsInitialized()
 
   backend->activate();
   
-  const int effects = 1; //50/3;
+  const int effects = 20; // * 5 * 2
   const int lines = 3;
 
   for (int l = 1; l <= lines; ++l) {

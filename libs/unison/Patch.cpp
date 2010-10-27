@@ -223,6 +223,31 @@ void Patch::compileSchedule (Internal::Schedule& output)
     output.readyWork[0].dependents[dc] = &output.work[dc];
   }
   output.readyWork[0].dependents[dc] = NULL; // NULL termination
+
+  // Print it out
+  printf("Compiled!!! \n");
+  /*
+  int wc;
+  for (wc=0; wc< output.workCount; ++wc) {
+    Unison::Internal::WorkUnit& w = output.work[wc];
+    printf(" Work: `%s` (%x) wait: %d\n",
+           qPrintable(w.processor->name()), w.processor, w.initialWait);
+    for (Unison::Internal::WorkUnit** wpp = w.dependents; *wpp; ++wpp) {
+      printf("  Dep: `%s` (%x) wait: %d\n",
+             qPrintable((*wpp)->processor->name()), (*wpp)->processor, (*wpp)->initialWait);
+    }
+  }
+  for (wc=0; wc< output.readyWorkCount; ++wc) {
+    Unison::Internal::WorkUnit &w = output.readyWork[wc];
+    printf(" Rdy Work: `%s` (%x) wait: %d\n", qPrintable(w.processor->name()), w.processor, w.initialWait);
+    for (Unison::Internal::WorkUnit** wpp = w.dependents; *wpp; ++wpp) {
+      printf("  Dep: `%s` (%x) wait: %d\n",
+             qPrintable((*wpp)->processor->name()), (*wpp)->processor, (*wpp)->initialWait);
+    }
+  }
+  printf("\n");
+*/
+
 }
 
 

@@ -139,12 +139,15 @@ class Worker
       WorkUnit* unit = m_readyList.pop();
       unlock();
 
+      //printf("%d: Running..\n", QThread::currentThreadId());
       // Stealing
       if (!unit) {
         //printf("Stealing ...\n");
 #ifdef ENABLE_STEALING
+        //printf("%d: Stealing..\n", QThread::currentThreadId());
         unit = stealRandomly();
         if (!unit) {
+          //printf("%d: Failed steal\n", QThread::currentThreadId());
           return true;
         }
 #else  // ENABLE_STEALING
@@ -154,7 +157,8 @@ class Worker
       //printf("Running ...\n");
 
       // Processing
-      printf("%d: Processing `%s`\n", QThread::currentThreadId(), qPrintable(unit->processor->name()));
+      //printf("%x: Processing `%s` (%x)\n", QThread::currentThreadId(),
+      //       qPrintable(unit->processor->name()),unit->processor);
       Processor* p = unit->processor;
       p->process(ctx);
 
@@ -164,10 +168,13 @@ class Worker
       lock();
       for (WorkUnit** dp = unit->dependents; *dp; ++dp) {
         WorkUnit *u = *dp;
-        //printf("decr: %llx  pre: %d\n", (unsigned long long)u, (int)u->wait);
+        //printf("%x: decr: %llx  (%x) pre: %d\n", QThread::currentThreadId(),
+        //       (unsigned long long)u, u->processor, (int)u->wait);
         // Decrement the wait. if the old value was 1, then we are at 0 and done.
         if (u->wait.fetchAndAddOrdered(-1) == 1) {
-          //printf("push: %llx \n", (unsigned long long)u);
+          //printf("%x: push: %llx (%x) \n", QThread::currentThreadId(),
+          //       (unsigned long long)u, u->processor);
+
           // TODO: Can optimize by not pushing, then popping right back
           foo = m_group.workLeft.fetchAndAddOrdered(1);
           //printf("FOO +1: %d\n", (int)foo);
@@ -179,6 +186,7 @@ class Worker
       foo = m_group.workLeft.fetchAndAddOrdered(-1);
       //printf("FOO -1: %d\n", (int)foo);
       if (foo == 1) {
+        //printf("%x: WE SHOULD BE DONE!!!\n", QThread::currentThreadId());
         m_group.workLeft.fetchAndStoreOrdered(-1); // Special case: -1 done
         return false;
       }
