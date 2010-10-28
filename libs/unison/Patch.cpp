@@ -225,8 +225,8 @@ void Patch::compileSchedule (Internal::Schedule& output)
   output.readyWork[0].dependents[dc] = NULL; // NULL termination
 
   // Print it out
-  printf("Compiled!!! \n");
   /*
+  printf("Compiled!!! \n");
   int wc;
   for (wc=0; wc< output.workCount; ++wc) {
     Unison::Internal::WorkUnit& w = output.work[wc];

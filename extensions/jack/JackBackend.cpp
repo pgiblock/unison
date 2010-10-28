@@ -80,44 +80,35 @@ void JackWorkerThread::setSchedulingPriority (int policy, unsigned int priority)
   pthread_t thread = pthread_self();
   int result = pthread_setschedparam(thread, policy, &sp);
   if (!result) {
-    printf("Setting JWT scheduling policy: ");
+    QDebug dbg = qDebug();
+    dbg << "Setting JWT scheduling policy:";
     switch (policy) {
-      case SCHED_FIFO:  printf("SCHED_FIFO");  break;
-      case SCHED_RR:    printf("SCHED_RR");    break;
-      case SCHED_OTHER: printf("SCHED_OTHER"); break;
+      case SCHED_FIFO:  dbg << "SCHED_FIFO";  break;
+      case SCHED_RR:    dbg << "SCHED_RR";    break;
+      case SCHED_OTHER: dbg << "SCHED_OTHER"; break;
 #ifdef SCHED_BATCH
-      case SCHED_BATCH: printf("SCHED_BATCH"); break;
+      case SCHED_BATCH: dbg << "SCHED_BATCH"; break;
 #endif
-      default:          printf("Unknown");     break;
+      default:          dbg << "Unknown";     break;
     }
-    printf(" and priority: %u\n", sp.sched_priority);
+    dbg << "and priority:" << sp.sched_priority;
   }
   else {
-    printf("Unable to set scheduling policy\n");
+    qDebug() << "Unable to set scheduling policy";
   }
 }
 
 
 void JackWorkerThread::run ()
 {
-  /*
-  struct sched_param sparam;
-  sparam.sched_priority = ( sched_get_priority_max( SCHED_FIFO ) +
-                            sched_get_priority_min( SCHED_FIFO ) ) / 2;
-  if (sched_setscheduler( 0, SCHED_FIFO, &sparam ) == -1 ) {
-    printf( "Notice: could not set realtime priority.\n" );
-  }*/
-  printf("JWT: started!\n");
+  qDebug() << "JWT: started!\n";
   setSchedulingPriority(SCHED_FIFO, 40);
 
   while (true) {
-    //printf("JWT: waiting...\n");
     m_wait.acquire();
 
-    //printf("JWT: running!\n");
     m_worker->run(*m_context);
 
-    //printf("JWT: done!\n");
     m_done.release(1);
   }
   // exec(); We don't want event handling
@@ -438,7 +429,6 @@ int JackBackend::processCb (nframes_t nframes, void* a)
   }
 
 
-  //printf("Initializing work with: %d units\n", s->readyWorkCount);
   backend->m_workers.workLeft = s->readyWorkCount;
 
   // workers[1] is on workerThreads[0]
