@@ -102,7 +102,7 @@ void JackWorkerThread::setSchedulingPriority (int policy, unsigned int priority)
 void JackWorkerThread::run ()
 {
   qDebug() << "JWT: started!\n";
-  setSchedulingPriority(SCHED_FIFO, 40);
+  setSchedulingPriority(SCHED_FIFO, 10);
 
   while (true) {
     m_wait.acquire();
@@ -123,11 +123,11 @@ void JackWorkerThread::run (ProcessingContext& ctx)
 
 Backend* JackBackendProvider::createBackend()
 {
-  return new JackBackend();
+  return new JackBackend(m_workerCount);
 }
 
 
-JackBackend::JackBackend () :
+JackBackend::JackBackend (int workerCount) :
   m_client(NULL),
   m_myPorts(),
   m_bufferLength(0),
@@ -135,15 +135,20 @@ JackBackend::JackBackend () :
   m_freewheeling(false),
   m_running(false)
 {
+  Q_ASSERT(workerCount > 0);
   initClient();
 
-  m_workers.workers = new Unison::Internal::Worker*[2];
-  m_workers.workerCount = 2;
-  m_workers.workers[0] = new Unison::Internal::Worker(m_workers); // JackCB
-  m_workers.workers[1] = new Unison::Internal::Worker(m_workers); // Thread
+  m_workers.workers = new Unison::Internal::Worker*[workerCount];
+  m_workers.workerCount = workerCount;
+  for (int i=0; i<workerCount; ++i) {
+    m_workers.workers[i] = new Unison::Internal::Worker(m_workers);
+  }
 
-  m_workerThreads.append(new JackWorkerThread(m_workers.workers[1], m_workersDone));
-  ((JackWorkerThread*)m_workerThreads[0])->start();
+  m_workerThreads.reserve(workerCount-1);
+  for (int i=0; i<workerCount-1; ++i) {
+    m_workerThreads.append(new JackWorkerThread(m_workers.workers[i], m_workersDone));
+    ((JackWorkerThread*)m_workerThreads[i])->start();
+  }
 }
 
 
@@ -431,14 +436,18 @@ int JackBackend::processCb (nframes_t nframes, void* a)
 
   backend->m_workers.workLeft = s->readyWorkCount;
 
-  // workers[1] is on workerThreads[0]
-  ((JackWorkerThread*)backend->m_workerThreads[0])->run(context); // unblock slave
+  int numThreads = backend->m_workerThreads.size();
+  workers[numThreads]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
 
-  workers[0]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
-  workers[0]->run(context);
+  for (int i=0; i < numThreads; ++i) {
+    ((JackWorkerThread*)backend->m_workerThreads[i])->run(context); // unblock slave
+  }
+
+  // Run us
+  workers[numThreads]->run(context);
 
   // join with slaves TODO: spin on a count?
-  backend->m_workersDone.acquire(1);
+  backend->m_workersDone.acquire(numThreads);
 
   return 0;
 }

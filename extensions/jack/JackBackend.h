@@ -43,8 +43,9 @@ class JackBackendProvider : public Core::IBackendProvider
 {
   Q_OBJECT
   public:
-    JackBackendProvider (QObject* parent = 0) :
-      Core::IBackendProvider(parent)
+    JackBackendProvider (QObject* parent = 0, int workerCount = 1) :
+      Core::IBackendProvider(parent),
+      m_workerCount(workerCount)
     {};
 
     ~JackBackendProvider ()
@@ -56,6 +57,10 @@ class JackBackendProvider : public Core::IBackendProvider
     };
 
     Unison::Backend* createBackend();
+
+  private:
+    // Our configuration - should make a global settings system soon
+    int m_workerCount;
 };
 
 
@@ -73,7 +78,7 @@ class JackBackend : public Unison::Backend
   Q_OBJECT
 
   public:
-    JackBackend ();
+    JackBackend (int workerCount);
     virtual ~JackBackend ();
 
     /**

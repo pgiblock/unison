@@ -46,6 +46,9 @@ public:
 
 private:
   void parseArguments(const QStringList& arguments);
+
+  // Parsed arguments
+  int m_workerCount;
 };
 
   } // namespace Internal
