@@ -166,8 +166,8 @@ void Patch::remove (Processor* processor)
 
 void Patch::compileSchedule (Internal::Schedule& output)
 {
-  qDebug() << "Compiling schedule for" << name()
-           << "with" << m_processors.count() << "children.";
+  //qDebug() << "Compiling schedule for" << name()
+  //         << "with" << m_processors.count() << "children.";
   // FIXME: this is not threadsafe, lock m_processors.
   output.workCount = m_processors.count();
   output.work = new Internal::WorkUnit[output.workCount];

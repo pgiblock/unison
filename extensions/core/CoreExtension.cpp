@@ -159,8 +159,8 @@ void CoreExtension::extensionsInitialized()
 
   backend->activate();
   
-  const int effects = 20; // * 5 * 2
-  const int lines = 3;
+  const int effects = 1; // * 5 * 2
+  const int lines = 20;
 
   for (int l = 1; l <= lines; ++l) {
 

@@ -161,7 +161,7 @@ void Port::acquireOutputBuffer (BufferProvider& provider, nframes_t len)
 
 void Port::updateBufferValue ()
 {
-  qDebug() << "Updating value of private buffer for port" << name();
+  //qDebug() << "Updating value of private buffer for port" << name();
   if (buffer() && type() == ControlPort) {
     // Verified ControlPort, so data must be a single float
     float* data = static_cast<float*>( buffer()->data() );

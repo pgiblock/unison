@@ -163,7 +163,6 @@ void FxLine::addPlugin(const PluginInfoPtr info, int pos)
     Entry producer = m_entries.value(idx-1);
     Entry consumer = m_entries.value(idx);
 
-    qWarning() << "FX LINE ADD producer port count:" << producer.outputPorts.count();
     for (int i=0; i<producer.outputPorts.count(); ++i) {
       Port* producerPort = producer.outputPorts.at(i);
       Port* consumerPort = consumer.inputPorts.at(i);
@@ -175,8 +174,6 @@ void FxLine::addPlugin(const PluginInfoPtr info, int pos)
       else {
         producerPort->disconnect(consumerPort);
       }
-      qWarning() << "FX: Connecting: " << producerPort->name() << " TO " << entry.inputPorts.at(i)->name();
-      qWarning() << "FX: and Connecting: " << consumerPort->name() << " TO " << entry.outputPorts.at(i)->name();
       producerPort->connect(entry.inputPorts.at(i));
       consumerPort->connect(entry.outputPorts.at(i));
     }

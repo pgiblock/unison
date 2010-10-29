@@ -69,13 +69,10 @@ void Lv2Plugin::init ()
   m_name = slv2_plugin_get_name( m_plugin );
   Q_ASSERT(m_name);
 
-  qDebug() << "Initializing Lv2Plugin" << m_name << "with ports:";
-
   int count = portCount();
   m_ports.resize( count );
   for (int i = 0; i < count; ++i) {
     m_ports[i] = new Lv2Port( m_world, this, i );
-    qDebug() << i << m_ports[i]->name();
   }
 
   m_authorName     = slv2_plugin_get_author_name( m_plugin );
@@ -83,8 +80,6 @@ void Lv2Plugin::init ()
   m_authorHomepage = slv2_plugin_get_author_homepage( m_plugin );
 
   m_features->initialize( *this );
-
-  qDebug() << "Instantiated Lv2Plugin:" << m_name;
 }
 
 
@@ -130,7 +125,7 @@ BufferProvider* Lv2Plugin::bufferProvider ()
 void Lv2Plugin::activate (BufferProvider* bp)
 {
   if (!m_activated) {
-    qDebug() << "Activating plugin" << name();
+    //qDebug() << "Activating plugin" << name();
     m_bufferProvider = bp;
 
     // Connect all ports first
@@ -193,13 +188,6 @@ QString Lv2Plugin::copyright () const
 
 void Lv2Plugin::process (const ProcessingContext& context)
 {
-  int count = portCount();
-  for (int i=0; i<count; ++i) {
-    Port* p  = port(i);
-    if (p->direction() == Input && p->type() == ControlPort) {
-//      qDebug() << "Control Port" << p->name() << "has value" << ((float*)(p->buffer()->data()))[0] ;
-    }
-  }
   slv2_instance_run(m_instance, context.bufferSize());
 }
 
