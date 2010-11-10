@@ -63,7 +63,7 @@ struct WorkUnit
   WorkUnit** dependents;   ///< Decrement these waits when we are done processing
 
   // State
-  QAtomicInt wait;        ///< Initialized to number of dependencies each run
+  int wait;        ///< Initialized to number of dependencies each run
 
   // Intrusive Doubly-linked list
   WorkUnit* initialNext;  ///< Used to rebuild the schedule (next and prev) each run
@@ -135,14 +135,15 @@ class Worker
     bool runOnce (const ProcessingContext& ctx)
     {
       // Look at us
-      lock();
+      //lock();
       WorkUnit* unit = m_readyList.pop();
-      unlock();
+      //unlock();
 
       //printf("%d: Running..\n", QThread::currentThreadId());
       // Stealing
       if (!unit) {
         //printf("Stealing ...\n");
+        return false;
 #ifdef ENABLE_STEALING
         //printf("%d: Stealing..\n", QThread::currentThreadId());
         unit = stealRandomly();
@@ -165,12 +166,13 @@ class Worker
       int foo;
 
       // Readying dependents
-      lock();
+//      lock();
       for (WorkUnit** dp = unit->dependents; *dp; ++dp) {
         WorkUnit *u = *dp;
         //printf("%x: decr: %llx  (%x) pre: %d\n", QThread::currentThreadId(),
         //       (unsigned long long)u, u->processor, (int)u->wait);
         // Decrement the wait. if the old value was 1, then we are at 0 and done.
+        /*
         if (u->wait.fetchAndAddOrdered(-1) == 1) {
           //printf("%x: push: %llx (%x) \n", QThread::currentThreadId(),
           //       (unsigned long long)u, u->processor);
@@ -180,9 +182,14 @@ class Worker
           //printf("FOO +1: %d\n", (int)foo);
           m_readyList.push(u);
         }
-      }
-      unlock();
+        */
+        if ((--u->wait) == 0) {
+          m_readyList.push(u);
+        }
 
+      }
+//      unlock();
+/*
       foo = m_group.workLeft.fetchAndAddOrdered(-1);
       //printf("FOO -1: %d\n", (int)foo);
       if (foo == 1) {
@@ -190,14 +197,14 @@ class Worker
         m_group.workLeft.fetchAndStoreOrdered(-1); // Special case: -1 done
         return false;
       }
-
+*/
 
       return true;
     }
 
     inline void run (const ProcessingContext& ctx)
     {
-      while (runOnce(ctx) && (int)m_group.workLeft >= 0) {}
+      while (runOnce(ctx) /*&& (int)m_group.workLeft >= 0*/ ) {}
     }
 
     inline WorkUnit* trySteal ()

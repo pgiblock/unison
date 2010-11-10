@@ -42,11 +42,23 @@
 
 // For pthread hack - abstract to platform-agnostic utils
 #include <pthread.h>
+#include <mcheck.h>
 
 using namespace Unison;
 
 namespace Jack {
   namespace Internal {
+
+// To check for malloc()s
+struct MTrace {
+  MTrace() {
+    mtrace();
+  }
+
+  ~MTrace() {
+    muntrace();
+  }
+};
 
 class JackWorkerThread : public QThread
 {
@@ -386,18 +398,21 @@ int JackBackend::graphOrderCb (void* a)
 {
   JackBackend* backend = static_cast<JackBackend*>(a);
   qDebug() << "JACK graph order changed";
-  // TODO-NOW: somehow ensure our graph is recompiled.
   return 0;
 }
 
 
 int JackBackend::processCb (nframes_t nframes, void* a)
 {
+
   JackBackend* backend = static_cast<JackBackend*>(a);
   JackBufferProvider nullProvider;
   int i;
 
+  char *c = new char;
+
   if (!(backend->m_running)) {
+    muntrace();
     return 0;
   }
 
@@ -411,17 +426,25 @@ int JackBackend::processCb (nframes_t nframes, void* a)
 
   // TODO: Remove this check, it is rather a hack
   if (s->readyWorkCount==0) {
+    muntrace();
     return 0;
   }
 
   // Aquire JACK buffers
+  /* This causes some QSets to be created - thus, implicitly-shared data is new()'d
+   * The dependents() and dependences() functions were not designed to be run in
+   * RT-Land.  I didn't realize connectToBuffer() calls these until now.
+   *
+   * So - Disable this for now. And rework Node::dependencies() and Node::dependents()
   for (i=0; i<backend->portCount(); ++i) {
     Port* port = backend->port(i);
     port->connectToBuffer();
 
     // Re-acquire buffers on ports connected to JACK
     // Read note below:
-    foreach (Port* other, port->connectedPorts()) {
+    // FIXME HACK: return a pointer from the 'private' interface. Otherwise QSet
+    // returns a copy and it destructs right here 
+    foreach (Port* other, port->_connectedPorts()) {
       other->connectToBuffer();
     }
 
@@ -432,6 +455,7 @@ int JackBackend::processCb (nframes_t nframes, void* a)
     // fixes both connections to regular Ports and to JackPorts.  It also let's
     // us remove JackBufferProvider and silly calls to connectToBuffer()...
   }
+  */
 
 
   backend->m_workers.workLeft = s->readyWorkCount;
@@ -439,16 +463,27 @@ int JackBackend::processCb (nframes_t nframes, void* a)
   int numThreads = backend->m_workerThreads.size();
   workers[numThreads]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
 
-  for (int i=0; i < numThreads; ++i) {
-    ((JackWorkerThread*)backend->m_workerThreads[i])->run(context); // unblock slave
+  // TODO: Switching on this sucks, should use a funcptr or template for 0 vs 1+
+  /*
+  if (numThreads) {
+    for (int i=0; i < numThreads; ++i) {
+      ((JackWorkerThread*)backend->m_workerThreads[i])->run(context); // unblock slave
+    }
+
+    // Run us
+    workers[numThreads]->run(context);
+
+    // join with slaves TODO: spin on a count?
+    backend->m_workersDone.acquire(numThreads);
   }
+  else {
+  */
+mtrace();
+    workers[numThreads]->run(context);
+muntrace();
+  //}
 
-  // Run us
-  workers[numThreads]->run(context);
-
-  // join with slaves TODO: spin on a count?
-  backend->m_workersDone.acquire(numThreads);
-
+  muntrace();
   return 0;
 }
 
@@ -480,7 +515,7 @@ void JackBackend::timebaseCb (jack_transport_state_t, nframes_t, jack_position_t
 
 
 int JackBackend::xrunCb (void* backend) {
-  //qWarning() << "XRun occured";
+  qWarning() << "XRun occured";
   return 0;
 }
 
