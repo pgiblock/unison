@@ -24,11 +24,14 @@
 
 #include "Port.h"
 
+#include "BufferProvider.h"
 #include "Commander.h"
 #include "PortConnect.h"
 #include "PortDisconnect.h"
 
 #include <QDebug>
+
+#define UNISON_BUFFER_LENGTH 1024
 
 namespace Unison {
 
@@ -47,16 +50,16 @@ void Port::setBufferLength (nframes_t len)
 }
 
 
-void Port::connect (Port* other)
+void Port::connect (Port* other, BufferProvider& bp)
 {
-  Command* cmd = new Internal::PortConnect(this, other);
+  Command* cmd = new Internal::PortConnect(this, other, bp);
   Internal::Commander::instance()->push(cmd);
 }
 
 
-void Port::disconnect (Port* other)
+void Port::disconnect (Port* other, BufferProvider& bp)
 {
-  Command* cmd = new Internal::PortDisconnect(this, other);
+  Command* cmd = new Internal::PortDisconnect(this, other, bp);
   Internal::Commander::instance()->push(cmd);
 }
 
@@ -109,6 +112,20 @@ const QSet<Node* const> Port::dependents () const {
 }
 
 
+void Port::acquireBuffer (BufferProvider& provider)
+{
+  switch (direction()) {
+    case Input:
+      acquireInputBuffer(provider, UNISON_BUFFER_LENGTH);
+      break;
+
+    case Output:
+      acquireOutputBuffer(provider, UNISON_BUFFER_LENGTH);
+      break;
+  }
+}
+
+
 void Port::acquireInputBuffer (BufferProvider& provider, nframes_t len)
 {
   int numConnections = dependencies().count();
@@ -143,15 +160,8 @@ void Port::acquireInputBuffer (BufferProvider& provider, nframes_t len)
 
 void Port::acquireOutputBuffer (BufferProvider& provider, nframes_t len)
 {
-  int numConnections = dependents().count();
-  if (numConnections == 1) {
-    // Use the other port's buffer
-    Port* other = static_cast<Port*>( *(dependents().begin()) );
-    m_buffer = other->buffer();
-  }
-  else if (numConnections == 2) {
-    qFatal("Internal mixing is not yet supported");
-  }
+  // TODO: if there are no connections, we should probably just connect to some shared
+  // bit-bucket buffer some place to save memory on plugins with sparsly used ports
 
   if (!m_buffer) {
     m_buffer = provider.acquire(type(), len);

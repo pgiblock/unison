@@ -30,6 +30,8 @@
 #include "Patch.h"
 
 namespace Unison {
+
+  class BufferProvider;
   
   namespace Internal {
     
@@ -38,7 +40,7 @@ namespace Unison {
 class PortConnect : public Command
 {
   public:
-    PortConnect (Port* port1, Port* port2);
+    PortConnect (Port* port1, Port* port2, BufferProvider& bp);
     void preExecute ();
     void execute (ProcessingContext& context);
     void postExecute ();
@@ -47,6 +49,7 @@ class PortConnect : public Command
     Port* m_consumer;
     Patch* m_patch;
     Schedule* m_compiled;
+    BufferProvider& m_bufferProvider;
 };
 
   } // Internal

@@ -36,6 +36,10 @@
 #include <QVarLengthArray>
 #include <jack/jack.h>
 
+namespace Unison {
+  class BufferProvider;
+}
+
 namespace Jack {
   namespace Internal {
 
@@ -78,7 +82,7 @@ class JackBackend : public Unison::Backend
   Q_OBJECT
 
   public:
-    JackBackend (int workerCount);
+    JackBackend (Unison::BufferProvider& bp, int workerCount);
     virtual ~JackBackend ();
 
     /**
@@ -142,6 +146,7 @@ class JackBackend : public Unison::Backend
 
     jack_client_t* m_client;                ///< The actual jack client handle
     QVarLengthArray<JackPort*> m_myPorts;   ///< Collection of ports we have registered
+    Unison::BufferProvider& m_bufferProvider;///< Provide standard buffers for our ports
     Unison::nframes_t m_bufferLength;       ///< Current audio buffer length
     Unison::nframes_t m_sampleRate;         ///< Current sampling rate
     bool m_freewheeling;                    ///< True if we are freewheeling

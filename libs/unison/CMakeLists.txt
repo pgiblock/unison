@@ -21,6 +21,9 @@
 # Boston, MA 02110-1301 USA.
 #
 
+set(UNISON_BUFFER_LENGTH "1024" CACHE STRING
+    "Audio buffer length. A work-around until runtime change is supported.")
+
 set(UNISON_SRCS
     Command.cpp
     Commander.cpp

@@ -31,6 +31,7 @@
 
 namespace Unison {
   
+  class BufferProvider;
   class Port;
   class ProcessingContext;
 
@@ -41,7 +42,7 @@ namespace Unison {
 class PortDisconnect : public Command
 {
   public:
-    PortDisconnect (Port* port1, Port* port2);
+    PortDisconnect (Port* port1, Port* port2, BufferProvider& bp);
     void preExecute ();
     void execute (ProcessingContext& context);
     void postExecute ();
@@ -50,6 +51,7 @@ class PortDisconnect : public Command
     Port* m_port2;
     Patch* m_patch;
     Schedule* m_compiled;
+    BufferProvider& m_bufferProvider;
 };
 
   } // Internal

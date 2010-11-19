@@ -116,7 +116,7 @@ static inline QStringList getExtensionPaths()
 
 int main (int argc, char **argv)
 {
-  bool createGui = false;
+  bool createGui = true;
   printLogo();
 
   QCoreApplication* appPtr;

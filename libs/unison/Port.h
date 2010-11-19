@@ -107,6 +107,13 @@ class Port : public Node
 
     virtual void setBufferLength (nframes_t len);
 
+
+    /**
+     * Assigns a buffer reference to this port.  This buffer will be used by
+     * connectToBuffer to connect the plugin itself.
+     */
+    void acquireBuffer (BufferProvider& provider);
+
     /**
      * Called in Process thread to assign the buffer used by this port
      * sub-classes may choose to assign a buffer from the BufferProvider or
@@ -123,15 +130,6 @@ class Port : public Node
       return m_buffer;
     }
 
-    // Connection stuff TODO: reconsider how this behaves with Patch
-    void connect (Port* other);
-    void disconnect (Port* other);
-    bool isConnected (Port* other) const;
-    QSet<Port* const> connectedPorts () const
-    {
-      return m_connectedPorts;
-    }
-
     /**
      * @returns Either the connected Nodes or the interfaced Nodes depending on the
      * direction of the port
@@ -144,10 +142,36 @@ class Port : public Node
      */
     const QSet<Node* const> dependents () const;
 
-    // Private API :: TODO: Move to D-ptr
-    QSet<Port* const>* _connectedPorts ()
+    
+    
+    // TODO: Probably move this connection stuff into Patch
+    void connect (Port* other, BufferProvider& bp);
+    void disconnect (Port* other, BufferProvider& bp);
+    bool isConnected (Port* other) const;
+    
+
+    // Private API
+    QSet<Port* const>::const_iterator connectionsBegin ()
     {
-      return &m_connectedPorts;
+      return m_connectedPorts.begin();
+    }
+
+    // Private API
+    QSet<Port* const>::const_iterator connectionsEnd ()
+    {
+      return m_connectedPorts.end();
+    }
+
+    // Private API
+    void addConnection (Port* other)
+    {
+      m_connectedPorts.insert(other);
+    }
+
+    // Private API
+    void removeConnection (Port* other)
+    {
+      m_connectedPorts.remove(other);
     }
 
   protected:

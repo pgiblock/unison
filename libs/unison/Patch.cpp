@@ -64,7 +64,7 @@ Port* Patch::port (const QString& id) const
 }
 
 
-void Patch::activate (BufferProvider* bp)
+void Patch::activate (BufferProvider& bp)
 {
   foreach (Processor* p, m_processors) {
     p->activate(bp);
@@ -188,9 +188,10 @@ void Patch::compileSchedule (Internal::Schedule& output)
       Port* port = proc->port(pc);
 
       // For all connected Ports.
-      QSetIterator<Port* const> pi( port->connectedPorts() );
-      while (pi.hasNext()) {
-        Port* otherPort = pi.next();
+      for (QSet<Port* const>::const_iterator pi = port->connectionsBegin();
+           pi != port->connectionsEnd(); ++pi) {
+
+        Port* const otherPort = *pi;
 
         // We can count on getting processors from this relationship, but it sucks to.
         if (port->direction() == Input) {

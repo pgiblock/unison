@@ -33,8 +33,6 @@ using namespace Unison;
 namespace Ladspa {
   namespace Internal {
 
-#define UNISON_BUFFER_LENGTH 1024
-
 LadspaPort::LadspaPort (LadspaPlugin *plugin, uint32_t index) :
   Port(),
   m_plugin(plugin),
@@ -304,16 +302,6 @@ const QSet<Node* const> LadspaPort::interfacedNodes () const
 
 void LadspaPort::connectToBuffer ()
 {
-  BufferProvider *provider = m_plugin->bufferProvider();
-  switch (direction()) {
-    case Input:
-      acquireInputBuffer(*provider, UNISON_BUFFER_LENGTH);
-      break;
-
-    case Output:
-      acquireOutputBuffer(*provider, UNISON_BUFFER_LENGTH);
-      break;
-  }
   pluginInfo()->connect_port(m_plugin->ladspaHandle(),
       m_index, (LADSPA_Data*)buffer()->data());
 }

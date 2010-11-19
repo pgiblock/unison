@@ -573,7 +573,10 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = ${CMAKE_SOURCE_DIR}/libs \
+INPUT                  = ${CMAKE_SOURCE_DIR}/libs/aggregation \
+                         ${CMAKE_SOURCE_DIR}/libs/extensionsystem \
+                         ${CMAKE_SOURCE_DIR}/libs/prg \
+                         ${CMAKE_SOURCE_DIR}/libs/unison \
                          ${CMAKE_SOURCE_DIR}/extensions \
                          ${CMAKE_SOURCE_DIR}/unisonstudio
 

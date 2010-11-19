@@ -90,7 +90,8 @@ void CoreExtension::parseArguments(const QStringList& arguments)
       bool ok;
       float timeout = arguments.at(i + 1).toFloat(&ok);
       if (ok) {
-        QTimer::singleShot(timeout * 1000, qApp, SLOT(quit()));
+        int timeoutMS = timeout*1000;
+        QTimer::singleShot(timeoutMS, qApp, SLOT(quit()));
       }
       i++; // skip the value
     }
@@ -160,7 +161,7 @@ void CoreExtension::extensionsInitialized()
   backend->activate();
   
   const int effects = 1; // * 5 * 2
-  const int lines = 20;
+  const int lines =11;
 
   for (int l = 1; l <= lines; ++l) {
 

@@ -38,7 +38,6 @@
 #include <unison/Commander.h>
 #include <unison/Patch.h>
 #include <unison/Scheduler.h>
-#include "JackBufferProvider.h"
 
 // For pthread hack - abstract to platform-agnostic utils
 #include <pthread.h>
@@ -48,17 +47,6 @@ using namespace Unison;
 
 namespace Jack {
   namespace Internal {
-
-// To check for malloc()s
-struct MTrace {
-  MTrace() {
-    mtrace();
-  }
-
-  ~MTrace() {
-    muntrace();
-  }
-};
 
 class JackWorkerThread : public QThread
 {
@@ -135,13 +123,14 @@ void JackWorkerThread::run (ProcessingContext& ctx)
 
 Backend* JackBackendProvider::createBackend()
 {
-  return new JackBackend(m_workerCount);
+  return new JackBackend(*Core::Engine::bufferProvider(), m_workerCount);
 }
 
 
-JackBackend::JackBackend (int workerCount) :
+JackBackend::JackBackend (Unison::BufferProvider& bp, int workerCount) :
   m_client(NULL),
   m_myPorts(),
+  m_bufferProvider(bp),
   m_bufferLength(0),
   m_sampleRate(0),
   m_freewheeling(false),
@@ -290,6 +279,7 @@ JackPort* JackBackend::registerPort (const QString& name, PortDirection directio
   }
   else {
     qDebug() << "Jack port registered: " << myPort->name();
+    myPort->activate( m_bufferProvider );
     m_myPorts.append( myPort );
     return myPort;
   }
@@ -404,13 +394,10 @@ int JackBackend::graphOrderCb (void* a)
 
 int JackBackend::processCb (nframes_t nframes, void* a)
 {
-
   JackBackend* backend = static_cast<JackBackend*>(a);
-  JackBufferProvider nullProvider;
   int i;
 
-  char *c = new char;
-
+  mtrace();
   if (!(backend->m_running)) {
     muntrace();
     return 0;
@@ -424,64 +411,42 @@ int JackBackend::processCb (nframes_t nframes, void* a)
   Unison::Internal::Worker** workers = backend->m_workers.workers;
   Unison::Internal::Schedule* s = backend->rootPatch()->schedule();
 
-  // TODO: Remove this check, it is rather a hack
-  if (s->readyWorkCount==0) {
-    muntrace();
-    return 0;
-  }
-
-  // Aquire JACK buffers
-  /* This causes some QSets to be created - thus, implicitly-shared data is new()'d
-   * The dependents() and dependences() functions were not designed to be run in
-   * RT-Land.  I didn't realize connectToBuffer() calls these until now.
-   *
-   * So - Disable this for now. And rework Node::dependencies() and Node::dependents()
   for (i=0; i<backend->portCount(); ++i) {
-    Port* port = backend->port(i);
-    port->connectToBuffer();
-
-    // Re-acquire buffers on ports connected to JACK
-    // Read note below:
-    // FIXME HACK: return a pointer from the 'private' interface. Otherwise QSet
-    // returns a copy and it destructs right here 
-    foreach (Port* other, port->_connectedPorts()) {
-      other->connectToBuffer();
-    }
-
-    // Copy data across directly connected jack buffers.
-    // XXX: TODO: This is a super-hack.  In retrospect, it would be better if JackPort
-    // simply didn't have any Buffer at all.  Just copy all the data to connected Ports
-    // before process()ing, Then Fill in outgoing ports on the way out.  This
-    // fixes both connections to regular Ports and to JackPorts.  It also let's
-    // us remove JackBufferProvider and silly calls to connectToBuffer()...
+    backend->port(i)->preProcess();
   }
-  */
 
+  // TODO: Remove this check, it is rather a hack
+  if (s->readyWorkCount!=0) {
 
-  backend->m_workers.workLeft = s->readyWorkCount;
+    backend->m_workers.workLeft = s->readyWorkCount;
 
-  int numThreads = backend->m_workerThreads.size();
-  workers[numThreads]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
+    int numThreads = backend->m_workerThreads.size();
+    workers[numThreads]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
 
-  // TODO: Switching on this sucks, should use a funcptr or template for 0 vs 1+
-  /*
-  if (numThreads) {
-    for (int i=0; i < numThreads; ++i) {
-      ((JackWorkerThread*)backend->m_workerThreads[i])->run(context); // unblock slave
+    // TODO: Switching on this sucks, should use a funcptr or template for 0 vs 1+
+    /*
+    if (numThreads) {
+      for (int i=0; i < numThreads; ++i) {
+        ((JackWorkerThread*)backend->m_workerThreads[i])->run(context); // unblock slave
+      }
+
+      // Run us
+      workers[numThreads]->run(context);
+
+      // join with slaves TODO: spin on a count?
+      backend->m_workersDone.acquire(numThreads);
     }
+    else {
+    */
+      workers[numThreads]->run(context);
+    //}
+  
+  } // End hacky conditional
 
-    // Run us
-    workers[numThreads]->run(context);
 
-    // join with slaves TODO: spin on a count?
-    backend->m_workersDone.acquire(numThreads);
+  for (i=0; i<backend->portCount(); ++i) {
+    backend->port(i)->postProcess();
   }
-  else {
-  */
-mtrace();
-    workers[numThreads]->run(context);
-muntrace();
-  //}
 
   muntrace();
   return 0;

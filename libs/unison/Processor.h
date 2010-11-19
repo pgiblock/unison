@@ -70,7 +70,7 @@ class Processor : public Node
      * although there is no guarantee that process() will be called any time soon.
      * @param bp the @c BufferProvider to use until we are deactivated
      */
-    virtual void activate (BufferProvider* bp) = 0;
+    virtual void activate (BufferProvider& bp) = 0;
 
     /**
      * Deactivates the processor. Allow the processor to free any resources that it no

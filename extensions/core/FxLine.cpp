@@ -56,8 +56,8 @@ FxLine::FxLine (Patch& parent, const QString& name) :
   m_entries.append(entry);
 
   // TODO: Bring back once backend ports have patch?
-  // m_inPorts[0]->connect(m_outPorts[0]);
-  // m_inPorts[1]->connect(m_outPorts[1]);
+  m_inPorts[0]->connect(m_outPorts[0], *Engine::bufferProvider());
+  m_inPorts[1]->connect(m_outPorts[1], *Engine::bufferProvider());
 }
 
 
@@ -127,7 +127,7 @@ void FxLine::addPlugin(const PluginInfoPtr info, int pos)
   Plugin* plugin = info->createPlugin(48000);
   Q_ASSERT(plugin);
 
-  plugin->activate(Engine::bufferProvider());
+  plugin->activate(*Engine::bufferProvider());
   m_parent.add(plugin);
 
   // Verify number of ports. TODO: Report error, not fatal
@@ -172,10 +172,10 @@ void FxLine::addPlugin(const PluginInfoPtr info, int pos)
         qWarning("Probably disconnecting two backend-ports. Ignoring");
       }
       else {
-        producerPort->disconnect(consumerPort);
+        producerPort->disconnect(consumerPort, *Engine::bufferProvider());
       }
-      producerPort->connect(entry.inputPorts.at(i));
-      consumerPort->connect(entry.outputPorts.at(i));
+      producerPort->connect(entry.inputPorts.at(i), *Engine::bufferProvider());
+      consumerPort->connect(entry.outputPorts.at(i), *Engine::bufferProvider());
     }
 
   m_entries.insert(idx, entry);

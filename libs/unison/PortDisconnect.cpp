@@ -32,11 +32,12 @@
 namespace Unison {
   namespace Internal {
 
-PortDisconnect::PortDisconnect (Port* port1, Port* port2) :
+PortDisconnect::PortDisconnect (Port* port1, Port* port2, BufferProvider& bp) :
   Command(false),
   m_port1(port1),
   m_port2(port2),
-  m_patch(NULL)
+  m_patch(NULL),
+  m_bufferProvider(bp)
 {
   m_compiled = new Schedule();
   setState(Command::Created);
@@ -47,17 +48,19 @@ void PortDisconnect::preExecute ()
 {
   m_patch = m_port1->parentPatch();
   // Handle the case where port1 is a backend port, and has no parent patch
-  if (!m_patch) {
-    m_patch = m_port2->parentPatch();
-  }
   Q_ASSERT(m_patch);
-  // TODO Bring back this assertion once BackendPorts have a parent node
-  //Q_ASSERT(m_patch == m_port2->parentPatch());
+  Q_ASSERT(m_patch == m_port2->parentPatch());
   Q_ASSERT(m_port1->isConnected(m_port2));
   Q_ASSERT(m_port2->isConnected(m_port1));
 
-  *m_port1->_connectedPorts() -= m_port2;
-  *m_port2->_connectedPorts() -= m_port1;
+  m_port1->removeConnection(m_port2);
+  m_port2->removeConnection(m_port1);
+
+  // Not sure which one is the Input port, but, calling acquire on an output port
+  // again is safe.. 
+  //TODO: FIXME IF YOU WANT Mixing support (need BufferProvider ref)
+  m_port1->acquireBuffer(m_bufferProvider);
+  m_port2->acquireBuffer(m_bufferProvider);
   
   m_patch->compileSchedule(*m_compiled);
   

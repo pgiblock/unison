@@ -30,10 +30,13 @@
 
 #include <jack/jack.h>
 
+namespace Unison {
+  class BufferProvider;
+}
+
 namespace Jack {
   namespace Internal {
 
-class JackBufferProvider;
 class JackBackend;
 
 /**
@@ -50,10 +53,7 @@ class JackPort : public Unison::BackendPort
       return m_port;
     }
 
-    Unison::Node* parent () const
-    {
-      return NULL;
-    }
+    Unison::Node* parent () const;
 
     JackBackend& backend () const
     {
@@ -124,6 +124,10 @@ class JackPort : public Unison::BackendPort
 
     void connectToBuffer ();
 
+    void activate (Unison::BufferProvider& bp);
+    void preProcess ();
+    void postProcess ();
+
     static Unison::PortDirection directionFromFlags (JackPortFlags flags);
     
     /**
@@ -139,8 +143,6 @@ class JackPort : public Unison::BackendPort
     // Need to shadow ID and direction so we can re-register
     QString m_id;
     Unison::PortDirection m_direction;
-
-    static JackBufferProvider* m_jackBufferProvider;
 };
 
   } // Internal

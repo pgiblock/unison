@@ -71,7 +71,7 @@ class Patch : public Processor
     virtual Port* port (int idx) const;
     virtual Port* port (const QString& id) const;
 
-    virtual void activate (BufferProvider* bp);
+    virtual void activate (BufferProvider& bp);
     virtual void deactivate ();
 
     virtual void setBufferLength (PortType type, nframes_t len);

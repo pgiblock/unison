@@ -116,20 +116,12 @@ Port* Lv2Plugin::port (const QString& id) const
 }
 
 
-BufferProvider* Lv2Plugin::bufferProvider ()
-{
-  return m_bufferProvider;
-}
-
-
-void Lv2Plugin::activate (BufferProvider* bp)
+void Lv2Plugin::activate (BufferProvider& bp)
 {
   if (!m_activated) {
-    //qDebug() << "Activating plugin" << name();
-    m_bufferProvider = bp;
-
     // Connect all ports first
     for (int i=0; i<m_ports.count(); ++i) {
+      m_ports[i]->acquireBuffer(bp);
       m_ports[i]->connectToBuffer();
     }
 

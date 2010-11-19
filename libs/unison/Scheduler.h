@@ -163,7 +163,7 @@ class Worker
       Processor* p = unit->processor;
       p->process(ctx);
 
-      int foo;
+      
 
       // Readying dependents
 //      lock();
