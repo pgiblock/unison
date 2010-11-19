@@ -32,10 +32,11 @@
 #include <QAtomicInt>
 #include <QSemaphore>
 #include <QThread> // for debugging
+#include <stdio.h>
 
 #include <stdlib.h> // for rand
 
-#define ENABLE_STEALING
+#define rtprintf(...) //printf(__VA_ARGS__)
 
 namespace Unison {
   namespace Internal {
@@ -63,7 +64,7 @@ struct WorkUnit
   WorkUnit** dependents;   ///< Decrement these waits when we are done processing
 
   // State
-  int wait;        ///< Initialized to number of dependencies each run
+  QAtomicInt wait;        ///< Initialized to number of dependencies each run
 
   // Intrusive Doubly-linked list
   WorkUnit* initialNext;  ///< Used to rebuild the schedule (next and prev) each run
@@ -135,75 +136,90 @@ class Worker
     bool runOnce (const ProcessingContext& ctx)
     {
       // Look at us
-      //lock();
+      lock();
       WorkUnit* unit = m_readyList.pop();
-      //unlock();
+      unlock();
 
-      //printf("%d: Running..\n", QThread::currentThreadId());
       // Stealing
       if (!unit) {
-        //printf("Stealing ...\n");
-        return false;
-#ifdef ENABLE_STEALING
-        //printf("%d: Stealing..\n", QThread::currentThreadId());
+        if (m_group.workerCount==1) {
+          rtprintf("W: nothing in readyList, singleThread done.\n");
+          return false;
+        }
+        
+        rtprintf("%d: Stealing..\n", QThread::currentThreadId());
         unit = stealRandomly();
         if (!unit) {
-          //printf("%d: Failed steal\n", QThread::currentThreadId());
-          return true;
+          rtprintf("%d: Failed steal\n", QThread::currentThreadId());
+          // Single-threaded, nowhere to steal from
+          // Otherwise, hope we have more luck next time
+          return true; // We aren't done necessarily done yet
         }
-#else  // ENABLE_STEALING
-        return false;
-#endif // ENABLE_STALING
       }
-      //printf("Running ...\n");
+      else {
+        rtprintf("W: Actually have a unit!\n");
+      }
 
-      // Processing
-      //printf("%x: Processing `%s` (%x)\n", QThread::currentThreadId(),
-      //       qPrintable(unit->processor->name()),unit->processor);
-      Processor* p = unit->processor;
-      p->process(ctx);
+      // Loop over the immediate execution path (depth first)
+      while (unit) {
 
-      
+        // Processing
+        rtprintf("%x: Processing `%s` (%x)\n", QThread::currentThreadId(),
+               qPrintable(unit->processor->name()),unit->processor);
+        Processor* p = unit->processor;
+        p->process(ctx);
 
-      // Readying dependents
-//      lock();
-      for (WorkUnit** dp = unit->dependents; *dp; ++dp) {
-        WorkUnit *u = *dp;
-        //printf("%x: decr: %llx  (%x) pre: %d\n", QThread::currentThreadId(),
-        //       (unsigned long long)u, u->processor, (int)u->wait);
-        // Decrement the wait. if the old value was 1, then we are at 0 and done.
+        // Readying dependents
+        lock(); // TODO: Move lock to immediately before the loop below?
+        WorkUnit** dp = unit->dependents;
+        WorkUnit*  u;
+        
+        // Reuse unit for finding our next unit
+        unit = NULL;
+
+        // Loop until the first ready one, stash that one for ourself
+        for (; *dp; ++dp) {
+          u = *dp;
+          if (u->wait.fetchAndAddOrdered(-1) == 1) {
+            unit = u;
+            ++dp;
+            break; // now continue with the "queueing" loop
+          }
+        }
+        
+        // Queue the rest
+        for (; *dp; ++dp) {
+          u = *dp;
+          //printf("%x: decr: %llx  (%x) pre: %d\n", QThread::currentThreadId(),
+          //       (unsigned long long)u, u->processor, (int)u->wait);
+          if (u->wait.fetchAndAddOrdered(-1) == 1) {
+            m_readyList.push(u);
+          }
+        }
+        unlock();
+      }
+
+
+  //
+  //      // FIXME: I DON"T THINK THIS WORKLEFT IS WORKING THE WAY WE THINK!!
+  //         I THINK IT IS POSSIBLY BREAKING EARLY, HENCE LOW UTILIZATION
+
         /*
-        if (u->wait.fetchAndAddOrdered(-1) == 1) {
-          //printf("%x: push: %llx (%x) \n", QThread::currentThreadId(),
-          //       (unsigned long long)u, u->processor);
+        foo = m_group.workLeft.fetchAndAddOrdered(-1);
+        //printf("FOO -1: %d\n", (int)foo);
+        if (foo == 1) {
+          //printf("%x: WE SHOULD BE DONE!!!\n", QThread::currentThreadId());
+          m_group.workLeft.fetchAndStoreOrdered(-1); // Special case: -1 done
+          return false;
+        }*/
 
-          // TODO: Can optimize by not pushing, then popping right back
-          foo = m_group.workLeft.fetchAndAddOrdered(1);
-          //printf("FOO +1: %d\n", (int)foo);
-          m_readyList.push(u);
-        }
-        */
-        if ((--u->wait) == 0) {
-          m_readyList.push(u);
-        }
-
-      }
-//      unlock();
-/*
-      foo = m_group.workLeft.fetchAndAddOrdered(-1);
-      //printf("FOO -1: %d\n", (int)foo);
-      if (foo == 1) {
-        //printf("%x: WE SHOULD BE DONE!!!\n", QThread::currentThreadId());
-        m_group.workLeft.fetchAndStoreOrdered(-1); // Special case: -1 done
-        return false;
-      }
-*/
 
       return true;
     }
 
     inline void run (const ProcessingContext& ctx)
     {
+      rtprintf("W: run() --------------------------------------------------\n");
       while (runOnce(ctx) /*&& (int)m_group.workLeft >= 0*/ ) {}
     }
 

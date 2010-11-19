@@ -18,6 +18,9 @@ this softawre. If not, see http://www.gnu.org/licenses/.
     <description>Required core features</description>
     <url>http://www.unisonstudio.org</url>
     <argumentList>
+        <argument name="--lines" parameter="count">How many FX-lines (of 4 FX) to create</argument>
+    </argumentList>
+    <argumentList>
         <argument name="--seconds" parameter="duration">How long to run, in seconds</argument>
     </argumentList>
 </extension>

@@ -122,7 +122,11 @@ class JackBackend : public Unison::Backend
 
     int connect (const QString& source, const QString& dest);
     int disconnect (const QString& source, const QString& dest);
-    int disconnect (Unison::BackendPort *);
+    int disconnect (Unison::BackendPort*);
+
+  protected:
+    int processST (Unison::Internal::Schedule* sched, Unison::ProcessingContext& ctx);
+    int processMT (Unison::Internal::Schedule* sched, Unison::ProcessingContext& ctx);
 
   private:
     void initClient ();
@@ -152,6 +156,11 @@ class JackBackend : public Unison::Backend
     bool m_freewheeling;                    ///< True if we are freewheeling
     bool m_running;                         ///< True if activated and still running
 
+    /** The workers and workerThreads are associated.  If the workerCount > 1, then
+     * any additional workers are assigned to a JackWorkerThread and put in
+     * m_workerTheads.  For simplicity, workerThread indexes match the indexes of
+     * the worker in the m_workers WorkerGroup. workerThread[0] uses workers[0], and
+     * workers[count-1] is the primary worker */
     Unison::Internal::WorkerGroup m_workers;
     QSemaphore m_workersDone;
     QVarLengthArray<void*> m_workerThreads; ///< FIXME: Hack!!

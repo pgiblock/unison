@@ -101,14 +101,16 @@ void JackWorkerThread::setSchedulingPriority (int policy, unsigned int priority)
 
 void JackWorkerThread::run ()
 {
-  qDebug() << "JWT: started!\n";
-  setSchedulingPriority(SCHED_FIFO, 10);
+  qDebug() << "JWT: started!" << QThread::currentThreadId();
+  setSchedulingPriority(SCHED_FIFO, 60);
 
+  // This blocks until processCb is called. only acquired once per period
   while (true) {
     m_wait.acquire();
 
     m_worker->run(*m_context);
 
+    printf("!!! RELEASING ONE !!!\n");
     m_done.release(1);
   }
   // exec(); We don't want event handling
@@ -145,10 +147,12 @@ JackBackend::JackBackend (Unison::BufferProvider& bp, int workerCount) :
     m_workers.workers[i] = new Unison::Internal::Worker(m_workers);
   }
 
-  m_workerThreads.reserve(workerCount-1);
-  for (int i=0; i<workerCount-1; ++i) {
-    m_workerThreads.append(new JackWorkerThread(m_workers.workers[i], m_workersDone));
-    ((JackWorkerThread*)m_workerThreads[i])->start();
+  if (workerCount>1) {
+    m_workerThreads.reserve(workerCount);
+    for (int i=0; i<workerCount; ++i) {
+      m_workerThreads.append(new JackWorkerThread(m_workers.workers[i], m_workersDone));
+      ((JackWorkerThread*)m_workerThreads[i])->start();
+    }
   }
 }
 
@@ -397,50 +401,30 @@ int JackBackend::processCb (nframes_t nframes, void* a)
   JackBackend* backend = static_cast<JackBackend*>(a);
   int i;
 
-  mtrace();
   if (!(backend->m_running)) {
-    muntrace();
     return 0;
   }
 
   ProcessingContext context( nframes );
+  Unison::Internal::Schedule* s = backend->rootPatch()->schedule();
 
   // Process commands
   Unison::Internal::Commander::instance()->process(context);
 
-  Unison::Internal::Worker** workers = backend->m_workers.workers;
-  Unison::Internal::Schedule* s = backend->rootPatch()->schedule();
-
+  // TODO, these pre/postprocesses could be built into the Schedule as
+  // workunits so that they run in parallel
   for (i=0; i<backend->portCount(); ++i) {
     backend->port(i)->preProcess();
   }
 
   // TODO: Remove this check, it is rather a hack
   if (s->readyWorkCount!=0) {
-
-    backend->m_workers.workLeft = s->readyWorkCount;
-
-    int numThreads = backend->m_workerThreads.size();
-    workers[numThreads]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
-
-    // TODO: Switching on this sucks, should use a funcptr or template for 0 vs 1+
-    /*
-    if (numThreads) {
-      for (int i=0; i < numThreads; ++i) {
-        ((JackWorkerThread*)backend->m_workerThreads[i])->run(context); // unblock slave
-      }
-
-      // Run us
-      workers[numThreads]->run(context);
-
-      // join with slaves TODO: spin on a count?
-      backend->m_workersDone.acquire(numThreads);
+    if (backend->m_workers.workerCount == 1) {
+      backend->processST(s, context);
     }
     else {
-    */
-      workers[numThreads]->run(context);
-    //}
-  
+      backend->processMT(s, context);
+    } 
   } // End hacky conditional
 
 
@@ -450,6 +434,38 @@ int JackBackend::processCb (nframes_t nframes, void* a)
 
   muntrace();
   return 0;
+}
+
+
+int JackBackend::processST (Unison::Internal::Schedule* sched, ProcessingContext& ctx)
+{
+  Unison::Internal::Worker* worker = m_workers.workers[0];
+  worker->pushReadyWorkUnsafe(sched->readyWork, sched->readyWorkCount);
+  worker->run(ctx);
+}
+
+
+int JackBackend::processMT (Unison::Internal::Schedule* sched, ProcessingContext& ctx)
+{
+  printf("NOTHING!!!\n");
+  /*
+  backend->m_workers.workLeft = s->readyWorkCount;
+
+  int numThreads = backend->m_workerThreads.size();
+  //workers[numThreads]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
+  workers[0]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
+
+  for (int i=0; i < numThreads; ++i) {
+    ((JackWorkerThread*)backend->m_workerThreads[i])->run(context); // unblock slave
+  }
+
+  // Run us
+  //workers[numThreads]->run(context);
+
+  // join with slaves TODO: spin on a count?
+  printf("!!! ACQUIRING %d !!!\n", numThreads);
+  backend->m_workersDone.acquire(numThreads);
+  */
 }
 
 

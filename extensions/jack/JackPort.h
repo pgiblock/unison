@@ -68,7 +68,7 @@ class JackPort : public Unison::BackendPort
 
     QString name () const
     {
-      return jack_port_name( m_port );
+      return QString::fromLocal8Bit( jack_port_name(m_port) );
     }
 
     Unison::PortDirection direction() const

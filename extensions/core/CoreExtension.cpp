@@ -95,6 +95,14 @@ void CoreExtension::parseArguments(const QStringList& arguments)
       }
       i++; // skip the value
     }
+    if (arguments.at(i) == QLatin1String("--lines")) {
+      bool ok;
+      m_lineCount = arguments.at(i + 1).toInt(&ok);
+      if (!ok) {
+        m_lineCount = 4;
+      }
+      i++; // skip the value
+    }
   }
 }
 
@@ -160,10 +168,9 @@ void CoreExtension::extensionsInitialized()
 
   backend->activate();
   
-  const int effects = 5; // * 5 * 2
-  const int lines =10;
+  const int effects = 2; // * 5 * 2
 
-  for (int l = 1; l <= lines; ++l) {
+  for (int l = 1; l <= m_lineCount; ++l) {
 
     FxLine* fxLine = new FxLine(*root, QString("Super Duper Fx-Line %1").arg(l));
 
@@ -171,7 +178,7 @@ void CoreExtension::extensionsInitialized()
       int j = 0;
       QString plugin = plugins.at(i);
       PluginInfoPtr desc = PluginManager::instance()->info(plugin);
-      // Add 10 of each
+      // Add N of each
       for (int cnt = 0; cnt < effects; ++cnt) {
         if (desc) {
           fxLine->addPlugin(desc, j++);
