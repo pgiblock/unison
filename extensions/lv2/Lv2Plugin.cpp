@@ -69,7 +69,7 @@ void Lv2Plugin::init ()
   m_name = slv2_plugin_get_name( m_plugin );
   Q_ASSERT(m_name);
 
-  int count = portCount();
+  int count = slv2_plugin_get_num_ports(m_plugin);
   m_ports.resize( count );
   for (int i = 0; i < count; ++i) {
     m_ports[i] = new Lv2Port( m_world, this, i );

@@ -72,7 +72,7 @@ class Lv2Plugin : public Unison::Plugin
 
     int portCount () const
     {
-      return slv2_plugin_get_num_ports(m_plugin);
+      return m_ports.count();
     }
 
     Unison::Port* port (int idx) const;

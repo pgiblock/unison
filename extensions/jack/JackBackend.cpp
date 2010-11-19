@@ -480,7 +480,6 @@ void JackBackend::timebaseCb (jack_transport_state_t, nframes_t, jack_position_t
 
 
 int JackBackend::xrunCb (void* backend) {
-  qWarning() << "XRun occured";
   return 0;
 }
 

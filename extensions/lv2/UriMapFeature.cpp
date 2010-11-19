@@ -53,7 +53,8 @@ uint32_t UriMapFeature::uriToId (LV2_URI_Map_Callback_Data cbData, const char* m
 {
   UriMap* uriMap = static_cast<UriMap*>( cbData );
   if (map != NULL) {
-    qWarning() << "LV2::UriMapFeature: Ignoring non-null map" << map;
+    // FIXME: Figure out what to really do here
+    //qWarning() << "LV2::UriMapFeature: Ignoring non-null map" << map;
   }
   return uriMap->uriToId(uri);
 }
