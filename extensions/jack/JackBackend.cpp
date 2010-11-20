@@ -110,8 +110,8 @@ void JackWorkerThread::run ()
 
     m_worker->run(*m_context);
 
-    printf("!!! RELEASING ONE !!!\n");
-    m_done.release(1);
+    //printf("!!! RELEASING ONE !!!\n");
+    //m_done.release(1);
   }
   // exec(); We don't want event handling
 }
@@ -447,24 +447,22 @@ int JackBackend::processST (Unison::Internal::Schedule* sched, ProcessingContext
 
 int JackBackend::processMT (Unison::Internal::Schedule* sched, ProcessingContext& ctx)
 {
-  printf("NOTHING!!!\n");
-  /*
-  backend->m_workers.workLeft = s->readyWorkCount;
-
-  int numThreads = backend->m_workerThreads.size();
-  //workers[numThreads]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
-  workers[0]->pushReadyWorkUnsafe(s->readyWork, s->readyWorkCount);
+  int numThreads = m_workerThreads.size();
+  m_workers.liveWorkers = numThreads;
+  m_workers.workers[0]->pushReadyWorkUnsafe(sched->readyWork, sched->readyWorkCount);
 
   for (int i=0; i < numThreads; ++i) {
-    ((JackWorkerThread*)backend->m_workerThreads[i])->run(context); // unblock slave
+    ((JackWorkerThread*)m_workerThreads[i])->run(ctx); // unblock slave
   }
 
+  //m_workers.done.acquire(numThreads);
+  m_workers.done.acquire(1);
+
+
+  /*
+  backend->m_workers.workLeft = s->readyWorkCount;
   // Run us
   //workers[numThreads]->run(context);
-
-  // join with slaves TODO: spin on a count?
-  printf("!!! ACQUIRING %d !!!\n", numThreads);
-  backend->m_workersDone.acquire(numThreads);
   */
 }
 

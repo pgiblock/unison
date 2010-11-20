@@ -36,6 +36,7 @@
 
 #include <stdlib.h> // for rand
 
+// The most RT-unsafe way to message ever! but is handy anyways
 #define rtprintf(...) //printf(__VA_ARGS__)
 
 namespace Unison {
@@ -116,12 +117,13 @@ class WorkerGroup
   // Possibility 1:
   // increment when a thread has a food supply, decrement when resorting to stealing
   // if value == 0, then we are done (threads wait for post)
-  //QAtomicInt liveWorkers; // workers who haven't resorted to stealing
+  QAtomicInt liveWorkers; // workers who haven't resorted to stealing
+  QSemaphore done;
 
   // Possibility 2:
   // keep count of processors, decrement when run. done when it reaches 0
   // works as long as the number of processors is known upfront.
-  QAtomicInt workLeft;
+  //QAtomicInt workLeft;
 
   friend class Worker;
 };
@@ -135,6 +137,7 @@ class Worker
     
     bool runOnce (const ProcessingContext& ctx)
     {
+      rtprintf("%x: Hello again.\n", QThread::currentThreadId());
       // Look at us
       lock();
       WorkUnit* unit = m_readyList.pop();
@@ -147,17 +150,30 @@ class Worker
           return false;
         }
         
-        rtprintf("%d: Stealing..\n", QThread::currentThreadId());
+        rtprintf("%x: Stealing..\n", QThread::currentThreadId());
         unit = stealRandomly();
         if (!unit) {
-          rtprintf("%d: Failed steal\n", QThread::currentThreadId());
-          // Single-threaded, nowhere to steal from
+          rtprintf("%x: Failed steal\n", QThread::currentThreadId());
+          if (!m_stealing) {
+            rtprintf("%x: Our very first steal!! awww..\n", QThread::currentThreadId());
+            m_stealing=true;
+            if (m_group.liveWorkers.fetchAndAddOrdered(-1) == 1) {
+              rtprintf("%x: WE ARE DONE!!\n", QThread::currentThreadId());
+              m_group.done.release(1);
+              return false;
+            }
+          }
           // Otherwise, hope we have more luck next time
+          QThread::yieldCurrentThread();
           return true; // We aren't done necessarily done yet
+        }
+        else if (m_stealing) {
+          m_group.liveWorkers.fetchAndAddOrdered(1);
+          m_stealing = false;
         }
       }
       else {
-        rtprintf("W: Actually have a unit!\n");
+        rtprintf("%x: Actually have a unit!\n", QThread::currentThreadId());
       }
 
       // Loop over the immediate execution path (depth first)
@@ -180,7 +196,9 @@ class Worker
         // Loop until the first ready one, stash that one for ourself
         for (; *dp; ++dp) {
           u = *dp;
+          rtprintf("Decr1\n");
           if (u->wait.fetchAndAddOrdered(-1) == 1) {
+            rtprintf("  Saving..\n");
             unit = u;
             ++dp;
             break; // now continue with the "queueing" loop
@@ -190,9 +208,11 @@ class Worker
         // Queue the rest
         for (; *dp; ++dp) {
           u = *dp;
+          rtprintf("Decr2\n");
           //printf("%x: decr: %llx  (%x) pre: %d\n", QThread::currentThreadId(),
           //       (unsigned long long)u, u->processor, (int)u->wait);
           if (u->wait.fetchAndAddOrdered(-1) == 1) {
+            rtprintf("  Queuing..\n");
             m_readyList.push(u);
           }
         }
@@ -219,8 +239,10 @@ class Worker
 
     inline void run (const ProcessingContext& ctx)
     {
-      rtprintf("W: run() --------------------------------------------------\n");
-      while (runOnce(ctx) /*&& (int)m_group.workLeft >= 0*/ ) {}
+      rtprintf("%x: run() --------------------------------------------------\n", QThread::currentThreadId());
+      m_stealing = false;
+      while (runOnce(ctx) && m_group.liveWorkers != 0) {}
+      rtprintf("%x: we are done.", QThread::currentThreadId());
     }
 
     inline WorkUnit* trySteal ()
@@ -293,6 +315,7 @@ class Worker
     WorkQueue m_readyList;
     SpinLock  m_lock;
     FastRandom m_random;
+    bool       m_stealing;
 };
 
 
