@@ -53,6 +53,7 @@ private:
 //    MainWindow* m_mainWindow;
 //    EditMode* m_editMode;
 //    DesignMode* m_designMode;
+  int m_lineCount;
 };
 
   } // namespace Internal

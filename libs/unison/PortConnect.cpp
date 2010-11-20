@@ -26,15 +26,17 @@
 
 #include "Port.h"
 #include "ProcessingContext.h"
+#include "Scheduler.h"
 
 namespace Unison {
   namespace Internal {
 
-PortConnect::PortConnect (Port* port1, Port* port2) :
+PortConnect::PortConnect (Port* port1, Port* port2, BufferProvider& bp) :
   Command(false),
   m_producer(NULL),
   m_consumer(NULL),
-  m_patch(NULL)
+  m_patch(NULL),
+  m_bufferProvider(bp)
 {
   if (port1->direction() == Output) {
     if (port2->direction() == Output) {
@@ -51,7 +53,7 @@ PortConnect::PortConnect (Port* port1, Port* port2) :
     m_producer = port2;
   }
 
-  m_compiled = new QList<Patch::CompiledProcessor>();
+  m_compiled = new Schedule();
   setState(Command::Created);
 }
 
@@ -60,20 +62,18 @@ void PortConnect::preExecute ()
 {
   // TODO: Check for existing connection and cycles!!!
   m_patch = m_producer->parentPatch();
-  // Handle the case where port1 is a backend port, and has no parent patch
-  if (!m_patch) {
-    m_patch = m_consumer->parentPatch();
-  }
   Q_ASSERT(m_patch);
-  // TODO Bring back this assertion once BackendPorts have a parent patch
-  //Q_ASSERT(m_patch == m_port2->parentPatch());
+  Q_ASSERT(m_patch == m_consumer->parentPatch());
   Q_ASSERT(!m_producer->isConnected(m_consumer));
   Q_ASSERT(!m_consumer->isConnected(m_producer));
 
-  *m_producer->_connectedPorts() += m_consumer;
-  *m_consumer->_connectedPorts() += m_producer;
+  m_producer->addConnection(m_consumer);
+  m_consumer->addConnection(m_producer);
+
+  //TODO: FIXME IF YOU WANT Mixing support (need BufferProvider ref)
+  m_consumer->acquireBuffer(m_bufferProvider);
   
-  m_patch->compile(*m_compiled);
+  m_patch->compileSchedule(*m_compiled);
   
   Command::preExecute();
 }
@@ -81,11 +81,9 @@ void PortConnect::preExecute ()
 
 void PortConnect::execute (ProcessingContext& context)
 {
-  // Connect Consumer first, to clear out any silence buffer
   m_consumer->connectToBuffer();
-  m_producer->connectToBuffer();
-  // FIXME: Leaking m_patch->compiledProcessors();
-  m_patch->setCompiledProcessors(m_compiled);
+  // FIXME: Leaking m_patch->schedule();
+  m_patch->setSchedule(m_compiled);
   Command::execute(context);
 }
 

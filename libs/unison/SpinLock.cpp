@@ -1,5 +1,5 @@
 /*
- * JackBufferProvider.cpp
+ * SpinLock.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,41 +22,71 @@
  *
  */
 
-#include "JackBufferProvider.h"
-#include "JackPort.h"
+#include "SpinLock.h"
+#include <QThread>
 
-#include <unison/AudioBuffer.h>
+namespace Unison {
 
-#include <jack/jack.h>
-#include <QDebug>
 
-using namespace Unison;
-
-namespace Jack {
-  namespace Internal {
-
-SharedBufferPtr JackBufferProvider::acquire (
-    const JackPort* port, nframes_t nframes)
+SpinLock::SpinLock ()
 {
-  // TODO: assert only called within process thread
-  void* jackBuffer = jack_port_get_buffer(port->jackPort(), nframes);
-  return new AudioBuffer( *this, nframes, jackBuffer );
+  release();
 }
 
 
-SharedBufferPtr JackBufferProvider::acquire (PortType, nframes_t)
+void SpinLock::lock ()
 {
-  qCritical() << "JackBufferProvider acquire called, programming error";
-  return NULL;
+  int count;
+  const int maxspin = 1048;
+
+  if (!acquire()) {
+    count = 0;
+    do {
+      do {
+        pause();
+
+        if (++count >= maxspin) {
+          /* let the OS reschedule every once in a while */
+          yield();
+          count = 0;
+        }
+      }
+      while (m_lock != 0);
+    }
+    while (!acquire());
+  }
 }
 
-SharedBufferPtr JackBufferProvider::zeroAudioBuffer () const
+
+bool SpinLock::tryLock ()
 {
-  qCritical() << "JackBufferProvider acquire called, programming error";
-  return NULL;
+  return acquire();
 }
 
-  } // Internal
-} // Jack
+
+void SpinLock::unlock ()
+{
+     release();
+}
+
+
+void SpinLock::pause ()
+{
+#if defined __i386__ || defined __x86_64
+    __asm__("pause");
+#else
+# error SpinLock::pause undefined on this platform
+#endif
+}
+
+
+void SpinLock::yield ()
+{
+  // Could yield to OS if we deem it safe.
+  QThread::yieldCurrentThread();
+}
+
+
+} // Unison
 
 // vim: tw=90 ts=8 sw=2 sts=2 et sta noai

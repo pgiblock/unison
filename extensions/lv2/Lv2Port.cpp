@@ -33,8 +33,6 @@ using namespace Unison;
 namespace Lv2 {
   namespace Internal {
 
-#define UNISON_BUFFER_LENGTH 1024
-
 Lv2Port::Lv2Port (const Lv2World& world, Lv2Plugin* plugin, uint32_t index) :
   Port(),
   m_world(world),
@@ -153,16 +151,6 @@ const QSet<Node* const> Lv2Port::interfacedNodes () const
 
 void Lv2Port::connectToBuffer ()
 {
-  BufferProvider *provider = m_plugin->bufferProvider();
-  switch (direction()) {
-    case Input:
-      acquireInputBuffer(*provider, UNISON_BUFFER_LENGTH);
-      break;
-
-    case Output:
-      acquireOutputBuffer(*provider, UNISON_BUFFER_LENGTH);
-      break;
-  }
   slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buffer()->data());
 }
 

@@ -26,6 +26,7 @@
 
 #include "Node.h"
 #include "Port.h"
+#include "Scheduler.h"
 
 #include <QtCore/QDebug>
 
@@ -34,7 +35,9 @@ namespace Unison {
 Patch::Patch () :
   Processor()
 {
-  m_compiled = new QList<CompiledProcessor>();
+  m_schedule = new Internal::Schedule();
+  m_schedule->work = NULL;
+  m_schedule->workCount = 0;
 }
 
 int Patch::portCount () const
@@ -61,7 +64,7 @@ Port* Patch::port (const QString& id) const
 }
 
 
-void Patch::activate (BufferProvider* bp)
+void Patch::activate (BufferProvider& bp)
 {
   foreach (Processor* p, m_processors) {
     p->activate(bp);
@@ -87,9 +90,14 @@ void Patch::setBufferLength (PortType type, nframes_t len)
 
 void Patch::process (const ProcessingContext& context)
 {
-  foreach (CompiledProcessor cp, *m_compiled) {
-    cp.processor->process(context);
-  }
+  Q_UNUSED(context);
+
+  // We don't actually need to do anything, scheduler will
+  // pull in our children as dependents
+  for (int i=0; i<m_schedule->workCount; ++i) {
+    Unison::Internal::WorkUnit& w = m_schedule->work[i];
+    w.wait = w.initialWait;
+  } 
 }
 
 
@@ -156,86 +164,91 @@ void Patch::remove (Processor* processor)
 }
 
 
-// 2 if child's dependency is sibling, nothing special - walk and visit
-// 3 if child's dependency is nested, then walk into the "nesting" sibling instead
-void Patch::compileWalk (Node* n, QList<CompiledProcessor>& output)
+void Patch::compileSchedule (Internal::Schedule& output)
 {
-  Processor* p;
-  bool pendingAddition = false;
+  //qDebug() << "Compiling schedule for" << name()
+  //         << "with" << m_processors.count() << "children.";
+  // FIXME: this is not threadsafe, lock m_processors.
+  output.workCount = m_processors.count();
+  output.work = new Internal::WorkUnit[output.workCount];
 
-  if ((p = dynamic_cast<Processor*>(n)) && !p->isVisited()) {
-    p->visit();
-    pendingAddition = true;
-  }
-
-  foreach (Node* dep, n->dependencies()) {
-    compileWalk( dep, output );
-  }
-
-  if (pendingAddition) {
-    CompiledProcessor cp;
-    cp.processor = p;
-    output.append(cp);
-  }
-}
-
-
-/*
-  Alternate compilation method:
-  create set of all nodes - these are "un-traversed".
-  remove from traversed, recurse into dependents, add to compiled-list
-*/
-
-
-void Patch::compile (QList<CompiledProcessor>& output)
-{
-  // Mark everything as unvisited
+  output.readyWorkCount = 1;
+  output.readyWork = new Internal::WorkUnit[output.readyWorkCount];
+  
   QListIterator<Processor*> i( m_processors );
-  while (i.hasNext()) {
-    i.next()->unvisit();
-  }
-
-  // Process nodes that are pure-sinks first
-  i.toFront();
-  while (i.hasNext()) {
+  for (int wc=0; i.hasNext(); ++wc) {
     Processor* proc = i.next();
 
-    bool isSink = true;
-    bool done = false;
-
-    // A rather naster traversal to find sinks:
+    // A rather naster traversal to find processors
+    QSet<Node* const> dependencies;
+    QSet<Node* const> dependents;
 
     // For each output port
-    for (int j = 0; j < proc->portCount() && !done; ++j) {
-      Port* port = proc->port(j);
-      if (port->direction() == Output) {
-        // For all connected Ports.
-        QSetIterator<Node*  const> k( port->dependents() );
-        while (k.hasNext()) {
-          // All Processor dependents are Ports
-          Port* otherPort = static_cast<Port*>(k.next());
+    for (int pc = 0; pc < proc->portCount(); ++pc) {
+      Port* port = proc->port(pc);
 
-          // Not a sink if a connected port has any dependents.
-          if (otherPort->dependents().count() != 0) {
-            // Not sink, and break out of outer loop:
-            isSink = false;
-            done = true;
-            continue;
-          }
+      // For all connected Ports.
+      for (QSet<Port* const>::const_iterator pi = port->connectionsBegin();
+           pi != port->connectionsEnd(); ++pi) {
+
+        Port* const otherPort = *pi;
+
+        // We can count on getting processors from this relationship, but it sucks to.
+        if (port->direction() == Input) {
+          dependencies.unite(otherPort->dependencies());
+        }
+        else {
+          dependents.unite(otherPort->dependents());
         }
       }
     }
 
-    if (isSink) {
-      compileWalk( proc, output );
+    output.work[wc].processor = proc;
+    output.work[wc].initialWait = dependencies.count() + 1; // dependents + patch;
+
+    output.work[wc].dependents = new Internal::WorkUnit*[dependents.count()+1];
+    int dc=0;
+    for (QSetIterator<Node* const> ni(dependents); ni.hasNext(); ++dc) {
+      int dwc = m_processors.indexOf((Processor*)ni.next());
+      output.work[wc].dependents[dc] = &output.work[dwc];
     }
+    output.work[wc].dependents[dc] = NULL; // NULL termination
   }
 
-  // Then compile everything else
-  i.toFront();
-  while (i.hasNext()) {
-    compileWalk( i.next(), output );
+  // Now prepare the Patch gwork
+  output.readyWork[0].processor = this;
+  output.readyWork[0].initialWait = 0;
+  output.readyWork[0].dependents = new Internal::WorkUnit*[output.workCount+1];
+  int dc=0;
+  for (; dc < output.workCount; ++dc) {
+    output.readyWork[0].dependents[dc] = &output.work[dc];
   }
+  output.readyWork[0].dependents[dc] = NULL; // NULL termination
+
+  // Print it out
+  /*
+  printf("Compiled!!! \n");
+  int wc;
+  for (wc=0; wc< output.workCount; ++wc) {
+    Unison::Internal::WorkUnit& w = output.work[wc];
+    printf(" Work: `%s` (%x) wait: %d\n",
+           qPrintable(w.processor->name()), w.processor, w.initialWait);
+    for (Unison::Internal::WorkUnit** wpp = w.dependents; *wpp; ++wpp) {
+      printf("  Dep: `%s` (%x) wait: %d\n",
+             qPrintable((*wpp)->processor->name()), (*wpp)->processor, (*wpp)->initialWait);
+    }
+  }
+  for (wc=0; wc< output.readyWorkCount; ++wc) {
+    Unison::Internal::WorkUnit &w = output.readyWork[wc];
+    printf(" Rdy Work: `%s` (%x) wait: %d\n", qPrintable(w.processor->name()), w.processor, w.initialWait);
+    for (Unison::Internal::WorkUnit** wpp = w.dependents; *wpp; ++wpp) {
+      printf("  Dep: `%s` (%x) wait: %d\n",
+             qPrintable((*wpp)->processor->name()), (*wpp)->processor, (*wpp)->initialWait);
+    }
+  }
+  printf("\n");
+*/
+
 }
 
 

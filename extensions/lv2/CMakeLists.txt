@@ -25,9 +25,6 @@ configure_file(Lv2.extinfo ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 add_definitions(-DLV2_EXTENSION)
 
-set(UNISON_BUFFER_LENGTH "1024" CACHE STRING
-    "Audio buffer length. A work-around until runtime change is supported.")
-
 
 set(LV2_SRCS
     Feature.cpp

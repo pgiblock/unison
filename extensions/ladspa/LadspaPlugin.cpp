@@ -114,20 +114,12 @@ Port* LadspaPlugin::port (const QString& id) const
 }
 
 
-BufferProvider *LadspaPlugin::bufferProvider ()
-{
-  return m_bufferProvider;
-}
-
-
-void LadspaPlugin::activate (BufferProvider *bp)
+void LadspaPlugin::activate (BufferProvider& bp)
 {
   if (!m_activated) {
-    qDebug() << "Activating plugin" << name();
-    m_bufferProvider = bp;
-
     // Connect all ports first
     for (int i=0; i<m_ports.count(); ++i) {
+      m_ports[i]->acquireBuffer(bp);
       m_ports[i]->connectToBuffer();
     }
 
@@ -242,6 +234,7 @@ LadspaPluginInfo::LadspaPluginInfo (const QString &path,
   m_path(path),
   m_descriptor(desc)
 {
+  printf("PATH %s %s\n",qPrintable(path), desc->Name);
   setName(desc->Name);
   setAuthorName(desc->Maker);
   setUniqueId(QString("%1%2").arg( UriRoot ).arg( m_descriptor->UniqueID ));

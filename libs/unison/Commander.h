@@ -100,8 +100,8 @@ class Commander
 
   private:
     enum {
-      COMMAND_BUFFER_LENGTH = 16,   ///< How big is our buffer?
-      COMMANDS_PER_PROCESS = 2      ///< How many commands to process per period
+      COMMAND_BUFFER_LENGTH = 1024,   ///< How big is our buffer?
+      COMMANDS_PER_PROCESS =  8       ///< How many commands to process per period
     };
 
     static Commander* m_instance;   ///< The instance

@@ -23,10 +23,10 @@
  */
 
 #include "JackPort.h"
-#include "JackBufferProvider.h"
 #include "JackBackend.h"
 
 #include <unison/AudioBuffer.h>
+#include <unison/Patch.h>
 
 #include <jack/jack.h>
 #include <QDebug>
@@ -39,9 +39,6 @@ using namespace Unison;
 namespace Jack {
   namespace Internal {
 
-JackBufferProvider* JackPort::m_jackBufferProvider =
-    new JackBufferProvider();
-
 
 JackPort::JackPort (JackBackend& backend, const QString& name,
                     PortDirection direction) :
@@ -53,6 +50,7 @@ JackPort::JackPort (JackBackend& backend, const QString& name,
 {}
 
 
+// Deferred initialization
 bool JackPort::registerPort ()
 {
   JackPortFlags flags = JackPort::flagsFromDirection(m_direction);
@@ -61,6 +59,12 @@ bool JackPort::registerPort ()
       m_id.toLatin1(), JACK_DEFAULT_AUDIO_TYPE, flags, 0 );
 
   return isRegistered();
+}
+
+
+Unison::Node* JackPort::parent () const
+{
+  return m_backend.rootPatch();
 }
 
 
@@ -91,7 +95,33 @@ const QSet<Node* const> JackPort::interfacedNodes() const
 
 void JackPort::connectToBuffer ()
 {
-  m_buffer = m_jackBufferProvider->acquire(this, backend().bufferLength());
+  // Don't need to do any 'connecting', we copy to/from our acquired buffer
+}
+
+
+void JackPort::activate (Unison::BufferProvider& bp)
+{
+  acquireBuffer(bp);
+  connectToBuffer(); // Might-as-well, though it is a no-op
+}
+
+void JackPort::preProcess ()
+{
+  if (direction() == Unison::Output) {
+    nframes_t frames = backend().bufferLength();
+    void* jackbuff = jack_port_get_buffer(jackPort(), frames);
+    memcpy(buffer()->data(), jackbuff, sizeof(sample_t) * frames);
+  }
+}
+
+
+void JackPort::postProcess ()
+{
+  if (direction() == Unison::Input) {
+    nframes_t frames = backend().bufferLength();
+    void* jackbuff = jack_port_get_buffer(jackPort(), frames);
+    memcpy(jackbuff, buffer()->data(), sizeof(sample_t) * frames);
+  }
 }
 
 

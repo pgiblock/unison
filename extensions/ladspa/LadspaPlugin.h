@@ -83,15 +83,13 @@ class LadspaPlugin : public Unison::Plugin
       return m_sampleRate;
     }
 
-    void activate (Unison::BufferProvider *bp);
+    void activate (Unison::BufferProvider& bp);
     void deactivate ();
 
     void process (const Unison::ProcessingContext &context);
 
     const QSet<Unison::Node* const> dependencies () const;
     const QSet<Unison::Node* const> dependents () const;
-
-    Unison::BufferProvider *bufferProvider ();
 
   private:
     const LADSPA_Descriptor *m_descriptor;
@@ -103,7 +101,6 @@ class LadspaPlugin : public Unison::Plugin
     QVarLengthArray<Unison::Port*, 16> m_ports;
     QSet<Unison::Node* const> m_audioInPorts;
     QSet<Unison::Node* const> m_audioOutPorts;
-    Unison::BufferProvider *m_bufferProvider;
 
     void init ();
 };

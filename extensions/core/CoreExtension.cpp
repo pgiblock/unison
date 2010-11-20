@@ -90,7 +90,16 @@ void CoreExtension::parseArguments(const QStringList& arguments)
       bool ok;
       float timeout = arguments.at(i + 1).toFloat(&ok);
       if (ok) {
-        QTimer::singleShot(timeout * 1000, qApp, SLOT(quit()));
+        int timeoutMS = timeout*1000;
+        QTimer::singleShot(timeoutMS, qApp, SLOT(quit()));
+      }
+      i++; // skip the value
+    }
+    if (arguments.at(i) == QLatin1String("--lines")) {
+      bool ok;
+      m_lineCount = arguments.at(i + 1).toInt(&ok);
+      if (!ok) {
+        m_lineCount = 4;
       }
       i++; // skip the value
     }
@@ -133,7 +142,7 @@ void CoreExtension::extensionsInitialized()
 
   // Loading a mix of LADSPA and LV2
   QStringList plugins;
-  plugins << "http://ladspa.org/plugins/2143"
+  plugins //<< "http://ladspa.org/plugins/2143"
           << "http://calf.sourceforge.net/plugins/Reverb"
           << "http://calf.sourceforge.net/plugins/Phaser";
 
@@ -158,19 +167,28 @@ void CoreExtension::extensionsInitialized()
   Engine::setBackend(backend);
 
   backend->activate();
+  
+  const int effects = 2; // * 5 * 2
 
-  FxLine* fxLine = new FxLine(*root, "Super Duper Fx-Line");
+  for (int l = 1; l <= m_lineCount; ++l) {
 
-  int j = 0;
-  for (int i = 0; i < plugins.size(); ++i) {
-    QString plugin = plugins.at(i);
-    PluginInfoPtr desc = PluginManager::instance()->info(plugin);
-    if (desc) {
-      fxLine->addPlugin(desc, j++);
+    FxLine* fxLine = new FxLine(*root, QString("Super Duper Fx-Line %1").arg(l));
+
+    for (int i = 0; i < plugins.size(); ++i) {
+      int j = 0;
+      QString plugin = plugins.at(i);
+      PluginInfoPtr desc = PluginManager::instance()->info(plugin);
+      // Add N of each
+      for (int cnt = 0; cnt < effects; ++cnt) {
+        if (desc) {
+          fxLine->addPlugin(desc, j++);
+        }
+        else {
+          qWarning() << "Could not load plugin: " << plugin;
+        }
+      }
     }
-    else {
-      qWarning() << "Could not load plugin: " << plugin;
-    }
+
   }
 
   //m_mainWindow->extensionsInitialized();

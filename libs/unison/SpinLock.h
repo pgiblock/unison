@@ -1,5 +1,5 @@
 /*
- * PortDisconnect.h
+ * SpinLock.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,41 +22,47 @@
  *
  */
 
+#ifndef UNISON_SPIN_LOCK_H_
+#define UNISON_SPIN_LOCK_H_
 
-#ifndef UNISON_PORT_DISCONNECT_H_
-#define UNISON_PORT_DISCONNECT_H_
-
-#include "Command.h"
-#include "Patch.h"
+#include <QObject>
 
 namespace Unison {
-  
-  class BufferProvider;
-  class Port;
-  class ProcessingContext;
 
-  namespace Internal {
-
-    class Schedule;
-
-class PortDisconnect : public Command
+class SpinLock
 {
+
   public:
-    PortDisconnect (Port* port1, Port* port2, BufferProvider& bp);
-    void preExecute ();
-    void execute (ProcessingContext& context);
-    void postExecute ();
+    SpinLock ();
+    virtual ~SpinLock () {};
+
+    void lock ();
+    bool tryLock ();
+
+    void unlock ();
+
+  protected:
+    inline bool acquire ()
+    {
+      // True if wasn't previously locked
+      return m_lock.fetchAndStoreOrdered(1) == 0;
+    }
+
+    inline void release ()
+    {
+      m_lock.fetchAndStoreOrdered(0);
+    }
+
+    void pause ();
+    void yield ();
+
   private:
-    Port* m_port1;
-    Port* m_port2;
-    Patch* m_patch;
-    Schedule* m_compiled;
-    BufferProvider& m_bufferProvider;
+    // 1 means locked
+    QAtomicInt m_lock;
 };
 
-  } // Internal
-} // Unison
 
+} // Unison
 
 #endif
 

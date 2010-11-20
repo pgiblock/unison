@@ -30,20 +30,26 @@
 #include "Patch.h"
 
 namespace Unison {
+
+  class BufferProvider;
   
   namespace Internal {
+    
+    class Schedule;
 
 class PortConnect : public Command
 {
   public:
-    PortConnect (Port* port1, Port* port2);
+    PortConnect (Port* port1, Port* port2, BufferProvider& bp);
     void preExecute ();
     void execute (ProcessingContext& context);
     void postExecute ();
   private:
-    Port* m_producer, *m_consumer;
+    Port* m_producer;
+    Port* m_consumer;
     Patch* m_patch;
-    QList<Patch::CompiledProcessor>* m_compiled;
+    Schedule* m_compiled;
+    BufferProvider& m_bufferProvider;
 };
 
   } // Internal

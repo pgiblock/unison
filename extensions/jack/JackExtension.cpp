@@ -48,7 +48,8 @@
 namespace Jack {
   namespace Internal {
 
-JackExtension::JackExtension()
+JackExtension::JackExtension() :
+  m_workerCount(0)
 {
 }
 
@@ -62,15 +63,32 @@ JackExtension::~JackExtension()
 
 void JackExtension::parseArguments(const QStringList& arguments)
 {
-  Q_UNUSED(arguments)
+  for (int i = 0; i < arguments.size() - 1; i++) {
+    if (arguments.at(i) == QLatin1String("--workers")) {
+      bool ok;
+      int workers = arguments.at(i + 1).toInt(&ok);
+
+      if (ok) {
+        m_workerCount = workers;
+      }
+      i++; // skip the value
+    }
+  }
 }
 
 
 bool JackExtension::initialize(const QStringList& arguments, QString* errorMessage)
 {
   Q_UNUSED(errorMessage)
+
   parseArguments(arguments);
-  addAutoReleasedObject(new JackBackendProvider());
+  
+  // Sanity
+  if (m_workerCount <= 0) {
+    m_workerCount = 1;
+  }
+
+  addAutoReleasedObject(new JackBackendProvider(0, m_workerCount));
   return true;
 }
 

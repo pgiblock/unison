@@ -28,6 +28,7 @@
 #include <unison/Processor.h>
 
 #include <QDebug>
+#include <QThread>
 #include <QWaitCondition>
 #include <jack/jack.h>
 
@@ -35,28 +36,124 @@
 #include <core/Engine.h>
 #include <unison/AudioBuffer.h>
 #include <unison/Commander.h>
-#include "JackBufferProvider.h"
+#include <unison/Patch.h>
+#include <unison/Scheduler.h>
+
+// For pthread hack - abstract to platform-agnostic utils
+#include <pthread.h>
+#include <mcheck.h>
 
 using namespace Unison;
 
 namespace Jack {
   namespace Internal {
 
-Backend* JackBackendProvider::createBackend()
+class JackWorkerThread : public QThread
 {
-  return new JackBackend();
+  public:
+    JackWorkerThread (Unison::Internal::Worker* w, QSemaphore& done);
+    void run ();
+
+    void run (ProcessingContext& ctx);
+
+  protected:
+    void setSchedulingPriority (int policy, unsigned int priority);
+
+    Unison::Internal::Worker* m_worker;
+    QSemaphore m_wait;
+    // Shared state:
+    QSemaphore& m_done;
+    ProcessingContext* m_context;
+};
+
+JackWorkerThread::JackWorkerThread (Unison::Internal::Worker* w, QSemaphore& done) :
+  m_worker(w),
+  m_wait(),
+  m_done(done)
+{}
+
+
+void JackWorkerThread::setSchedulingPriority (int policy, unsigned int priority)
+{
+  sched_param sp;
+  sp.sched_priority = priority;
+  pthread_t thread = pthread_self();
+  int result = pthread_setschedparam(thread, policy, &sp);
+  if (!result) {
+    QDebug dbg = qDebug();
+    dbg << "Setting JWT scheduling policy:";
+    switch (policy) {
+      case SCHED_FIFO:  dbg << "SCHED_FIFO";  break;
+      case SCHED_RR:    dbg << "SCHED_RR";    break;
+      case SCHED_OTHER: dbg << "SCHED_OTHER"; break;
+#ifdef SCHED_BATCH
+      case SCHED_BATCH: dbg << "SCHED_BATCH"; break;
+#endif
+      default:          dbg << "Unknown";     break;
+    }
+    dbg << "and priority:" << sp.sched_priority;
+  }
+  else {
+    qDebug() << "Unable to set scheduling policy";
+  }
 }
 
 
-JackBackend::JackBackend () :
+void JackWorkerThread::run ()
+{
+  qDebug() << "JWT: started!" << QThread::currentThreadId();
+  setSchedulingPriority(SCHED_FIFO, 60);
+
+  // This blocks until processCb is called. only acquired once per period
+  while (true) {
+    m_wait.acquire();
+
+    m_worker->run(*m_context);
+
+    //printf("!!! RELEASING ONE !!!\n");
+    //m_done.release(1);
+  }
+  // exec(); We don't want event handling
+}
+
+void JackWorkerThread::run (ProcessingContext& ctx)
+{
+  m_context = &ctx;
+  m_wait.release();
+}
+
+
+Backend* JackBackendProvider::createBackend()
+{
+  return new JackBackend(*Core::Engine::bufferProvider(), m_workerCount);
+}
+
+
+JackBackend::JackBackend (Unison::BufferProvider& bp, int workerCount) :
   m_client(NULL),
   m_myPorts(),
+  m_bufferProvider(bp),
   m_bufferLength(0),
   m_sampleRate(0),
   m_freewheeling(false),
   m_running(false)
 {
+  Q_ASSERT(workerCount > 0);
   initClient();
+
+  m_workers.workers = new Unison::Internal::Worker*[workerCount];
+  m_workers.workerCount = workerCount;
+  for (int i=0; i<workerCount; ++i) {
+    m_workers.workers[i] = new Unison::Internal::Worker(m_workers);
+  }
+
+  if (workerCount>1) {
+    m_workerThreads.reserve(workerCount);
+    for (int i=0; i<workerCount; ++i) {
+      m_workerThreads.append(new JackWorkerThread(m_workers.workers[i], m_workersDone));
+      ((JackWorkerThread*)m_workerThreads[i])->start();
+    }
+  }
 }
 
 
@@ -186,6 +283,7 @@ JackPort* JackBackend::registerPort (const QString& name, PortDirection directio
   }
   else {
     qDebug() << "Jack port registered: " << myPort->name();
+    myPort->activate( m_bufferProvider );
     m_myPorts.append( myPort );
     return myPort;
   }
@@ -294,7 +392,6 @@ int JackBackend::graphOrderCb (void* a)
 {
   JackBackend* backend = static_cast<JackBackend*>(a);
   qDebug() << "JACK graph order changed";
-  // TODO-NOW: somehow ensure our graph is recompiled.
   return 0;
 }
 
@@ -302,7 +399,6 @@ int JackBackend::graphOrderCb (void* a)
 int JackBackend::processCb (nframes_t nframes, void* a)
 {
   JackBackend* backend = static_cast<JackBackend*>(a);
-  JackBufferProvider nullProvider;
   int i;
 
   if (!(backend->m_running)) {
@@ -310,33 +406,64 @@ int JackBackend::processCb (nframes_t nframes, void* a)
   }
 
   ProcessingContext context( nframes );
+  Unison::Internal::Schedule* s = backend->rootPatch()->schedule();
 
+  // Process commands
   Unison::Internal::Commander::instance()->process(context);
 
-
-  // Aquire JACK buffers
+  // TODO, these pre/postprocesses could be built into the Schedule as
+  // workunits so that they run in parallel
   for (i=0; i<backend->portCount(); ++i) {
-    Port* port = backend->port(i);
-    port->connectToBuffer();
-
-    // Re-acquire buffers on ports connected to JACK
-    // Read note below:
-    foreach (Port* other, port->connectedPorts()) {
-      other->connectToBuffer();
-    }
-
-    // Copy data across directly connected jack buffers.
-    // XXX: TODO: This is a super-hack.  In retrospect, it would be better if JackPort
-    // simply didn't have any Buffer at all.  Just copy all the data to connected Ports
-    // before process()ing, Then Fill in outgoing ports on the way out.  This
-    // fixes both connections to regular Ports and to JackPorts.  It also let's
-    // us remove JackBufferProvider and silly calls to connectToBuffer()...
+    backend->port(i)->preProcess();
   }
 
-  Q_ASSERT(backend->rootPatch());
-  backend->rootPatch()->process(context);
+  // TODO: Remove this check, it is rather a hack
+  if (s->readyWorkCount!=0) {
+    if (backend->m_workers.workerCount == 1) {
+      backend->processST(s, context);
+    }
+    else {
+      backend->processMT(s, context);
+    } 
+  } // End hacky conditional
 
+
+  for (i=0; i<backend->portCount(); ++i) {
+    backend->port(i)->postProcess();
+  }
+
+  muntrace();
   return 0;
+}
+
+
+int JackBackend::processST (Unison::Internal::Schedule* sched, ProcessingContext& ctx)
+{
+  Unison::Internal::Worker* worker = m_workers.workers[0];
+  worker->pushReadyWorkUnsafe(sched->readyWork, sched->readyWorkCount);
+  worker->run(ctx);
+}
+
+
+int JackBackend::processMT (Unison::Internal::Schedule* sched, ProcessingContext& ctx)
+{
+  int numThreads = m_workerThreads.size();
+  m_workers.liveWorkers = numThreads;
+  m_workers.workers[0]->pushReadyWorkUnsafe(sched->readyWork, sched->readyWorkCount);
+
+  for (int i=0; i < numThreads; ++i) {
+    ((JackWorkerThread*)m_workerThreads[i])->run(ctx); // unblock slave
+  }
+
+  //m_workers.done.acquire(numThreads);
+  m_workers.done.acquire(1);
+
+
+  /*
+  backend->m_workers.workLeft = s->readyWorkCount;
+  // Run us
+  //workers[numThreads]->run(context);
+  */
 }
 
 
@@ -367,7 +494,6 @@ void JackBackend::timebaseCb (jack_transport_state_t, nframes_t, jack_position_t
 
 
 int JackBackend::xrunCb (void* backend) {
-  //qWarning() << "XRun occured";
   return 0;
 }
 

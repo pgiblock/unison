@@ -26,6 +26,8 @@
 
 #include <unison/RingBuffer.h>
 
+#include <iostream>
+
 using namespace Unison;
 
 bool singlePushAndPop ()
@@ -142,10 +144,10 @@ int main (int argc, char* argv[])
   bool ppf = pushAndPopAreFifo();
   bool pos = pushOverflowSingles();
   bool ppb = pushAndPopOverBoundary();
-  printf("  singlePushPop: %s\n", spp?"OK":"FAIL" );
-  printf("  pushAndPopAreFifo: %s\n", ppf?"OK":"FAIL" );
-  printf("  pushOverflowSingles: %s\n", pos?"OK":"FAIL" );
-  printf("  pushAndPopOverBoundary: %s\n", ppb?"OK":"FAIL" );
+  std::cout << "  singlePushPop: "          << spp?"OK":"FAIL" << std::endl;
+  std::cout << "  pushAndPopAreFifo: "      << ppf?"OK":"FAIL" << std::endl;
+  std::cout << "  pushOverflowSingles: "    << pos?"OK":"FAIL" << std::endl;
+  std::cout << "  pushAndPopOverBoundary: " << ppb?"OK":"FAIL" << std::endl;
 
   return (spp + ppf + pos + ppb -  4);
 }

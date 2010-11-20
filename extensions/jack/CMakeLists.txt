@@ -27,7 +27,6 @@ add_definitions(-DJACK_EXTENSION)
 
 set(JACK_SRCS
     JackBackend.cpp
-    JackBufferProvider.cpp
     JackExtension.cpp
     JackPort.cpp
 )

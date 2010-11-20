@@ -1,5 +1,5 @@
 /*
- * PortDisconnect.h
+ * FastRandom.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,41 +22,66 @@
  *
  */
 
-
-#ifndef UNISON_PORT_DISCONNECT_H_
-#define UNISON_PORT_DISCONNECT_H_
-
-#include "Command.h"
-#include "Patch.h"
+#ifndef UNISON_FAST_RANDOM_H_
+#define UNISON_FAST_RANDOM_H_
 
 namespace Unison {
-  
-  class BufferProvider;
-  class Port;
-  class ProcessingContext;
 
-  namespace Internal {
-
-    class Schedule;
-
-class PortDisconnect : public Command
+/**
+ * An implementation of the pseudo-random number generator presented in
+ * POSIX.1-2001.  It looks like this should be sufficiently fast. */
+class FastRandom
 {
   public:
-    PortDisconnect (Port* port1, Port* port2, BufferProvider& bp);
-    void preExecute ();
-    void execute (ProcessingContext& context);
-    void postExecute ();
+
+    FastRandom () : n(0)
+    {}
+
+    FastRandom (const FastRandom& other) : n(other.n)
+    {}
+
+    /**
+     * Seed our random number generator. Use time, or another RNG. */
+    void seed (unsigned s)
+    {
+      n = s;
+    }
+
+    /**
+     * Gets a random int in [0, 32767]
+     */
+    inline unsigned nextInt ()
+    {
+      return (unsigned)(next()/65536) % 32768;
+    }
+
+    /**
+     * Gets a random float in [0, 1.0)
+     */
+    inline float nextFloat ()
+    {
+      return next() * 2.328306e-10;
+    }
+
+    /**
+     * Gets a random double in [0, 1.0)
+     */
+    inline double nextDouble ()
+    {
+      return next() * 2.328306e-10;
+    }
+
   private:
-    Port* m_port1;
-    Port* m_port2;
-    Patch* m_patch;
-    Schedule* m_compiled;
-    BufferProvider& m_bufferProvider;
+
+    inline unsigned next ()
+    {
+      return (n = n * 1103515245 + 12345);
+    }
+
+    unsigned n;
 };
 
-  } // Internal
 } // Unison
-
 
 #endif
 

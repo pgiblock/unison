@@ -66,12 +66,10 @@ SharedBufferPtr PooledBufferProvider::acquire (PortType type, nframes_t nframes)
   Buffer* buf;
   switch (type) {
     case AudioPort:
-      qDebug() << "New Audio Buffer " << nframes << " frames.";
       buf = new AudioBuffer( *this, nframes );
       break;
 
     case ControlPort:
-      qDebug() << "New Control Buffer";
       buf = new ControlBuffer( *this );
       break;
     default:
