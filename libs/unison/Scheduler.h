@@ -36,8 +36,7 @@
 
 #include <stdlib.h> // for rand
 
-// The most RT-unsafe way to message ever! but is handy anyways
-#define rtprintf(...) //printf(__VA_ARGS__)
+//#define NO_PROCESS
 
 namespace Unison {
   namespace Internal {
@@ -57,12 +56,10 @@ class Worker;
  * Worker). The WorkUnit only exists in a single list, so this restriction is fine. */
 struct WorkUnit
 {
-  //Q_DISABLE_COPY(WorkUnit)
-
   // Work unit definition 
   Processor* processor;   ///< The processor to run
-  int initialWait;  ///< Initial count of unresolved dependencies
-  WorkUnit** dependents;   ///< Decrement these waits when we are done processing
+  int initialWait;        ///< Initial count of unresolved dependencies
+  WorkUnit** dependents;  ///< Decrement these waits when we are done processing
 
   // State
   QAtomicInt wait;        ///< Initialized to number of dependencies each run
@@ -74,70 +71,102 @@ struct WorkUnit
 };
 
 
-
+/**
+ * A WorkQueue is held by a worker and maintains a list of ready-work.  The queue
+ * is intrusive to avoid allocating nodes for the container.  The front of the queue
+ * is used by the owning worker and the rear is used by thieves.  This helps maintain
+ * reasonable locality on the owning-side, while leaving units that are likely to have
+ * more dependents for theives.  The implementation could be replaced with a more
+ * complicated lock-free structure in the future, but this seems fine for now. 
+ *
+ * TODO: rewrite using a sentinel node for extra efficiency. */
 class WorkQueue
 {
-  // TODO: Disable copy
+  Q_DISABLE_COPY(WorkQueue)
+
   public:
     WorkQueue ();
 
     /** 
-     * Used by the worker to enqueue work that has just been made ready */
-    void push (WorkUnit* u);
+     * Used by the worker to enqueue work that has just been made ready
+     * @param unit work that has just met its dependencies. */
+    void push (WorkUnit* unit);
 
     /**
-     * Used by the worker to get work when the current execution path has ended */
+     * Used by the worker to get work when the current execution path has ended
+     * @return the "last-in" WorkUnit */
     WorkUnit* pop ();
 
     /**
-     * Used by thieves to steal work when their queue is empty */
+     * Used by thieves to steal work when their queue is empty
+     * @return the "first-in" WorkUnit */
     WorkUnit* steal ();
+
+    /**
+     * Check if there is anything worth stealing
+     * @return true if work exists */
+    inline bool isNotEmpty ()
+    {
+      return m_tail;
+    }
 
     /**
      * Initialize the queue by means of another queue.  We _could_ have used a copy
      * ctor for this, but WorkQueue doesn't support copy per-se.  What we want is to
-     * restore the state of a queue multiple times */
+     * restore the state of a queue multiple times 
+     * @param other the head of the linked list walked through initialNext pointer */
     void initializeFrom (const WorkQueue& other);
 
   private:
-    WorkUnit* m_head;
-    WorkUnit* m_tail;
-
-  friend class Worker;  // FIXME: HACK
+    WorkUnit* m_head;   ///< The head - used by the owner Worker
+    WorkUnit* m_tail;   ///< The tail - used by theives
 };
 
 
 
-class WorkerGroup
+/**
+ * A happy family of workers.  Used for synchronization */
+struct WorkerGroup
 {
   public: // Temporary full-public
-  Worker** workers;
-  int workerCount;
+    
+  Worker** workers; ///< The workers in this group
+  int workerCount;  ///< The size of this group
 
-  // Possibility 1:
-  // increment when a thread has a food supply, decrement when resorting to stealing
-  // if value == 0, then we are done (threads wait for post)
-  QAtomicInt liveWorkers; // workers who haven't resorted to stealing
+  /**
+   * Used by workers to determine when to quit.  Incremented when a thread gains
+   * food supply, decremented when resorting to stealing. */
+  QAtomicInt liveWorkers;
+
+  /**
+   * Waitcondition for main processing thread. Signaled by the first thread to
+   * realize that all workers are starved. */
   QSemaphore done;
-
-  // Possibility 2:
-  // keep count of processors, decrement when run. done when it reaches 0
-  // works as long as the number of processors is known upfront.
-  //QAtomicInt workLeft;
-
-  friend class Worker;
 };
 
 
 
+/**
+ * Workers process a schedule.  Many workers can work in parallel if they are
+ * in a WorkerGroup.  There is no requirement how the workers are run exactly,
+ * For example, one Worker could be executed in the main processing thread, while
+ * additional Workers are run in a QThread. */
 class Worker 
 {
   public:
+    /**
+     * Create a Worker.
+     * @param group The WorkerGroup the worker belongs to. */
     Worker (WorkerGroup& group);
     
+    /**
+     * Runs a single processing iteration.  This could be multiple WorkUnits,
+     * if dependents are readied in order to reduce the cost of pushing just to
+     * pop immediately afterwards.
+     * @param ctx The ProcessingContext to run in
+     * @return true if the Worker was able to run at least one WorkUnit */
     bool runOnce (const ProcessingContext& ctx)
     {
-      rtprintf("%x: Hello again.\n", QThread::currentThreadId());
       // Look at us
       lock();
       WorkUnit* unit = m_readyList.pop();
@@ -146,44 +175,37 @@ class Worker
       // Stealing
       if (!unit) {
         if (m_group.workerCount==1) {
-          rtprintf("W: nothing in readyList, singleThread done.\n");
           return false;
         }
         
-        rtprintf("%x: Stealing..\n", QThread::currentThreadId());
         unit = stealRandomly();
         if (!unit) {
-          rtprintf("%x: Failed steal\n", QThread::currentThreadId());
           if (!m_stealing) {
-            rtprintf("%x: Our very first steal!! awww..\n", QThread::currentThreadId());
             m_stealing=true;
+            // TODO: this could probably be a single counting Semaphore.
             if (m_group.liveWorkers.fetchAndAddOrdered(-1) == 1) {
-              rtprintf("%x: WE ARE DONE!!\n", QThread::currentThreadId());
               m_group.done.release(1);
               return false;
             }
           }
           // Otherwise, hope we have more luck next time
           QThread::yieldCurrentThread();
-          return true; // We aren't done necessarily done yet
+          return true; // We aren't necessarily done yet
         }
         else if (m_stealing) {
           m_group.liveWorkers.fetchAndAddOrdered(1);
           m_stealing = false;
         }
       }
-      else {
-        rtprintf("%x: Actually have a unit!\n", QThread::currentThreadId());
-      }
 
       // Loop over the immediate execution path (depth first)
       while (unit) {
 
         // Processing
-        rtprintf("%x: Processing `%s` (%x)\n", QThread::currentThreadId(),
-               qPrintable(unit->processor->name()),unit->processor);
         Processor* p = unit->processor;
+#ifndef NO_PROCESS
         p->process(ctx);
+#endif
 
         // Readying dependents
         lock(); // TODO: Move lock to immediately before the loop below?
@@ -196,9 +218,7 @@ class Worker
         // Loop until the first ready one, stash that one for ourself
         for (; *dp; ++dp) {
           u = *dp;
-          rtprintf("Decr1\n");
           if (u->wait.fetchAndAddOrdered(-1) == 1) {
-            rtprintf("  Saving..\n");
             unit = u;
             ++dp;
             break; // now continue with the "queueing" loop
@@ -208,43 +228,29 @@ class Worker
         // Queue the rest
         for (; *dp; ++dp) {
           u = *dp;
-          rtprintf("Decr2\n");
-          //printf("%x: decr: %llx  (%x) pre: %d\n", QThread::currentThreadId(),
-          //       (unsigned long long)u, u->processor, (int)u->wait);
           if (u->wait.fetchAndAddOrdered(-1) == 1) {
-            rtprintf("  Queuing..\n");
             m_readyList.push(u);
           }
         }
         unlock();
       }
 
-
-  //
-  //      // FIXME: I DON"T THINK THIS WORKLEFT IS WORKING THE WAY WE THINK!!
-  //         I THINK IT IS POSSIBLY BREAKING EARLY, HENCE LOW UTILIZATION
-
-        /*
-        foo = m_group.workLeft.fetchAndAddOrdered(-1);
-        //printf("FOO -1: %d\n", (int)foo);
-        if (foo == 1) {
-          //printf("%x: WE SHOULD BE DONE!!!\n", QThread::currentThreadId());
-          m_group.workLeft.fetchAndStoreOrdered(-1); // Special case: -1 done
-          return false;
-        }*/
-
-
       return true;
     }
 
+    /**
+     * Run the Worker while there is work.
+     * @param ctx The ProcessingContext to run in */
     inline void run (const ProcessingContext& ctx)
     {
-      rtprintf("%x: run() --------------------------------------------------\n", QThread::currentThreadId());
       m_stealing = false;
       while (runOnce(ctx) && m_group.liveWorkers != 0) {}
-      rtprintf("%x: we are done.", QThread::currentThreadId());
     }
 
+    /**
+     * Try to steal from this Worker, used by other workesr when they've resorted to
+     * stealing. 
+     * @return The stolen WorkUnit if success, otherwise NULL. */
     inline WorkUnit* trySteal ()
     {
       WorkUnit* u = NULL;
@@ -257,7 +263,9 @@ class Worker
 
     /**
      * Pushes the null-terminated list onto the queue. No locking occurs since this
-     * function would run while any other workers are blocked */
+     * function would run while any other workers are blocked
+     * @param units Array of units to ready
+     * @oaram count size of units array */
     inline void pushReadyWorkUnsafe (WorkUnit* units, int count)
     {
       for (int i=0; i<count; ++i) {
@@ -269,7 +277,7 @@ class Worker
 
     bool canStealFrom (Worker* victim) const
     {
-      return victim->m_readyList.m_tail;
+      return victim->m_readyList.isNotEmpty();
     }
 
 
@@ -311,11 +319,11 @@ class Worker
   protected:
 
   private:
-    WorkerGroup& m_group;
-    WorkQueue m_readyList;
-    SpinLock  m_lock;
-    FastRandom m_random;
-    bool       m_stealing;
+    WorkerGroup& m_group;   ///< The WorkerGroup 
+    WorkQueue m_readyList;  ///< List of WorkUnits that that have satisfied dependencies
+    SpinLock  m_lock;       ///< Lock for the readyList
+    FastRandom m_random;    ///< RNG used for picking victim Workers
+    bool       m_stealing;  ///< Are we stealing?
 };
 
 
@@ -326,11 +334,8 @@ class Worker
 class Schedule
 {
   public:
-  // /**
-  //  * The initial queue of ready work. This queue is technically invalid at all times.
-  //  * It is only used to initialize the Queue used by the Worker itself. */
-  // const WorkQueue queue;
-
+  /**
+   * Work without any data dependencies, used to begin the processing */
   WorkUnit* readyWork;
   int readyWorkCount;
 

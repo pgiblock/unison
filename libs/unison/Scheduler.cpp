@@ -38,6 +38,7 @@ WorkQueue::WorkQueue () :
   m_tail(NULL)
 {}
 
+
 void WorkQueue::push (WorkUnit* u)
 {
   u->prev = NULL;
@@ -51,6 +52,7 @@ void WorkQueue::push (WorkUnit* u)
 
   m_head = u;
 }
+
 
 WorkUnit* WorkQueue::pop ()
 {
@@ -68,6 +70,7 @@ WorkUnit* WorkQueue::pop ()
   return r;
 }
 
+
 WorkUnit* WorkQueue::steal ()
 {
   if (!m_tail) {
@@ -83,6 +86,7 @@ WorkUnit* WorkQueue::steal ()
   }
   return r;
 }
+
 
 void WorkQueue::initializeFrom (const WorkQueue& other)
 {

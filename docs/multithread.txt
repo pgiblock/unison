@@ -1,0 +1,320 @@
+/*
+<pgib>	Hello. I basically have a data-flow problem.  My system is a signal processor, and consists of multiple blocks, connected by edges.  the data dependencies between each node is a buffer shared by either node of an edge
+<pgib>	I was able to write a compiler to compile the graph into a sequence for execution on a single processor.  Now, I'm looking for techniques to schedule on more than one processor.
+<pgib>	any ideas of terms, algorithms, or anything else that may help me research
+<pgib>	I'll require some amount of static analysis, since the over head of finding the next node totally dynamically creates too much overhead
+<pkhuong>	pgib: there are tons of heuristics and exact methods for job shop scheduling.
+<pkhuong>	If you can, I'd probably try to first go with an integer programming formulation and solve it with CPLEX or Gurobi.
+<pkhuong>	they have free, unrestricted, academic licenses
+<pkhuong>	otherwise, SCIP is Free, but not as good.
+<pkhuong>	The nice thing about doing it with a MIP solver first is that you get lower bounds, so, even if they're too slow, you get an idea of how far from the optimum the solutions found by your other (heuristic) methods are.
+<pgib>	hmm thanks. Although I wonder how applicable some of that is.
+<pgib>	I'm not really trying to solve any integer formulation. This is a digital signal processing problem.  so it is more of a load-balancing issue. Either that, or I misunderstood something in your response
+<pgib>	or both
+<pkhuong>	pgib: you want to assign heterogeneous jobs to workers while respecting precedence constraints, and you'd like to minimize the total amount of time to execute all the jobs?
+<pkhuong>	assuming identical processors, that's a jobshop problem.
+<pgib>	identical processors, heterogeneous jobs, but the duration for a single job to run will vary depending on the inputs
+<pgib>	i.e: some nodes can run very quickly if the input is silent, for example.
+<pkhuong>	if you can at least provide an estimate of the durations statically, that's still doable.
+<pkhuong>	it'll be suboptimal compared to a fully dynamic schedule, obviously.
+<pgib>	pkhuong, yes. I should be able to - and I can meter it and re-weight periodicially
+<pkhuong>	although, is dynamic scheduling really impractical?
+<pgib>	ok thanks - some of the tools you mentioned first scared me. I guess I need to learn some of the terminology. This is a FOSS project as well, so I can't really offset the calculations to some other process
+<pkhuong>	ah, k.
+<pkhuong>	so, what makes you say that dynamic scheduling won't work?
+<pgib>	hmm I guess I'm afraid of it taking too long.  there may be hundreds of nodes. The work units are fairly small, and the actuall processing occurs in hard real-time
+<pkhuong>	basic dynamic scheduling for a dependency graph is pretty simple
+<pkhuong>	a ready list of work units with all deps satisfied
+<pgib>	hmmm
+<pkhuong>	when a work unit is completed, decrement the wait count for all the work units that depend on it
+<pkhuong>	and add any of those unit whose wait count has reached 0 to the ready list
+<pgib>	I was having trouble figuring out how to implement that in realtime though - I cannot block the processors
+<pkhuong>	all that can easily be done without locking
+<pgib>	the case of preprocessing - I can atomically swap a pointer to the new ordered list at the beginning of the processing routine
+<pgib>	s/preprocessing/static-analysis
+<pgib>	hmm sure - seems simple enough
+<pgib>	the thing is the whole decrement-and-test needs to be atomic
+<pkhuong>	right.
+<pgib>	and I suppose there is an operation for that at least
+<pkhuong>	that's a single instruction on x86
+<pkhuong>	there are gcc and icc intrinsics for that
+<pgib>	yeah add and test or whatever, right?
+<pkhuong>	exchange-and-add
+<pgib>	ah yes. thanks
+<pkhuong>	lock xadd, and you're done.
+<pgib>	yeah - I'll probably use the facilities provided by glib for this, but sounds sane
+<pkhuong>	the atomic decrement and test is the only overhead compared to a fully static schedule
+<pgib>	I guess it won't hurt to try this.
+<pkhuong>	after that, there's a ton of interesting optimisations to try: in what order should the ready list be processed, do you want to assign each processor a local ready list + work stealing, ...
+<pkhuong>	but it should still give you a ballpark idea of feasibility.
+<pgib>	yeah I was thinking about that - generally best to run any large jobs first so the small jobs can fill in the time with less waste toward the end
+<pgib>	and regarding local vs global ready list, I'd have to just test that
+<pgib>	thanks for the insight - this sounds relatively simple.
+<pgib>	there is one more issue - resource allocation (not processor allocation). I can implement the non-ideal solution quickly though
+<pkhuong>	good luck, I'd like to see what becomes of that :)
+<pgib>	pkhuong, ok I'll stay in touch
+<pgib>	I'll tell you my other situation in a few minutes, if you are interested in at least hearing it
+<pgib>	pkhuong, I won't bother you with this yet - I have to think about it from a different angle now that this is all dynamic. But, basically, the data-dependencies between nodes are implemented as buffers.  Many nodes support writing output to the same buffer as the input.  So - if there is a chain of nodes, they could theoretically all execute with a single buffer
+<pgib>	optimizing buffer allocation (reuse instead of a unique buffer per-edge) was easy statically- it is a whole different problem now.  One I'll have to sit on for a few hours
+<pgib>	pkhuong, do you have a website or anything? just wondering who I am talking with
+<pkhuong>	pvk.ca
+<pkhuong>	Pragmatically, I'd try to use a good malloc first and see how hard it fails
+<pkhuong>	(maintain a refcount, reuse buffers with a refcount of 1, free/malloc around that)
+<pgib>	yes - I am already maintaining a pool for buffers so that they can be obtained in hard realtime mode
+<pgib>	the thing is - I would prefer something closer to a depth-first traversal than a breadth-first
+<pkhuong>	right, better for locality; that's something you can do by tweaking the ordering of the free list
+<pgib>	breadth-first will require buffers to be used for the whole breadth.  depth-first would encourage buffers to be derefed then immediately refed back
+<pgib>	yeah - I suppose if I process, and then a dependant becomes free, then I want to put it on front of the list
+<pgib>	so that my output buffer is reclaimed sooner.  oh boy - fun stuff to think about.  thanks again!
+<pkhuong>	actually, you can get depth-first ordering by tagging each node with a precedence order
+<pkhuong>	it could be the depth of the node
+<pkhuong>	or the actual order in a DF traversal
+<pkhuong>	and (somewhat) order the ready list according to that tag.
+<pkhuong>	e.g., if your graph isn't too deep, having a vector of bucket per depth might work.
+<pgib>	ah I see. ready list is a priority queue sorted by the node's depth
+<pkhuong>	could be.
+<pgib>	ok - I'll have to start thinking about concurrency with these lists
+<pgib>	a global free-list may have some issues
+<pkhuong>	but, you're right that you can get some of that and save a lot of synchronisation by executing newly-ready nodes instead of pushing and popping them right back from the ready list
+<pkhuong>	right. If you have many processors, local ready lists + work stealing may work better.
+<pgib>	^^ ah I like that idea - if a node(s) becomes available, run at least the first one immediately
+<pgib>	I suppose oprofile will be the judge of that
+<pgib>	pkhuong, going home for the day
+<pgib>	to work on this scheduler
+<pkhuong>	pgib: have fun (:
+<pkhuong>	another heuristic for the free list might be to execute the node with the greatest number of inputs whose refcount is 1.
+<pkhuong>	*ready list
+<pgib>	greatest number of inputs with refcount = 1?
+<pgib>	wouldn't that mean exactly one input?
+<pgib>	"The greatest value of 1"  err..
+<pgib>	I guess I'm confused - if one of the input's refcounts is still 1, then that node isn't ready to execute yet (since it has un-finished dependencies)
+<pgib>	pkhuong, hmm. I want to leave the office. thanks again for your help. if you happen to post a response, please mail it to pgiblox \at\ gmail [dot] com. thanks! bye
+
+==========
+Summary
+==========
+
+
+<pkhuong>	a ready list of work units with all deps satisfied
+<pkhuong>	when a work unit is completed, decrement the wait count for all the work units that depend on it
+<pkhuong>	and add any of those unit whose wait count has reached 0 to the ready list
+<pgib>	the thing is the whole decrement-and-test needs to be atomic
+<pkhuong>	that's a single instruction on x86
+<pkhuong>	exchange-and-add
+<pkhuong>	lock xadd, and you're done.
+
+======================
+OK... some thinking
+======================*/
+
+namespace Unison {
+  namespace Internal {
+
+// Pointers are generally bad. Unless your in DSP RT tight-loop land.
+// We are using 'ordered' operation on QAtomics, we may be able to loosen this
+
+struct WorkUnit
+{
+  // Work unit definition 
+  Processor* processor;   ///< The processor to run
+  const int initialWait;  ///< Initial count of unresolved dependencies
+  WorkUnit* dependents[]; ///< Decrement these waits when we are done processing
+
+  // State
+  QAtomicInt wait;        ///< Initialized to number of dependencies each run
+
+  // Intrusive Doubly-linked list
+  WorkUnit* initialNext   ///< Used to rebuild the schedule (next and prev) each run
+  WorkUnit* next;         ///< Next pointer for whichever dequeue we live in
+  WorkUnit* prev;         ///< Next pointer for whichever dequeue we live in
+}
+
+
+/**
+ * A schedule is prepared by non-RT land and then passed over to the backend in this
+ * handy class. */
+class Schedule
+{
+  /**
+   * The initial queue of ready work. This queue is technically invalid at all times.
+   * It is only used to initialize the Queue used by the Slave itself. */
+  const WorkQueue queue;
+
+  /**
+   * All the units, for resource management.
+   * Client should use a smart pointer around Schedule itself. */
+  WorkUnit units[];
+}
+
+
+class WorkQueue
+{
+  Q_DISABLE_COPY
+  public:
+    /** 
+     * Used by the slave to enqueue work that has just been made ready */
+    void push (WorkUnit* u);
+
+    /**
+     * Used by the slave to get work when the current execution path has ended */
+    WorkUnit* pop ();
+
+    /**
+     * Used by thieves to steal work when their queue is empty */
+    WorkUnit* steal ();
+
+    /**
+     * Initialize the queue by means of another queue.  We _could_ have used a copy
+     * ctor for this, but WorkQueue doesn't support copy per-se.  What we want is to
+     * restore the state of a queue multiple times */
+    void initializeFrom (const WorkQueue& other);
+
+  private:
+    WorkUnit* head;
+    WorkUnit* tail;
+}
+
+void WorkQueue::push (WorkUnit* u)
+{
+  u.prev = NULL;
+  u.next = head;
+  head.prev = u;
+  head = u;
+}
+
+WorkUnit* WorkQueue::pop ()
+{
+  Q_ASSERT(head);
+  WorkUnit* r = head;
+  head = head->next;
+  head->prev = NULL;
+  if (!head) {
+    tail = NULL;
+  }
+  return r;
+}
+
+WorkUnit* WorkQueue::steal ()
+{
+  Q_ASSERT(tail);
+  WorkUnit* r = tail;
+  tail = tail->prev;
+  tail->next = NULL;
+  if (!tail) {
+    head = NULL;
+  }
+  return r;
+}
+
+void WorkQueue::initializeFrom (const WorkQueue& other)
+{
+  // Init end pointers
+  head = other.head;
+  tail = other.tail;
+  
+  // Init linked list
+  WorkUnit* unit = head;
+  WorkUnit* prev = NULL;
+  while (unit) {
+    unit->next = unit->initialNext;
+    unit->prev = prev;
+    prev = unit;
+    unit = unit->next;
+  }
+}
+
+
+
+class Slave
+{
+
+  public:
+    void run ()
+    {
+      while (1) {
+        // Look at us
+        lock();
+        WorkUnit* unit = queue.pop();
+        unlock();
+
+        // Stealing
+        if (!unit) {
+          randomlyPickAVictim();
+          steal();
+          tryAgain();
+        }
+
+        // Processing
+        Processor* p = unit->processor;
+        p->process(ctx);
+
+        // Readying dependents
+        WorkUnit* d = unit->dependents;
+        while (d) {
+          // Decrement the wait. if the old value was 1, then we are at 0 and done.
+          if (d->wait.fetchAndAddOrdered(-1) == 1) {
+            // TODO: Can optimize by not pushing-then-popping the first or last item
+            if (something) {
+              useUnitForNextRun();
+            }
+            else {
+              putUnitInQueue();
+            }
+          }
+          d++;
+        }
+
+      
+    }
+
+    
+    void steal ()
+    {
+
+    }
+
+    void lock ()
+    {
+      lock.lock();
+    }
+
+    void unlock ()
+    {
+      lock.unlock();
+    }
+
+  protected:
+
+  private:
+    WorkQueue readyList;
+    SpinLock  lock;
+
+    //QAtomicInt doNotSteal ///< Atomically set by worker when pushing or poping to dequeue
+}
+
+
+class Scheduler
+{
+}
+
+
+
+
+
+
+
+
+
+
+
+
+struct JobBlarg {
+  Processor *processor;
+
+}
+
+struct ProcessorJob {
+  Processor *processor;
+}
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai
+
