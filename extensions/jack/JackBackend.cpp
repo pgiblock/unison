@@ -440,6 +440,7 @@ int JackBackend::processCb (nframes_t nframes, void* a)
 int JackBackend::processST (Unison::Internal::Schedule* sched, ProcessingContext& ctx)
 {
   Unison::Internal::Worker* worker = m_workers.workers[0];
+  m_workers.liveWorkers = 1;
   worker->pushReadyWorkUnsafe(sched->readyWork, sched->readyWorkCount);
   worker->run(ctx);
 }
@@ -457,13 +458,6 @@ int JackBackend::processMT (Unison::Internal::Schedule* sched, ProcessingContext
 
   //m_workers.done.acquire(numThreads);
   m_workers.done.acquire(1);
-
-
-  /*
-  backend->m_workers.workLeft = s->readyWorkCount;
-  // Run us
-  //workers[numThreads]->run(context);
-  */
 }
 
 
