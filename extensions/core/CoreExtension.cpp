@@ -52,7 +52,8 @@ using namespace Unison;
 namespace Core {
   namespace Internal {
 
-CoreExtension::CoreExtension()
+CoreExtension::CoreExtension() :
+  m_lineCount(4)
 //  m_mainWindow(new MainWindow), m_editMode(0)
 {
 }
@@ -97,9 +98,9 @@ void CoreExtension::parseArguments(const QStringList& arguments)
     }
     if (arguments.at(i) == QLatin1String("--lines")) {
       bool ok;
-      m_lineCount = arguments.at(i + 1).toInt(&ok);
-      if (!ok) {
-        m_lineCount = 4;
+      int count = arguments.at(i + 1).toInt(&ok);
+      if (ok) {
+        m_lineCount = count;
       }
       i++; // skip the value
     }
