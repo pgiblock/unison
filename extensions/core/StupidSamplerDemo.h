@@ -85,12 +85,11 @@ class Sampler : public Unison::Processor
     Sampler (QString name);
     int portCount () const;
     Unison::Port* port (int idx) const;
-    Unison::Port* port (QString name) const;
-    void activate (Unison::BufferProvider *bp);
+    Unison::Port* port (const QString& name) const;
+    void activate (Unison::BufferProvider& bp);
     void deactivate ();
     void setSampleBuffer (Unison::SampleBuffer *buff);
-    void process (const Unison::ProcessingContext & context);
-    Unison::BufferProvider *bufferProvider ();
+    void process (const Unison::ProcessingContext& context);
     QString name() const
     {
       return m_name;
@@ -98,9 +97,8 @@ class Sampler : public Unison::Processor
 
   private:
     QString m_name;
-    Unison::SampleBuffer *m_sampleBuff;
-    Unison::BufferProvider *m_bufferProvider;
-    Unison::Port *m_ports[2];
+    Unison::SampleBuffer* m_sampleBuff;
+    Unison::Port* m_ports[2];
     double m_cnt;
     Unison::nframes_t m_fcnt;
 
@@ -108,7 +106,7 @@ class Sampler : public Unison::Processor
 
 /** A stupid sampler demo.
  *
- * This lets meoblast test sample-buffer loading code. LV2 doesn't have a
+ * This lets someone test sample-buffer loading code. LV2 doesn't have a
  * feature that allows us to pass in a "waveform".  We will develop this
  * functionality, but this is a quick hack for testing purposes. */
 class StupidSamplerDemo

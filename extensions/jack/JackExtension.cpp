@@ -28,6 +28,7 @@
 #include <extensionsystem/ExtensionManager.h>
 
 #include <QtPlugin>
+#include <QtDebug>
 
 /*!
     \namespace Jack
@@ -47,27 +48,47 @@
 namespace Jack {
   namespace Internal {
 
-JackExtension::JackExtension()
+JackExtension::JackExtension() :
+  m_workerCount(0)
 {
 }
 
 
 JackExtension::~JackExtension()
 {
+  qDebug() << "JACK dtor";
+  // BackendProvider is auto-released
 }
 
 
-void JackExtension::parseArguments(const QStringList &arguments)
+void JackExtension::parseArguments(const QStringList& arguments)
 {
-  Q_UNUSED(arguments)
+  for (int i = 0; i < arguments.size() - 1; i++) {
+    if (arguments.at(i) == QLatin1String("--workers")) {
+      bool ok;
+      int workers = arguments.at(i + 1).toInt(&ok);
+
+      if (ok) {
+        m_workerCount = workers;
+      }
+      i++; // skip the value
+    }
+  }
 }
 
 
-bool JackExtension::initialize(const QStringList &arguments, QString *errorMessage)
+bool JackExtension::initialize(const QStringList& arguments, QString* errorMessage)
 {
   Q_UNUSED(errorMessage)
+
   parseArguments(arguments);
-  addObject(new JackBackendProvider());
+  
+  // Sanity
+  if (m_workerCount <= 0) {
+    m_workerCount = 1;
+  }
+
+  addAutoReleasedObject(new JackBackendProvider(0, m_workerCount));
   return true;
 }
 
@@ -77,7 +98,7 @@ void JackExtension::extensionsInitialized()
 }
 
 
-void JackExtension::remoteCommand(const QStringList &options, const QStringList &args)
+void JackExtension::remoteCommand(const QStringList& options, const QStringList& args)
 {
   Q_UNUSED(options)
   Q_UNUSED(args)
@@ -86,6 +107,7 @@ void JackExtension::remoteCommand(const QStringList &options, const QStringList 
 
 void JackExtension::shutdown()
 {
+  qDebug() << "JACK shutdown";
 }
 
 EXPORT_EXTENSION(JackExtension)
@@ -93,4 +115,4 @@ EXPORT_EXTENSION(JackExtension)
   } // Internal
 } // Jack
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

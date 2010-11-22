@@ -25,8 +25,8 @@
 #include "Commander.h"
 #include "Command.h"
 
-#include <QMutex>
-#include <QMutexLocker>
+#include <QtCore/QMutex>
+#include <QtCore/QMutexLocker>
 
 namespace Unison {
   namespace Internal {
@@ -35,6 +35,7 @@ Commander* Commander::m_instance = static_cast<Commander*>(NULL);
 
 void Commander::initialize ()
 {
+  Q_ASSERT(m_instance == NULL);
   m_instance = new Commander();
 }
 
@@ -42,16 +43,13 @@ void Commander::initialize ()
 Commander::Commander () :
   m_writeLock(),
   m_blockWait(),
-  m_buffer(24)
-{
-  //
-}
+  m_buffer(COMMAND_BUFFER_LENGTH)
+{}
 
 
-void Commander::push (Command *command)
+void Commander::push (Command* command)
 {
   bool block = command->isBlocking();
-  size_t size = sizeof(command);
 
   QMutexLocker locker(&m_writeLock);
   command->preExecute();
@@ -62,11 +60,10 @@ void Commander::push (Command *command)
 } 
 
 
-void Commander::process (ProcessingContext &context)
+void Commander::process (ProcessingContext& context)
 {
-  const int MAX_COMMANDS = 1;
-  Command* commands[MAX_COMMANDS];
-  int cnt = m_buffer.read(commands, MAX_COMMANDS);
+  Command* commands[COMMANDS_PER_PROCESS];
+  int cnt = m_buffer.read(commands, COMMANDS_PER_PROCESS);
 
   for (int i=0; i<cnt; ++i) {
     commands[i]->execute(context);
@@ -76,4 +73,4 @@ void Commander::process (ProcessingContext &context)
   } // Internal
 } // Unison
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

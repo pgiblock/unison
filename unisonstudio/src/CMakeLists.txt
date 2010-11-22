@@ -42,3 +42,5 @@ target_link_libraries(unisonstudio
 
 install(TARGETS unisonstudio RUNTIME
         DESTINATION bin/)
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

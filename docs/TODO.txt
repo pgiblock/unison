@@ -1,35 +1,83 @@
 
-Immediate TODO:
+Core TODO:
 ===============
-x TODOs
-- Movement of code from main.cpp:
-x   JackEngine and Callbacks
-x   Connections and Compiling
-x     Connections across Containers
-x       add node.parent()
-x       enhancements to compiler
-x     Ability to find Ports by name for connecting purposes
-      COMPILE ON INTERNAL GRAPH CHANGES! (and find bufferProvider)   << HERE
-x Documentation and add UNISON_ to #ifndefs
-x ControlPorts
-x Release To SF.net
+  CLEANUP!!  (Just libunison first)
+      exceptions assert qFatal
+      fix all warnings
+      Make sure we are managing memory correctly.
+        pointer vs ref vs smart pointers
+  Copy to/from Jack or fix AudioBuffer "owns" Jack data relationship
+  QFlagify enums
 
-x ExtensionSystem
-x   core
-x   lv2
-    lv2-features
-    Plugin => Component/Module/Extension ?
-    ::Internal => ::Private ?
-x   jack
+watchout with acquireBuffer() on Port(Dis)Connect..
+  is the reference to the old port lost?
+  does this mean that the port is connected to a recycled buffer?
+  do we need to hold on to a reference until postExecute?
 
-> Simple sample-buffer looper for testing
-x Better handling of dependencies in CMake
-  Show lists of supported backends, formats, etc in CMake (features, not deps)
+  BufferSize and Sample-rate Changes, and probably enhacements to PooledBufferProvider
+    g_slice ?
+    RCU
 
-x Add whatever we need to get compilations to happen automatically,
-x Properly defer installing new graph until pre-process
+  Allow browsing/searching IPluginProviders
 
-  MidiPorts
+  Code cleanup:
+    #include - remove unneeded includes, make sure ordering is correct
+    code style - mostly whitespacing
+    documentation - decide on a style, document undocumented stuff
+    use tr() everywhere we should
+
+
+Plugins TODO:
+===================
+  Make an LV2 extension so our LV2 plugins can have tighter (optional)
+  integration with Unison(Studio).  For example, loading samplebuffers, Qt UI,
+  Widget library for things like knobs and graphs, hooking into the Main UI.
+  However, alot of tasks could be done through a standard such as OSC.
+
+  Port all the Plugins to LV2:
+    TripleOsc
+    Lb302
+    AudioSampler
+    BitInvader
+    SF2Player
+    Organic
+    Papu
+    Patman
+    SID
+    Vibed
+    BassBooster
+    SpectrumAnalyzer
+    StereoMatrix
+    
+  VST - VST will be its own extension
+  ZASF - Not sure what we will do with ZynAddSuxFx just yet
+
+  LV2-features
+x   URI-map
+    Event-port (MIDI)
+    Units
+    Port groups
+    
+  Extensions TODO:
+  ======================
+
+  Jack: on Xrun, mark all workers as done
+
+  Unison Projects
+  LMMS Project import
+  FLP import
+  MIDI import
+  KDE integration
+  Scripting
+  OSC
+
+  Sequencer
+    MidiPorts
+    MetricMap
+    Sequencer
+    Pattern
+    Tracks
+    Song
 
   Split stuff out of Plugin and Port and create general purpose
     PluginProcessor and PortNode classes for managing the graph.
@@ -38,59 +86,14 @@ x Properly defer installing new graph until pre-process
   Ability to remove stuff, with an eye toward resource-cleanup.
     Smart-pointers are fine for Plugin-refs and stuff!
 
-  BufferSize Changes, and probably enhacements to PooledBufferProvider
-
-  TODO-NOWs
   Jack - proper tie-in with session - allowing jack to disconnect etc..
   Mixing (multi-connect)
-  Thread
   QActions
-  Handle buffer-size changes
-  Finish Memory Management
 
 
 Random thoughts:
-================
-
-Support Lv2Plugin features
-SharedBufferPtr vs BufferPtr vs BufferProvider::BufferPtr vs
-  BufferProvider::Ptr
-
-
 ================
 Port.isInput(),isOutput(),direction()  Most underlying ports have native
 isInput or isOutput functions.  Using direction() forces us to if-else on the
 native function then requires the consumer to switch() on the Direction. Is
 this really what we want??
-
-Graph (PortGraph?):
-
-  Some means of connecting these in the graph.
-
-
-
-Or... Make JackEngine a "Plugin"?  or, make Plugin and JackEngine "PortHolders" (GraphNodes)
-
-
-Recording line:
-JackInsert -> (Pre FX)* -> Mute/Fader -> Panner -> (Post FX)* -> Disk -> JackSend
-
-Instrument line
-InstrumentInsert -> (Pre FX)* -> Mute/Fader -> Panner -> (Post FX)* -> JackSend
-
-Master or Send line:
-JackInsert -> (Pre FX)* -> Mute/Fader -> Panner -> (Post FX)* -> JackSend
-
-
-
-A                   B            C             D         E             F
-InstrumentInsert -> (Pre FX)* -> Mute/Fader -> Panner -> (Post FX)* -> JackSend
-
-
-
-Ao -> Bi
-Bo -> Ci
-Co -> Di
-Do -> Ei
-Eo -> Fi
-

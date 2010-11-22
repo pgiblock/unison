@@ -22,27 +22,28 @@
  *
  */
 
+#include "Engine.h"
+
 #include <unison/Backend.h>
 #include <unison/BufferProvider.h>
-#include "Engine.h"
 
 namespace Core {
 
-Unison::Backend *Engine::m_backend = 0;
-Unison::BufferProvider *Engine::m_bufferProvider = 0;
+Unison::Backend* Engine::m_backend = 0;
+Unison::BufferProvider* Engine::m_bufferProvider = 0;
 
 
-void Engine::setBackend (Unison::Backend *backend)
+void Engine::setBackend (Unison::Backend* backend)
 {
   m_backend = backend;
 }
 
 
-void Engine::setBufferProvider(Unison::BufferProvider *bufferProvider)
+void Engine::setBufferProvider(Unison::BufferProvider* bufferProvider)
 {
   m_bufferProvider = bufferProvider;
 }
 
 } // Core
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

@@ -1,0 +1,230 @@
+{
+   libc
+   Memcheck:Free
+   fun:free
+   obj:/lib64/libc-2.11.so
+   obj:/lib64/libc-2.11.so
+   fun:_vgnU_freeres
+   fun:__run_exit_handlers
+   fun:exit
+   fun:(below main)
+}
+{
+   ld
+   Memcheck:Cond
+   fun:_dl_relocate_object
+   fun:dl_main
+   fun:_dl_sysdep_start
+   fun:_dl_start
+}
+{
+   QLibrary ld usage
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:_ZN15QLibraryPrivate8load_sysEv
+   fun:_ZN15QLibraryPrivate4loadEv
+}
+{
+   QLibrary ld usage (calloc)
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:_ZN15QLibraryPrivate8load_sysEv
+   fun:_ZN15QLibraryPrivate4loadEv
+}
+{
+   QApp ctor; glib language
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   ...
+   fun:g_get_language_names
+   fun:_g_utils_thread_init
+   fun:g_thread_init_glib
+   fun:g_thread_init
+   fun:_ZN27QEventDispatcherGlibPrivateC2EP13_GMainContext
+   fun:_ZN30QGuiEventDispatcherGlibPrivateC1Ev
+   fun:_ZN23QGuiEventDispatcherGlibC1EP7QObject
+   fun:_ZN19QApplicationPrivate21createEventDispatcherEv
+}
+{
+   QApp ctor: glib language (calloc)
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   fun:g_get_language_names
+   fun:_g_utils_thread_init
+   fun:g_thread_init_glib
+   fun:g_thread_init
+   fun:_ZN27QEventDispatcherGlibPrivateC2EP13_GMainContext
+   fun:_ZN30QGuiEventDispatcherGlibPrivateC1Ev
+   fun:_ZN23QGuiEventDispatcherGlibC1EP7QObject
+   fun:_ZN19QApplicationPrivate21createEventDispatcherEv
+   fun:_ZN16QCoreApplication4initEv
+   fun:_ZN16QCoreApplicationC2ER23QCoreApplicationPrivate
+}
+{
+   QApp ctor: glib language (realloc)
+   Memcheck:Leak
+   fun:realloc
+   fun:g_realloc
+   fun:g_array_maybe_expand
+   fun:g_array_set_size
+   fun:g_static_private_set
+   fun:g_get_language_names
+   fun:_g_utils_thread_init
+   fun:g_thread_init_glib
+   fun:g_thread_init
+   fun:_ZN27QEventDispatcherGlibPrivateC2EP13_GMainContext
+   fun:_ZN30QGuiEventDispatcherGlibPrivateC1Ev
+   fun:_ZN23QGuiEventDispatcherGlibC1EP7QObject
+   fun:_ZN19QApplicationPrivate21createEventDispatcherEv
+   fun:_ZN16QCoreApplication4initEv
+   fun:_ZN16QCoreApplicationC2ER23QCoreApplicationPrivate
+}
+{
+   QApp ctor: glib language (gslice, memalign)
+   Memcheck:Leak
+   fun:memalign
+   fun:posix_memalign
+   fun:slab_allocator_alloc_chunk
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:g_strsplit
+   fun:g_get_language_names
+   fun:_g_utils_thread_init
+   fun:g_thread_init_glib
+   fun:g_thread_init
+   fun:_ZN27QEventDispatcherGlibPrivateC2EP13_GMainContext
+   fun:_ZN30QGuiEventDispatcherGlibPrivateC1Ev
+   fun:_ZN23QGuiEventDispatcherGlibC1EP7QObject
+   fun:_ZN19QApplicationPrivate21createEventDispatcherEv
+   fun:_ZN16QCoreApplication4initEv
+   fun:_ZN16QCoreApplicationC2ER23QCoreApplicationPrivate
+   fun:_ZN12QApplicationC1ERiPPci
+}
+{
+   QApp ctor: glib filename charsets
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   ...
+   fun:g_get_filename_charsets
+   fun:_g_convert_thread_init
+   fun:g_thread_init_glib
+   fun:g_thread_init
+   fun:_ZN27QEventDispatcherGlibPrivateC2EP13_GMainContext
+   fun:_ZN30QGuiEventDispatcherGlibPrivateC1Ev
+   fun:_ZN23QGuiEventDispatcherGlibC1EP7QObject
+   fun:_ZN19QApplicationPrivate21createEventDispatcherEv
+}
+{
+   QApp ctor: glib filename charsets (calloc)
+   Memcheck:Leak
+   fun:calloc
+   fun:g_malloc0
+   ...
+   fun:g_get_filename_charsets
+   fun:_g_convert_thread_init
+   fun:g_thread_init_glib
+   fun:g_thread_init
+   fun:_ZN27QEventDispatcherGlibPrivateC2EP13_GMainContext
+   fun:_ZN30QGuiEventDispatcherGlibPrivateC1Ev
+   fun:_ZN23QGuiEventDispatcherGlibC1EP7QObject
+   fun:_ZN19QApplicationPrivate21createEventDispatcherEv
+   fun:_ZN16QCoreApplication4initEv
+}
+{
+   QApp ctor: glib filename charsets (g_slice, memalign)
+   Memcheck:Leak
+   fun:memalign
+   fun:posix_memalign
+   fun:slab_allocator_alloc_chunk
+   fun:g_slice_alloc
+   fun:g_array_sized_new
+   fun:g_array_new
+   fun:g_static_private_set
+   fun:g_get_filename_charsets
+   fun:_g_convert_thread_init
+   fun:g_thread_init_glib
+   fun:g_thread_init
+   fun:_ZN27QEventDispatcherGlibPrivateC2EP13_GMainContext
+   fun:_ZN30QGuiEventDispatcherGlibPrivateC1Ev
+   fun:_ZN23QGuiEventDispatcherGlibC1EP7QObject
+   fun:_ZN19QApplicationPrivate21createEventDispatcherEv
+   fun:_ZN16QCoreApplication4initEv
+   fun:_ZN16QCoreApplicationC2ER23QCoreApplicationPrivate
+}
+{
+   QApp ctor: font-config
+   Memcheck:Leak
+   fun:malloc
+   fun:FcStrStaticName
+   ...
+   fun:FcEndElement
+   fun:doContent
+   fun:contentProcessor
+   fun:doProlog
+   fun:prologProcessor
+   ...
+   fun:XML_ParseBuffer
+   fun:FcConfigParseAndLoad
+   fun:FcInitLoadConfig
+   fun:FcInitLoadConfigAndFonts
+   fun:FcInit
+   fun:_Z7qt_initP19QApplicationPrivateiP9_XDisplaymm
+}
+{
+   QApp.exec
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:g_realloc
+   fun:g_ptr_array_maybe_expand
+   fun:g_ptr_array_add
+   fun:g_main_context_check
+   fun:g_main_context_iterate
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+   fun:_ZN23QGuiEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+   fun:_ZN10QEventLoop13processEventsE6QFlagsINS_17ProcessEventsFlagEE
+   fun:_ZN10QEventLoop4execE6QFlagsINS_17ProcessEventsFlagEE
+   fun:_ZN16QCoreApplication4execEv
+   fun:main
+}
+{
+   QApp ctor: XRM stuff
+   Memcheck:Leak
+   fun:realloc
+   fun:add_codeset
+   fun:load_generic
+   fun:initialize
+   fun:_XlcCreateLC
+   fun:_XlcDefaultLoader
+   fun:_XOpenLC
+   fun:_XrmInitParseInfo
+   fun:NewDatabase
+   fun:XrmGetStringDatabase
+   fun:InitDefaults
+   fun:XGetDefault
+   fun:_ZL11getXDefaultPKcS0_Pi
+   fun:_Z7qt_initP19QApplicationPrivateiP9_XDisplaymm
+   fun:_ZN19QApplicationPrivate9constructEP9_XDisplaymm
+   fun:_ZN12QApplicationC1ERiPPci
+}
+

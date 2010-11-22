@@ -21,6 +21,9 @@
 # Boston, MA 02110-1301 USA.
 #
 
+set(UNISON_BUFFER_LENGTH "1024" CACHE STRING
+    "Audio buffer length. A work-around until runtime change is supported.")
+
 set(UNISON_SRCS
     Command.cpp
     Commander.cpp
@@ -32,6 +35,8 @@ set(UNISON_SRCS
     PortDisconnect.cpp
     Processor.cpp
     SampleBuffer.cpp
+    Scheduler.cpp
+    SpinLock.cpp
 )
 
 set(UNISON_MOC_HEADERS
@@ -46,6 +51,7 @@ set(UNISON_INCLUDES
     BufferProvider.h
     Command.h
     ControlBuffer.h
+    FastRandom.h
     Node.h
     Patch.h
     Plugin.h
@@ -55,6 +61,7 @@ set(UNISON_INCLUDES
     Processor.h
     RingBuffer.h
     SampleBuffer.h
+    SpinLock.h
     types.h
 )
 
@@ -73,3 +80,13 @@ install(TARGETS unison LIBRARY
 
 install(FILES ${UNISON_INCLUDES}
         DESTINATION include/unison/)
+
+# build the tests
+if(COMPILE_TESTS)
+  add_subdirectory(tests)
+endif(COMPILE_TESTS)
+
+# add the tests
+add_test(NAME TestRingBuffer COMMAND tests/TestRingBuffer)
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

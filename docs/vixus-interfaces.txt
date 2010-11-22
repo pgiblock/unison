@@ -1,0 +1,165 @@
+<vixus> btw will we cater for plugins that can act on the midi data?
+<vixus> arpeggiators and such
+<pgib> I plan to actually implement the sequencer and instruments as being connected by event-streams
+<pgib> so midi-events and probably some unison-proprietary ones
+<vixus> ok
+<pgib> so things to let you distribute midi, arpeggiate, transpose, split the keyboard range, etc.. can be implemented as filters
+<vixus> neat
+<pgib> whether we present it to the user as filters or as pre-assembled blocks is up to our final design
+<vixus> hence why i wanted a patchage style interface (with separate audio/midi ports)
+<vixus> which could simplify to a list
+<pgib> yeah - me too. although I like the organization of the "rack" over a 2-dimensional directed graph
+<pgib> still a digraph vs a rack is a very trivial presentation detail
+<pgib> either of these vs Fruityloops is a bigger gap
+<pgib> worse case, if the main interface is locked-down, there will at least be a modular synth that lets you build a patch and use it as a component
+<vixus> what is fruityloops like?
+<pgib> The Instrument vs. Effect vs. Controller system (Cubase, FLstudio, etc..) definitely has a disadvantage there. some things aren't easily classified as a single type of plugin
+<vixus> yes
+<pgib> FLStudio is a cubase-like system but very simplified
+<pgib> essentially,
+<pgib> you can create tracks, there is a single instrument per track.  (there is a group instruments into one, but that is hardly routing)
+<pgib> then you have what is basically a tracker.  you create patterns, and each pattern has midi-data for every track in the system
+<pgib> this is basically what LMMS mimicks
+<pgib> very straight-forward, impossible to do really cool effects.
+<pgib> automation is handled by automation-tracks. Where the pattern is associated with a particular control (like in LMMS)
+<pgib> all these systems are comprised of modules and relationships in my eyes. it is a matter of how far they are locked into a single workflow
+<vixus> ok
+<vixus> basically, in unison, now that audio tracks will exist, i thought vocoders and calf's autoclavier and such would be possible to use
+<pgib> not due to audio tracks. There is no concept of track in Unison yet
+<pgib> but, because Unison will let the client connect ports together arbitrarily, yes, vocoders and stuff are possible
+<pgib> but.. it would be some effects and and instrument, connected, and floating out in space some where
+<pgib> no real way for the user to conceptualize it, no order or structure
+<pgib> unless we just showed the whole thing like a graph in patchage, which is not my goal
+<pgib> (I hope that made sense)
+<vixus> um
+<pgib> hehe..
+<pgib> I guess, imagine total mayhem
+<pgib> Unison allows total mayhem.  The user doesn't want mayhem. They want direction, and some hand-holding
+<vixus> yes
+<vixus> so will you not want a songeditor style module at some point?
+<pgib> so, technically the most elaborate routing is possible right now, but the user doesn't want to spend 15 minutes wiring up an fx-line with eq, and fader, and stuff every time they add an instrument
+<pgib> vixus, yes of course
+<vixus> no but that could be easily automated..
+<pgib> I want these things sooner than later
+<vixus> so what do you have in mind in terms of routing?
+<pgib> once I get this ringbuffer thing fixed (still bugged) I'm actually beginning work on the MIDI and Sequencer stuff (so a song editor would be needed sometime after or during that)
+<pgib> vixus, I don't really know, I mean, a system that could be changed between LMMS-like and Reason-like interfaces without conversion would be ideal
+<pgib> but I don't think that will work out quite right
+<vixus> yeah that will be difficult
+<pgib> so then I'm thinking - well maybe it is about layers
+<pgib> maybe it is a complicated system that contains a simplification
+<vixus> although maybe we should think in terms of gui modules rather than the user 'switching' between interfaces.
+<pgib> or a simple system containing a complicated one
+<vixus> if they want the lmms view... they enable that module and connections are made the lmms way
+<vixus> if they want reason then they enable that module and connections are made as in reason
+<vixus> since unison is flexible it can be up to the routing module to decide how connections are made maybe
+<pgib> yeah, but the problem I see in that is if a user tries to open up a reason-like project in unison-like mode
+<pgib> s/unison-like/lmms-like/
+<pgib> what if the reason one is doing something too complicated to be represented in lmms view
+<pgib> think collaboration, or the user simply changing prefs and opening an old project
+<vixus> true
+<vixus> but in any case it's going to be hard for them to collaborate fully in any case
+<vixus> i thought the chosen module would be in the project file.. but that essentially reduces flexibility which we don't want.. tough tough
+<pgib> in either case? what is the other case?
+<pgib> any case.. I mean.. 
+<pgib> ahh I see what you mean, so the project is in one mode or another
+<pgib> and it should be simple to convert from lmms-mode to reason-mode, but not necessarily the other way
+<vixus> yeah
+<pgib> I wonder if there is a way to do a single mode, that has all the features available. Like nested, or side-by-side
+<pgib> as long as the stuff you don't want doesn't get in the way..
+<vixus> if we could come up with one it would be amazing.. there's absolutely no way i can see going from reason -> lmms
+<pgib> maybe that is what you were saying originally
+<pgib> well, for a casual user or a simple project, I think it is safe to assume we want a central mixer with inserts/sends
+<vixus> yes.. esp. for simple recording and such, nothing better..
+<pgib> things like instruments and sequencing gets more interesting
+<pgib> reason lets you actually make separate sequencers and such.. While I think that may be handy for drums, I don't know if that is necessary vs a single Song-Editor w/ piano rolls
+<vixus> yeah i'm fairly happy with the piano roll system..
+<vixus> unless you were going for essentially emulating an  analog environment.
+<pgib> although.. I can also imagine how a separate sequencer *could* be handy. especially with making reusable patches
+<pgib> you could make an instrument that actually features some sequence of events as part of the "voice"
+<vixus> yeah, that's what i meant by my arpeggiator..
+<pgib> ah ok
+<pgib> hmm...
+<vixus> i think i meant patterns
+<vixus> so you put in a pattern of notes and everytime you push a key they get transposed..
+<pgib> here is an idea
+<pgib> the reason/patchage interface.  A global songeditor w/ pianorolls
+<vixus> ok
+<pgib> imagine a module for that system that basically implements LMMS...
+<pgib> what would go in that module, and what would be global
+<pgib> (don't worry about presentation, just technical details)
+<vixus> well we get back to defining tracks and either having a track (and hence sequencer) as part of the routing chain or dedicated to an instrument (like sampler, synth etc)
+<pgib> true, which is good I suppose. What duties would the lmms-module have..
+<vixus> if you go with the former, the lmms module would essentially just be automating connections and setting up predefined signal chains
+<vixus> all hidden behind an lmms style song editor and fx mixer
+<pgib> yeah, I actually support nested patches :)
+<pgib> and a patch will be able to have ports registered on it.. so, not everything is visible
+<vixus> the cool thing then is that if the user wants to progress beyond the lmms interface, they can 'expose' the underlying routing and play with it
+<vixus> which i fear would be an irreversible process..
+<pgib> that is the problem with that technique
+<pgib> that is why I'm thinking the LMMS interface is instead wrapped with the complicated one
+<vixus> how does that work?
+<pgib> the lmms interface is a black box with a bunch of ports on it (ports are dynamically added and removed automatically)
+<vixus> yup
+<pgib> the user interacts with the lmms interface, and for instance, a intrument audio port and a mixer audio port will appear, and then be connected
+<vixus> sure
+<pgib> I started to write this ProxyPort earlier, but stopped since it wasn't needed yet since I wasn't nesting Patches
+<pgib> so the user can do stuff in LMMS-land if they want and never leave
+<pgib> the user can do stuff in reason-land and never even include the LMMS module
+<pgib> and the user can do stuff with both, since the ports that will be exposed wont break any of the functionality of the LMMS preconfiguration
+<pgib> I wonder what should go in the black box and what should stay out - obviously there will be redundancies as well
+<vixus> aaah
+<vixus> so have the lmms stuff as a module in the more complex environment?
+<pgib> yeah
+<vixus> that's actually an awesome idea
+<pgib> so I want to make that module as slim as possible
+<pgib> the song-editor for example, *could* be a more global entity
+<pgib> but something like Fx-Mixer, probably not
+<vixus> yeah i was wondering about that
+<vixus> the song editor should just be a generalised way to control streams
+<pgib> The FxMixer in LMMS would be the send,insert based system
+<vixus> yup
+<pgib> the one on the other side is like remix, or just a frontend for Jack
+<pgib> well, that is where "BackendPorts" come in
+<vixus> i mean, lmms essentially just consists of the song editor, fx mixer and bbe
+<vixus> the bbe imo is sort of redundant
+<pgib> in JackBackend the ports are exposed to jack for further twiddling. But in AlsaBackend or something, we'd have to implement the graph ourselves
+<vixus> right
+<pgib> vixus, yeah. I may not even have a BBE and just convert stuff on import.. Or It may be nice to keep it. I mean, some people use it
+* Spell_ (~spellor@pD9514898.dip0.t-ipconnect.de) has joined #unison
+<vixus> well i was hoping to use grouped tracks (with click/drag to duplicate) in place of it
+<pgib> but if the songeditor is generalized as just a way to do segments
+<pgib> LMMS-module could expose the BBE tracks to the songeditor, which is global
+<vixus> yeah ok
+<pgib> perhaps.. 
+<pgib> oooh
+<pgib> explain grouped tracks
+<vixus> oh ok well the bbe is (usually) just a bunch of sample tracks with a differently styled interface
+<vixus> which just translates to notes on the piano roll in any case
+* Spell has quit (Ping timeout: 252 seconds)
+<vixus> so if you had a grouped track which is like a parent to all these sample tracks then when it is minimised it displays all the subtracks midi notes overlayed so you can get a sense of the drum beat or w/e
+<vixus> then clicking and dragging (much like with current bbe tracks) would extend/duplicate the segment by extending/duplicating all daughter tracks
+<pgib> that is a pretty good idea
+<vixus> it's just to dispel complaints about not being able to easily package drums and such
+<vixus> but i hate that it needs a separate editor
+<pgib> that is a good idea
+<pgib> also, if it is collapsed, and the height is tall enough, it could be editable as a group, like a step sequencer
+<vixus> yeah exactly
+<pgib> set the steps-per-bar by some icons on the side, etc..
+<pgib> ok, good point
+<pgib> the one real argument I keep hearing in BBE's defence is that you can make a loop, refine it, have it automatically changed across the song
+<vixus> right now in lmms you have no idea of the beat in terms of other notes in the song
+<pgib> that makes sense. unless there is a better way to do that. I've suggested some kind of "ghost track" feature when you duplicate, but it is just a reference to another pattern.  If you want to modify it, then it is really copied
+<pgib> but people didn't like that, I guess it was confusing
+<vixus> well then the user could define the total number of bars in track before it loops
+<pgib> vixus, I've already written a MetricMap that keeps track of meter and tempo and can calculate song-time vs clock-time quickly if that is what you mean
+<vixus> well i mean for the grouped track they could say that there should be only 4 bars with 8 beats per bar
+<vixus> then when they extend it it clones after 4 bars
+<pgib> yeah ok I see
+<vixus> and any changes made within the four bars gets reflected across all the clones
+<pgib> it just has to be contiguous.
+<vixus> yep
+<vixus> well i need to head off.. i've saved a log of the convo
+<pgib> ok
+<vixus> bye for now
+<pgib> so long

@@ -25,3 +25,5 @@ set(PRG_SRCS
 )
 
 add_library(prg STATIC ${PRG_SRCS})
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

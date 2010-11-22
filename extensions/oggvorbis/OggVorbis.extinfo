@@ -10,7 +10,7 @@ You should have received a copy of the GNU General Public License along with
 this softawre. If not, see http://www.gnu.org/licenses/.
     </license>
     <description>
-Support for wav, snd, raw, voc, and more file formats
+Support for the Ogg Vorbis file format
     </description>
     <url>http://www.unisonstudio.org</url>
     <dependencies>

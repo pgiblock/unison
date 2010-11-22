@@ -30,6 +30,7 @@
 #include <unison/BackendPort.h>
 #include <unison/BufferProvider.h>
 #include <unison/Patch.h>
+#include <unison/ProcessingContext.h>
 #include <unison/SampleBuffer.h>
 
 #define UNISON_BUFFER_LENGTH 1024
@@ -61,12 +62,12 @@ QString SamplerPort::name () const
 
 Unison::PortType SamplerPort::type () const
 {
-  return AUDIO_PORT;
+  return AudioPort;
 }
 
 Unison::PortDirection SamplerPort::direction () const
 {
-  return OUTPUT;
+  return Output;
 }
 
 float SamplerPort::value () const
@@ -116,19 +117,9 @@ const QSet<Unison::Node* const> SamplerPort::interfacedNodes () const
   return p;
 }
 
+
 void SamplerPort::connectToBuffer ()
 {
-  BufferProvider *provider = m_parent->bufferProvider();
-  switch (direction()) {
-    case INPUT:
-      acquireInputBuffer(*provider, UNISON_BUFFER_LENGTH);
-      break;
-
-    case OUTPUT:
-      acquireOutputBuffer(*provider, UNISON_BUFFER_LENGTH);
-      break;
-  }
-  // TODO: Do something!
 }
 
 
@@ -153,14 +144,17 @@ Port* Sampler::port (int idx) const
   return m_ports[idx];
 }
 
-Port* Sampler::port (QString name) const
+Port* Sampler::port (const QString& name) const
 {
   // TODO: Find port with name
 }
 
-void Sampler::activate (BufferProvider *bp)
+void Sampler::activate (BufferProvider& bp)
 {
-  m_bufferProvider=bp;
+  for (int i=0; i<2; ++i) {
+    m_ports[i]->acquireBuffer(bp);
+    m_ports[i]->connectToBuffer();
+  }
 }
 
 void Sampler::deactivate ()
@@ -192,27 +186,21 @@ void Sampler::process (const ProcessingContext & context)
 
 }
 
-Unison::BufferProvider *Sampler::bufferProvider ()
-{
-  return m_bufferProvider;
-}
-
-
 
 
 StupidSamplerDemo::StupidSamplerDemo (Patch* parent, QString name) :
   m_name(name)
 {
-  m_outPorts[0] = Engine::backend()->registerPort(name + "/out 1", INPUT);
-  m_outPorts[1] = Engine::backend()->registerPort(name + "/out 2", INPUT);
+  m_outPorts[0] = Engine::backend()->registerPort(name + "/out 1", Input);
+  m_outPorts[1] = Engine::backend()->registerPort(name + "/out 2", Input);
 
   m_sampler = new Sampler(name);
 
-  m_sampler->activate(Engine::bufferProvider());
+  m_sampler->activate(*Engine::bufferProvider());
   parent->add(m_sampler);
 
-  m_sampler->port(0)->connect(m_outPorts[0]);
-  m_sampler->port(1)->connect(m_outPorts[1]);
+  m_sampler->port(0)->connect(m_outPorts[0], *Engine::bufferProvider());
+  m_sampler->port(1)->connect(m_outPorts[1], *Engine::bufferProvider());
 }
 
 

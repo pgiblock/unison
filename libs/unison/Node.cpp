@@ -22,25 +22,19 @@
  *
  */
 
-#include <QDebug>
-
 #include "Node.h"
 #include "Patch.h"
 
 namespace Unison {
 
-Patch *Node::parentPatch () const
+Patch* Node::parentPatch () const
 {
-  Node *n = parent();
+  Node* n = parent();
 
   // While non-patch parents exist
-  forever {
-    // Graph isn't contained in a patch yet
-    if (n == NULL) {
-      break;
-    }
+  while (n != NULL) {
     // Is this a patch?
-    Patch *p = dynamic_cast<Patch*>(n);
+    Patch* p = dynamic_cast<Patch*>(n);
     if (p) {
       return p;
     }
@@ -52,4 +46,4 @@ Patch *Node::parentPatch () const
 
 } // Unison
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

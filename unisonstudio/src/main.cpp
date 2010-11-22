@@ -22,6 +22,10 @@
  *
  */
 
+#include "extensionsystem/ExtensionManager.h"
+#include "extensionsystem/ExtensionInfo.h"
+#include "extensionsystem/IExtension.h"
+
 #include <QDir>
 #include <QDebug>
 #include <QSettings>
@@ -29,10 +33,6 @@
 #include <QtNetwork/QNetworkProxyFactory>
 
 #include <QApplication>
-
-#include "extensionsystem/ExtensionManager.h"
-#include "extensionsystem/ExtensionInfo.h"
-#include "extensionsystem/IExtension.h"
 
 //using namespace Unison;
 
@@ -119,14 +119,16 @@ int main (int argc, char **argv)
   bool createGui = false;
   printLogo();
 
-  QCoreApplication * app = NULL;
+  QCoreApplication* appPtr;
   if (createGui) {
-    app = new QApplication( argc, argv );
+    appPtr = new QApplication( argc, argv );
   }
   else {
     printDisclaimer();
-    app = new QCoreApplication( argc, argv );
+    appPtr = new QCoreApplication( argc, argv );
   }
+  QScopedPointer<QCoreApplication> app(appPtr);
+  appPtr = NULL;
 
   app->setApplicationName( "Unison" );
   app->setOrganizationDomain( "unison.sourceforge.net" );
@@ -247,6 +249,7 @@ int main (int argc, char **argv)
     }
   }
 
+
   // Single instance stuff
   //if (isFirstInstance) {
       // Set up lock and remote arguments for the first instance only.
@@ -259,8 +262,7 @@ int main (int argc, char **argv)
   //QObject::connect(&app, SIGNAL(fileOpenRequest(QString)), coreplugin->plugin(), SLOT(fileOpenRequest(QString)));
 
   // Do this after the event loop has started
-  //QTimer::singleShot(100, &pluginManager, SLOT(startTests()));
   return app->exec();
 }
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

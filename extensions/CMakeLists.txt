@@ -34,6 +34,10 @@ if(BUILD_JACK_EXTENSION)
   add_subdirectory(jack)
 endif(BUILD_JACK_EXTENSION)
 
+if(BUILD_LADSPA_EXTENSION)
+  add_subdirectory(ladspa)
+endif(BUILD_LADSPA_EXTENSION)
+
 if(BUILD_LV2_EXTENSION)
   add_subdirectory(lv2)
 endif(BUILD_LV2_EXTENSION)
@@ -46,4 +50,4 @@ if(BUILD_SNDFILE_EXTENSION)
   add_subdirectory(sndfile)
 endif(BUILD_SNDFILE_EXTENSION)
 
-# vim: ts=8 sw=2 sts=2 et sta noai
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

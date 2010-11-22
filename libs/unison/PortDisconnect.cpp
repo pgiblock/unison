@@ -23,21 +23,24 @@
  */
 
 
-#include "unison/PortDisconnect.h"
-#include "unison/ProcessingContext.h"
+#include "PortDisconnect.h"
+
+#include "Port.h"
+#include "ProcessingContext.h"
+#include "Scheduler.h"
 
 namespace Unison {
   namespace Internal {
 
-PortDisconnect::PortDisconnect (Port *port1, Port *port2) :
-  Command(),
+PortDisconnect::PortDisconnect (Port* port1, Port* port2, BufferProvider& bp) :
+  Command(false),
   m_port1(port1),
   m_port2(port2),
-  m_patch(NULL)
+  m_patch(NULL),
+  m_bufferProvider(bp)
 {
-  m_blocking = false;
-  m_compiled = new QList<Patch::CompiledProcessor>();
-  m_state = Command::Created;
+  m_compiled = new Schedule();
+  setState(Command::Created);
 }
 
 
@@ -45,30 +48,32 @@ void PortDisconnect::preExecute ()
 {
   m_patch = m_port1->parentPatch();
   // Handle the case where port1 is a backend port, and has no parent patch
-  if (!m_patch) {
-    m_patch = m_port2->parentPatch();
-  }
   Q_ASSERT(m_patch);
-  // TODO Bring back this assertion once BackendPorts have a parent node
-  //Q_ASSERT(m_patch == m_port2->parentPatch());
+  Q_ASSERT(m_patch == m_port2->parentPatch());
   Q_ASSERT(m_port1->isConnected(m_port2));
   Q_ASSERT(m_port2->isConnected(m_port1));
 
-  *m_port1->_connectedPorts() -= m_port2;
-  *m_port2->_connectedPorts() -= m_port1;
+  m_port1->removeConnection(m_port2);
+  m_port2->removeConnection(m_port1);
+
+  // Not sure which one is the Input port, but, calling acquire on an output port
+  // again is safe.. 
+  //TODO: FIXME IF YOU WANT Mixing support (need BufferProvider ref)
+  m_port1->acquireBuffer(m_bufferProvider);
+  m_port2->acquireBuffer(m_bufferProvider);
   
-  m_patch->compile(*m_compiled);
+  m_patch->compileSchedule(*m_compiled);
   
   Command::preExecute();
 }
 
 
-void PortDisconnect::execute (ProcessingContext &context)
+void PortDisconnect::execute (ProcessingContext& context)
 {
   m_port1->connectToBuffer();
   m_port2->connectToBuffer();
   // FIXME: Leaking m_patch->compiledProcessors();
-  m_patch->setCompiledProcessors(m_compiled);
+  m_patch->setSchedule(m_compiled);
   Command::execute(context);
 }
 
@@ -81,4 +86,4 @@ void PortDisconnect::postExecute ()
   } // Internal
 } // Unison
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

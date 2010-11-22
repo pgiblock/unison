@@ -20,15 +20,15 @@ if (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
 else (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
 
   find_path(RDF_INCLUDE_DIR
-    NAMES rdf_init.h
+      NAMES rdf_init.h
   )
 
   find_library(RDF_LIBRARY
-    NAMES rdf
+      NAMES rdf
   )
 
   set(RDF_INCLUDE_DIRS
-    ${RDF_INCLUDE_DIR}
+      ${RDF_INCLUDE_DIR}
   )
 
   if (RDF_LIBRARY)
@@ -46,3 +46,4 @@ else (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
 
 endif (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
 
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

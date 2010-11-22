@@ -28,34 +28,132 @@
 #include <unison/Processor.h>
 
 #include <QDebug>
+#include <QThread>
+#include <QWaitCondition>
 #include <jack/jack.h>
 
 // For connect-and-copy hackfest in processCb
 #include <core/Engine.h>
 #include <unison/AudioBuffer.h>
 #include <unison/Commander.h>
-#include "JackBufferProvider.h"
+#include <unison/Patch.h>
+#include <unison/Scheduler.h>
+
+// For pthread hack - abstract to platform-agnostic utils
+#include <pthread.h>
+#include <mcheck.h>
 
 using namespace Unison;
 
 namespace Jack {
   namespace Internal {
 
-Backend * JackBackendProvider::createBackend()
+class JackWorkerThread : public QThread
 {
-  return new JackBackend();
+  public:
+    JackWorkerThread (Unison::Internal::Worker* w, QSemaphore& done);
+    void run ();
+
+    void run (ProcessingContext& ctx);
+
+  protected:
+    void setSchedulingPriority (int policy, unsigned int priority);
+
+    Unison::Internal::Worker* m_worker;
+    QSemaphore m_wait;
+    // Shared state:
+    QSemaphore& m_done;
+    ProcessingContext* m_context;
+};
+
+JackWorkerThread::JackWorkerThread (Unison::Internal::Worker* w, QSemaphore& done) :
+  m_worker(w),
+  m_wait(),
+  m_done(done)
+{}
+
+
+void JackWorkerThread::setSchedulingPriority (int policy, unsigned int priority)
+{
+  sched_param sp;
+  sp.sched_priority = priority;
+  pthread_t thread = pthread_self();
+  int result = pthread_setschedparam(thread, policy, &sp);
+  if (!result) {
+    QDebug dbg = qDebug();
+    dbg << "Setting JWT scheduling policy:";
+    switch (policy) {
+      case SCHED_FIFO:  dbg << "SCHED_FIFO";  break;
+      case SCHED_RR:    dbg << "SCHED_RR";    break;
+      case SCHED_OTHER: dbg << "SCHED_OTHER"; break;
+#ifdef SCHED_BATCH
+      case SCHED_BATCH: dbg << "SCHED_BATCH"; break;
+#endif
+      default:          dbg << "Unknown";     break;
+    }
+    dbg << "and priority:" << sp.sched_priority;
+  }
+  else {
+    qDebug() << "Unable to set scheduling policy";
+  }
 }
 
 
-JackBackend::JackBackend () :
+void JackWorkerThread::run ()
+{
+  qDebug() << "JWT: started!" << QThread::currentThreadId();
+  setSchedulingPriority(SCHED_FIFO, 60);
+
+  // This blocks until processCb is called. only acquired once per period
+  while (true) {
+    m_wait.acquire();
+
+    m_worker->run(*m_context);
+
+    //printf("!!! RELEASING ONE !!!\n");
+    //m_done.release(1);
+  }
+  // exec(); We don't want event handling
+}
+
+void JackWorkerThread::run (ProcessingContext& ctx)
+{
+  m_context = &ctx;
+  m_wait.release();
+}
+
+
+Backend* JackBackendProvider::createBackend()
+{
+  return new JackBackend(*Core::Engine::bufferProvider(), m_workerCount);
+}
+
+
+JackBackend::JackBackend (Unison::BufferProvider& bp, int workerCount) :
   m_client(NULL),
   m_myPorts(),
+  m_bufferProvider(bp),
   m_bufferLength(0),
   m_sampleRate(0),
   m_freewheeling(false),
   m_running(false)
 {
+  Q_ASSERT(workerCount > 0);
   initClient();
+
+  m_workers.workers = new Unison::Internal::Worker*[workerCount];
+  m_workers.workerCount = workerCount;
+  for (int i=0; i<workerCount; ++i) {
+    m_workers.workers[i] = new Unison::Internal::Worker(m_workers);
+  }
+
+  if (workerCount>1) {
+    m_workerThreads.reserve(workerCount);
+    for (int i=0; i<workerCount; ++i) {
+      m_workerThreads.append(new JackWorkerThread(m_workers.workers[i], m_workersDone));
+      ((JackWorkerThread*)m_workerThreads[i])->start();
+    }
+  }
 }
 
 
@@ -65,18 +163,18 @@ JackBackend::~JackBackend ()
 }
 
 
-void JackBackend::initClient()
+void JackBackend::initClient ()
 {
   QString name = tr("Unison Studio");
 
   // JACK stuff
   m_client = jack_client_open(name.toLatin1(), JackNullOption, NULL);
+  m_running = false;
   if (!m_client) {
-    // TODO-NOW: Fail more gracefully
-    qFatal("Failed to connect to JACK.");
+    qWarning("Failed to connect to JACK.");
   }
   else {
-    qDebug() << "Connected to JACK.\n";
+    qDebug("Connected to JACK.");
   }
 
   m_bufferLength = jack_get_buffer_size(m_client);
@@ -97,59 +195,110 @@ void JackBackend::initClient()
 }
 
 
-void JackBackend::activate ()
+bool JackBackend::activate ()
 {
+  if (!m_client) {
+    qWarning("JACK backend cannot be activated while disconnected");
+    return false;
+  }
+
   if (!m_running) {
-    m_running = jack_activate(m_client) == 0;
+    m_running = (jack_activate(m_client) == 0);
   }
+
+  return m_running;
 }
 
 
-void JackBackend::deactivate ()
+bool JackBackend::deactivate ()
 {
-  jack_deactivate(m_client);
+  if (m_client && m_running) {
+    m_running = false;
+    // TODO: Destroy ports!
+    jack_deactivate(m_client);
+  }
+  return true;
+}
+
+
+bool JackBackend::reconnectToJack ()
+{
+  if (m_client) {
+    disconnectFromJack();
+    
+    // wait 1/4 of a second for JACK to breathe
+    QMutex dummy;
+    dummy.lock();
+    QWaitCondition sleep;
+    sleep.wait(&dummy, 250);
+  }
+
+  initClient();
+
+  for (int i=0; i<portCount(); ++i) {
+    JackPort* p = port(i);
+
+    // This is kind of dirty, the port should be already registered,
+    // but the jack_port_t is dangling since we are disconnected.
+    // so it is safe to overwrite it.
+    // TODO: Instead check if it is in a zombie-state as set in disconnectFromJack
+    if (p->isRegistered()) {
+      if (p->registerPort()) {
+        qDebug() << "Jack port re-registered: " << p->id();
+      }
+      else {
+        qWarning() << "Jack port re-registration failed for port: " << p->id();
+      }
+    }
+  }
+
+  // TODO: return a proper return code
+  return true;
+}
+
+
+bool JackBackend::disconnectFromJack ()
+{
+  if (m_client) {
+    jack_client_close(m_client);
+    m_client = NULL;
+  }
+
+  // TODO: Put ports in some zombie state
+
   m_running = false;
+  // Return true if we are disconnected
+  return true;
 }
 
 
-JackPort* JackBackend::registerPort (QString name, PortDirection direction)
+JackPort* JackBackend::registerPort (const QString& name, PortDirection direction)
 {
-  // Build Jack flags, currently just direction. Which, is reversed since
-  // our Ports' directions are relative to Unison's connections but
-  // jack_port_t's direction is relative to Jack's graph.
-  JackPortFlags flag;
-  switch (direction) {
-    case INPUT:
-      flag = JackPortIsOutput;
-      break;
-    case OUTPUT:
-    default:
-      flag = JackPortIsInput;
-      break;
-  }
+  JackPort* myPort = new JackPort( *this, name, direction);
 
-  jack_port_t* port = jack_port_register(
-      client(), name.toLatin1(), JACK_DEFAULT_AUDIO_TYPE, flag, 0 );
-  if (port) {
-    JackPort* myPort = new JackPort( *this, port );
-    m_myPorts.append( myPort );
+  if (!myPort->registerPort()) {
+    qWarning() << "Jack port registration failed for port: " << name;
+    delete myPort;
+    return NULL;
+  }
+  else {
     qDebug() << "Jack port registered: " << myPort->name();
+    myPort->activate( m_bufferProvider );
+    m_myPorts.append( myPort );
     return myPort;
   }
-  qWarning() << "Jack port registration failed for port: " << name;
-  return NULL;
 }
 
 
-void JackBackend::unregisterPort (BackendPort *port)
+void JackBackend::unregisterPort (BackendPort* port)
 {
-  JackPort *jackPort = dynamic_cast<JackPort*>(port);
+  JackPort* jackPort = dynamic_cast<JackPort*>(port);
   //Q_ASSERT_X(jackPort !=  NULL, "Jack Backend", "cannot unregister a non-Jack port");
   unregisterPort(jackPort);
 }
 
 
-void JackBackend::unregisterPort (JackPort *port)
+void JackBackend::unregisterPort (JackPort* port)
 {
   jack_port_unregister(client(), port->jackPort());
   delete port;
@@ -186,7 +335,7 @@ JackPort* JackBackend::port (int index) const
 }
 
 
-JackPort* JackBackend::port (QString name) const
+JackPort* JackBackend::port (const QString& name) const
 {
   return NULL; // TODO: implement
 }
@@ -204,7 +353,7 @@ int JackBackend::disconnect (const QString& source, const QString& dest)
 }
 
 
-int JackBackend::disconnect (Unison::BackendPort *)
+int JackBackend::disconnect (Unison::BackendPort* port)
 {
   return 0;
 }
@@ -243,7 +392,6 @@ int JackBackend::graphOrderCb (void* a)
 {
   JackBackend* backend = static_cast<JackBackend*>(a);
   qDebug() << "JACK graph order changed";
-  // TODO-NOW: somehow ensure our graph is recompiled.
   return 0;
 }
 
@@ -251,37 +399,65 @@ int JackBackend::graphOrderCb (void* a)
 int JackBackend::processCb (nframes_t nframes, void* a)
 {
   JackBackend* backend = static_cast<JackBackend*>(a);
-  JackBufferProvider nullProvider;
   int i;
 
-  ProcessingContext context( nframes );
-
-  Unison::Internal::Commander::instance()->process(context);
-
-
-  // Aquire JACK buffers
-  for (i=0; i<backend->portCount(); ++i) {
-    Port *port = backend->port(i);
-    port->connectToBuffer();
-
-    // Re-acquire buffers on ports connected to JACK
-    // Read note below:
-    foreach (Port *other, port->connectedPorts()) {
-      other->connectToBuffer();
-    }
-
-    // Copy data across directly connected jack buffers.
-    // XXX: TODO: This is a super-hack.  In retrospect, it would be better if JackPort
-    // simply didn't have any Buffer at all.  Just copy all the data to connected Ports
-    // before process()ing, Then Fill in outgoing ports on the way out.  This
-    // fixes both connections to regular Ports and to JackPorts.  It also let's
-    // us remove JackBufferProvider and silly calls to connectToBuffer()...
+  if (!(backend->m_running)) {
+    return 0;
   }
 
-  Q_ASSERT(backend->rootPatch());
-  backend->rootPatch()->process(context);
+  ProcessingContext context( nframes );
+  Unison::Internal::Schedule* s = backend->rootPatch()->schedule();
 
+  // Process commands
+  Unison::Internal::Commander::instance()->process(context);
+
+  // TODO, these pre/postprocesses could be built into the Schedule as
+  // workunits so that they run in parallel
+  for (i=0; i<backend->portCount(); ++i) {
+    backend->port(i)->preProcess();
+  }
+
+  // TODO: Remove this check, it is rather a hack
+  if (s->readyWorkCount!=0) {
+    if (backend->m_workers.workerCount == 1) {
+      backend->processST(s, context);
+    }
+    else {
+      backend->processMT(s, context);
+    } 
+  } // End hacky conditional
+
+
+  for (i=0; i<backend->portCount(); ++i) {
+    backend->port(i)->postProcess();
+  }
+
+  muntrace();
   return 0;
+}
+
+
+int JackBackend::processST (Unison::Internal::Schedule* sched, ProcessingContext& ctx)
+{
+  Unison::Internal::Worker* worker = m_workers.workers[0];
+  m_workers.liveWorkers = 1;
+  worker->pushReadyWorkUnsafe(sched->readyWork, sched->readyWorkCount);
+  worker->run(ctx);
+}
+
+
+int JackBackend::processMT (Unison::Internal::Schedule* sched, ProcessingContext& ctx)
+{
+  int numThreads = m_workerThreads.size();
+  m_workers.liveWorkers = numThreads;
+  m_workers.workers[0]->pushReadyWorkUnsafe(sched->readyWork, sched->readyWorkCount);
+
+  for (int i=0; i < numThreads; ++i) {
+    ((JackWorkerThread*)m_workerThreads[i])->run(ctx); // unblock slave
+  }
+
+  //m_workers.done.acquire(numThreads);
+  m_workers.done.acquire(1);
 }
 
 
@@ -312,7 +488,6 @@ void JackBackend::timebaseCb (jack_transport_state_t, nframes_t, jack_position_t
 
 
 int JackBackend::xrunCb (void* backend) {
-  //qWarning() << "XRun occured";
   return 0;
 }
 
@@ -320,4 +495,4 @@ int JackBackend::xrunCb (void* backend) {
 } // Jack
 
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

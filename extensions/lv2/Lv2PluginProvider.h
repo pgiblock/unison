@@ -49,7 +49,7 @@ namespace Lv2 {
 
 /** Provides a database of LV2 plug-ins.  Upon instantiation,
  *  it loads all of the plug-ins found in the LV2_PATH environmental variable
- *  and stores their access descriptors according in a dictionary keyed on
+ *  and stores their access Infos according in a dictionary keyed on
  *  the filename the plug-in was loaded from and the label of the plug-in.
  *  Can be retrieved by using lv2_key_t (which is really just the LV2 URI) */
 class Lv2PluginProvider : public Core::IPluginProvider
@@ -64,20 +64,23 @@ class Lv2PluginProvider : public Core::IPluginProvider
       return tr("Lv2 Plugin Provider");
     }
 
-    /** Describes the requested plugin.  Right now, only LV2 plugins are
-     *  supported. This could take a param, or split into multiple functions
-     *  for distinguishing between LADSPA, VST, etc..
-     *  @param plugin  The URI of the plugin to describe
-     *  @return The Plugin Descriptor */
-    Unison::PluginDescriptorPtr descriptor (const QString plugin);
+    Unison::PluginInfoPtr info (const QString& plugin);
 
   private:
     void addLv2Plugin (SLV2Plugin _plugin);
 
+    /**
+     * the lv2World. If we want to provide Lv2-support to other Extensions, then we
+     * will need to make expose lv2World
+     */
     Lv2World m_lv2World;
 
-    typedef QMap<QString, Unison::PluginDescriptorPtr> Lv2PluginDescriptorMap;
-    Lv2PluginDescriptorMap m_lv2DescriptorMap;
+    /* We just hold on to all Infos here. We will probably store our information in an SQL
+     * or RDF database later for quicker searching etc..  However, we will still need to
+     * keep a Map of all plugins loaded this session - at least to encourage reuse of the
+     * already constructed PluginInfos */
+    typedef QMap<QString, Unison::PluginInfoPtr> Lv2PluginInfoMap;
+    Lv2PluginInfoMap m_lv2InfoMap;
 };
 
   } // Internal
@@ -85,4 +88,4 @@ class Lv2PluginProvider : public Core::IPluginProvider
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

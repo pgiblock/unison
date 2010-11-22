@@ -23,33 +23,41 @@
  */
 
 
-#ifndef UNISON_PORT_DISCONNECT_H
-#define UNISON_PORT_DISCONNECT_H
+#ifndef UNISON_PORT_DISCONNECT_H_
+#define UNISON_PORT_DISCONNECT_H_
 
-#include "unison/Command.h"
-#include "unison/Port.h"
-#include "unison/Patch.h"
+#include "Command.h"
+#include "Patch.h"
 
 namespace Unison {
+  
+  class BufferProvider;
+  class Port;
   class ProcessingContext;
+
   namespace Internal {
+
+    class Schedule;
 
 class PortDisconnect : public Command
 {
   public:
-    PortDisconnect (Port *port1, Port *port2);
+    PortDisconnect (Port* port1, Port* port2, BufferProvider& bp);
     void preExecute ();
-    void execute (ProcessingContext &context);
+    void execute (ProcessingContext& context);
     void postExecute ();
   private:
-    Port *m_port1, *m_port2;
-    Patch *m_patch;
-    QList<Patch::CompiledProcessor>* m_compiled;
+    Port* m_port1;
+    Port* m_port2;
+    Patch* m_patch;
+    Schedule* m_compiled;
+    BufferProvider& m_bufferProvider;
 };
 
   } // Internal
 } // Unison
 
+
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

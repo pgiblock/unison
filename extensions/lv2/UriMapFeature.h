@@ -1,5 +1,5 @@
 /*
- * JackBufferProvider.cpp
+ * UriMapFeature.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,41 +22,39 @@
  *
  */
 
-#include "JackBufferProvider.h"
-#include "JackPort.h"
+#ifndef UNISON_LV2_URI_MAP_FEATURE_H
+#define UNISON_LV2_URI_MAP_FEATURE_H
 
-#include <unison/AudioBuffer.h>
+#include "Feature.h"
 
-#include <jack/jack.h>
-#include <QDebug>
+#include <lv2/uri-map.lv2/uri-map.h>
 
-using namespace Unison;
-
-namespace Jack {
+namespace Lv2 {
   namespace Internal {
 
-SharedBufferPtr JackBufferProvider::acquire (
-    const JackPort* port, nframes_t nframes)
-{
-  // TODO: assert only called within process thread
-  void* jackBuffer = jack_port_get_buffer(port->jackPort(), nframes);
-  return new AudioBuffer( *this, nframes, jackBuffer );
-}
+class UriMap;
 
-
-SharedBufferPtr JackBufferProvider::acquire (PortType, nframes_t)
+class UriMapFeature : public Feature
 {
-  qCritical() << "JackBufferProvider acquire called, programming error";
-  return NULL;
-}
+  public:
+    UriMapFeature (UriMap* uriMap);
 
-SharedBufferPtr JackBufferProvider::zeroAudioBuffer () const
-{
-  qCritical() << "JackBufferProvider acquire called, programming error";
-  return NULL;
-}
+    LV2_Feature* lv2Feature ();
+    void initialize (LV2_Feature*, const Lv2Plugin&) const {};
+    void cleanup (LV2_Feature*) const {};
+
+  private:
+    static uint32_t uriToId (LV2_URI_Map_Callback_Data cbData, const char* map, const char* uri);
+
+    LV2_Feature m_feature;
+    LV2_URI_Map_Feature m_data;
+
+    UriMap* m_uriMap;
+};
 
   } // Internal
-} // Jack
+} // Lv2
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+#endif
+
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

@@ -1,5 +1,5 @@
 /*
- * Lv2Port.h
+ * Lv2Port.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -32,8 +32,6 @@ using namespace Unison;
 
 namespace Lv2 {
   namespace Internal {
-
-#define UNISON_BUFFER_LENGTH 1024
 
 Lv2Port::Lv2Port (const Lv2World& world, Lv2Plugin* plugin, uint32_t index) :
   Port(),
@@ -79,16 +77,16 @@ PortType Lv2Port::type () const
 {
   SLV2Plugin slv2Plugin = m_plugin->slv2Plugin();
   if (slv2_port_is_a( slv2Plugin, m_port, m_world.controlClass )) {
-    return CONTROL_PORT;
+    return ControlPort;
   }
   else if (slv2_port_is_a( slv2Plugin, m_port, m_world.audioClass )) {
-    return AUDIO_PORT;
+    return AudioPort;
   }
   else if (slv2_port_is_a( slv2Plugin, m_port, m_world.midiClass )) {
-    return MIDI_PORT;
+    return MidiPort;
   }
   else {
-    return UNKNOWN_PORT;
+    return UnknownPort;
   }
 }
 
@@ -97,10 +95,10 @@ PortDirection Lv2Port::direction () const
 {
   SLV2Plugin plugin = m_plugin->slv2Plugin();
   if (slv2_port_is_a( plugin, m_port, m_world.inputClass )) {
-    return INPUT;
+    return Input;
   }
   if (slv2_port_is_a( plugin, m_port, m_world.outputClass )) {
-    return OUTPUT;
+    return Output;
   }
   // TODO: Maybe have an UNDEFINED direction?
   qFatal("Port `%s' is neither input or output", qPrintable(name()));
@@ -153,16 +151,6 @@ const QSet<Node* const> Lv2Port::interfacedNodes () const
 
 void Lv2Port::connectToBuffer ()
 {
-  BufferProvider *provider = m_plugin->bufferProvider();
-  switch (direction()) {
-    case INPUT:
-      acquireInputBuffer(*provider, UNISON_BUFFER_LENGTH);
-      break;
-
-    case OUTPUT:
-      acquireOutputBuffer(*provider, UNISON_BUFFER_LENGTH);
-      break;
-  }
   slv2_instance_connect_port (m_plugin->slv2Instance(), m_index, buffer()->data());
 }
 
@@ -170,4 +158,4 @@ void Lv2Port::connectToBuffer ()
   } // Internal
 } // Lv2
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

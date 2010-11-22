@@ -25,3 +25,5 @@ add_subdirectory(aggregation)
 add_subdirectory(extensionsystem)
 add_subdirectory(prg)
 add_subdirectory(unison)
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

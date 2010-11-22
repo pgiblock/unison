@@ -39,13 +39,16 @@ public:
   JackExtension();
   ~JackExtension();
 
-  virtual bool initialize(const QStringList &arguments, QString *errorMessage = 0);
+  virtual bool initialize(const QStringList& arguments, QString* errorMessage = 0);
   virtual void extensionsInitialized();
   virtual void shutdown();
-  virtual void remoteCommand(const QStringList &options, const QStringList &args);
+  virtual void remoteCommand(const QStringList& options, const QStringList& args);
 
 private:
-  void parseArguments(const QStringList &arguments);
+  void parseArguments(const QStringList& arguments);
+
+  // Parsed arguments
+  int m_workerCount;
 };
 
   } // namespace Internal
@@ -53,4 +56,4 @@ private:
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

@@ -24,6 +24,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 project(unison)
+enable_testing()
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_MODULE_PATH})
 
@@ -44,17 +45,20 @@ set(BACKENDS_ENABLED "")
 
 option(WANT_FLAC_EXTENSION "Include FLAC file support extension" OFF)
 option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" ON)
+option(WANT_LADSPA_EXTENSION "Include LADSPA plugin support extension" ON)
 option(WANT_LV2_EXTENSION "Include LV2 plugin support extension" ON)
 option(WANT_OGGVORBIS_EXTENSION "Include OGG/Vorbis file support extension" ON)
 option(WANT_SNDFILE_EXTENSION "Include libsndfile support (WAV,AIFF,SND,VOC,etc..) extension" ON)
+
+option(COMPILE_TESTS "Compile unit-tests" OFF)
 
 ## Find required dependencies ########
 
 find_package(Qt4 4.6.0 COMPONENTS QtCore QtGui QtXml QtNetwork) # REQUIRED)
 macro_log_feature(QT4_FOUND "Qt4"
-  "Needed for cross-platform data, UI, XML, and Network support"
-  "http://qt.nokia.com/"
-  TRUE "" "")
+    "Needed for cross-platform data, UI, XML, and Network support"
+    "http://qt.nokia.com/"
+    TRUE "" "")
 
 ## Find dependencies based on features selected ########
 
@@ -76,17 +80,17 @@ if(WANT_JACK_EXTENSION)
   # JACK is technically optional, but it is required since it is the only
   # backend implementation at the current time
   macro_log_feature(JACK_FOUND "Jack"
-    "Needed for the Jack (Jack Audio Connection Kit) backend extension."
-    "http://jackaudio.org/"
-    TRUE "" "")
+      "Needed for the Jack (Jack Audio Connection Kit) backend extension."
+      "http://jackaudio.org/"
+      TRUE "" "")
 endif(WANT_JACK_EXTENSION)
 
 if(WANT_LV2_EXTENSION)
   find_package(Slv2)
   macro_log_feature(SLV2_FOUND "SLV2"
-    "Needed to discover, load, and use LV2 plugins."
-    "http://drobilla.net/docs/slv2/"
-    FALSE "" "")
+      "Needed to discover, load, and use LV2 plugins."
+      "http://drobilla.net/docs/slv2/"
+      FALSE "" "")
 endif(WANT_LV2_EXTENSION)
 
 if(WANT_OGGVORBIS_EXTENSION)
@@ -114,6 +118,10 @@ endif(WANT_FLAC_EXTENSION AND FLAC_FOUND) # AND FLAC++_FOUND)
 if(WANT_JACK_EXTENSION AND JACK_FOUND)
   set(BUILD_JACK_EXTENSION 1)
 endif(WANT_JACK_EXTENSION AND JACK_FOUND)
+
+if(WANT_LADSPA_EXTENSION)
+  set(BUILD_LADSPA_EXTENSION 1)
+endif(WANT_LADSPA_EXTENSION)
 
 if(WANT_LV2_EXTENSION AND SLV2_FOUND)
   set(BUILD_LV2_EXTENSION 1)
@@ -150,18 +158,18 @@ if(NOT WIN32)
 endif(NOT WIN32)
 
 # use, i.e. don't skip the full RPATH for the build tree
-SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 
 # when building, don't use the install RPATH already
 # (but later on when installing)
-SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 
 # the RPATH to be used when installing
-SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/unison")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/unison")
 
 # don't add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
-SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
 #Internal location, TODO: Don't hardcode platform-specific paths!!
 set(PRG_INCLUDE_DIR    ${CMAKE_SOURCE_DIR}/libs/prg)
@@ -177,4 +185,4 @@ add_subdirectory(unisonstudio)
 ## Config Summary ########
 macro_display_feature_log()
 
-# vim: ts=8 sw=2 sts=2 et sta noai
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

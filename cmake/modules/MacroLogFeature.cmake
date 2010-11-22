@@ -30,116 +30,118 @@
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
-IF (NOT _macroLogFeatureAlreadyIncluded)
-   SET(_file ${CMAKE_BINARY_DIR}/MissingRequirements.txt)
-   IF (EXISTS ${_file})
-      FILE(REMOVE ${_file})
-   ENDIF (EXISTS ${_file})
+if (NOT _macroLogFeatureAlreadyIncluded)
+   set(_file ${CMAKE_BINARY_DIR}/MissingRequirements.txt)
+   if (EXISTS ${_file})
+      file(REMOVE ${_file})
+   endif (EXISTS ${_file})
 
-   SET(_file ${CMAKE_BINARY_DIR}/EnabledFeatures.txt)
-   IF (EXISTS ${_file})
-      FILE(REMOVE ${_file})
-   ENDIF (EXISTS ${_file})
+   set(_file ${CMAKE_BINARY_DIR}/EnabledFeatures.txt)
+   if (EXISTS ${_file})
+      file(REMOVE ${_file})
+   endif (EXISTS ${_file})
 
-   SET(_file ${CMAKE_BINARY_DIR}/DisabledFeatures.txt)
-   IF (EXISTS ${_file})
-      FILE(REMOVE ${_file})
-  ENDIF (EXISTS ${_file})
+   set(_file ${CMAKE_BINARY_DIR}/DisabledFeatures.txt)
+   if (EXISTS ${_file})
+      file(REMOVE ${_file})
+  endif (EXISTS ${_file})
 
-  SET(_macroLogFeatureAlreadyIncluded TRUE)
-ENDIF (NOT _macroLogFeatureAlreadyIncluded)
+  set(_macroLogFeatureAlreadyIncluded TRUE)
+endif (NOT _macroLogFeatureAlreadyIncluded)
 
 
-MACRO(MACRO_LOG_FEATURE _var _package _description _url ) # _required _minvers _comments)
+macro(MACRO_LOG_FEATURE _var _package _description _url ) # _required _minvers _comments)
 
-   SET(_required "${ARGV4}")
-   SET(_minvers "${ARGV5}")
-   SET(_comments "${ARGV6}")
+   set(_required "${ARGV4}")
+   set(_minvers "${ARGV5}")
+   set(_comments "${ARGV6}")
 
-   IF (${_var})
-     SET(_LOGFILENAME ${CMAKE_BINARY_DIR}/EnabledFeatures.txt)
-   ELSE (${_var})
-     IF (${_required} MATCHES "[Tt][Rr][Uu][Ee]")
-       SET(_LOGFILENAME ${CMAKE_BINARY_DIR}/MissingRequirements.txt)
-     ELSE (${_required} MATCHES "[Tt][Rr][Uu][Ee]")
-       SET(_LOGFILENAME ${CMAKE_BINARY_DIR}/DisabledFeatures.txt)
-     ENDIF (${_required} MATCHES "[Tt][Rr][Uu][Ee]")
-   ENDIF (${_var})
+   if (${_var})
+     set(_LOGFILENAME ${CMAKE_BINARY_DIR}/EnabledFeatures.txt)
+   else (${_var})
+     if (${_required} MATCHES "[Tt][Rr][Uu][Ee]")
+       set(_LOGFILENAME ${CMAKE_BINARY_DIR}/MissingRequirements.txt)
+     else (${_required} MATCHES "[Tt][Rr][Uu][Ee]")
+       set(_LOGFILENAME ${CMAKE_BINARY_DIR}/DisabledFeatures.txt)
+     endif (${_required} MATCHES "[Tt][Rr][Uu][Ee]")
+   endif (${_var})
 
-   SET(_logtext "   * ${_package}")
+   set(_logtext "   * ${_package}")
 
-   IF (NOT ${_var})
-      IF (${_minvers} MATCHES ".*")
-        SET(_logtext "${_logtext} (${_minvers} or higher)")
-      ENDIF (${_minvers} MATCHES ".*")
-      SET(_logtext "${_logtext}  <${_url}>\n     ")
-   ELSE (NOT ${_var})
-     SET(_logtext "${_logtext} - ")
-   ENDIF (NOT ${_var})
+   if (NOT ${_var})
+      if (${_minvers} MATCHES ".*")
+        set(_logtext "${_logtext} (${_minvers} or higher)")
+      endif (${_minvers} MATCHES ".*")
+      set(_logtext "${_logtext}  <${_url}>\n     ")
+   else (NOT ${_var})
+     set(_logtext "${_logtext} - ")
+   endif (NOT ${_var})
 
-   SET(_logtext "${_logtext}${_description}")
+   set(_logtext "${_logtext}${_description}")
 
-   IF (NOT ${_var})
-      IF (${_comments} MATCHES ".*")
-        SET(_logtext "${_logtext}\n     ${_comments}")
-      ENDIF (${_comments} MATCHES ".*")
-#      SET(_logtext "${_logtext}\n") #double-space missing features?
-   ENDIF (NOT ${_var})
+   if (NOT ${_var})
+      if (${_comments} MATCHES ".*")
+        set(_logtext "${_logtext}\n     ${_comments}")
+      endif (${_comments} MATCHES ".*")
+#      set(_logtext "${_logtext}\n") #double-space missing features?
+   endif (NOT ${_var})
 
-   FILE(APPEND "${_LOGFILENAME}" "${_logtext}\n")
+   file(APPEND "${_LOGFILENAME}" "${_logtext}\n")
  
-ENDMACRO(MACRO_LOG_FEATURE)
+endmacro(MACRO_LOG_FEATURE)
 
 
-MACRO(MACRO_DISPLAY_FEATURE_LOG)
+macro(MACRO_DISPLAY_FEATURE_LOG)
 
-   SET(_missingFile ${CMAKE_BINARY_DIR}/MissingRequirements.txt)
-   SET(_enabledFile ${CMAKE_BINARY_DIR}/EnabledFeatures.txt)
-   SET(_disabledFile ${CMAKE_BINARY_DIR}/DisabledFeatures.txt)
+   set(_missingFile ${CMAKE_BINARY_DIR}/MissingRequirements.txt)
+   set(_enabledFile ${CMAKE_BINARY_DIR}/EnabledFeatures.txt)
+   set(_disabledFile ${CMAKE_BINARY_DIR}/DisabledFeatures.txt)
 
-   IF (EXISTS ${_missingFile} OR EXISTS ${_enabledFile} OR EXISTS ${_disabledFile})
-     SET(_printSummary TRUE)
-   ENDIF (EXISTS ${_missingFile} OR EXISTS ${_enabledFile} OR EXISTS ${_disabledFile})
+   if (EXISTS ${_missingFile} OR EXISTS ${_enabledFile} OR EXISTS ${_disabledFile})
+     set(_printSummary TRUE)
+   endif (EXISTS ${_missingFile} OR EXISTS ${_enabledFile} OR EXISTS ${_disabledFile})
 
-   IF(_printSummary)
-     SET(_missingDeps 0)
-     IF (EXISTS ${_enabledFile})
-       FILE(READ ${_enabledFile} _enabled)
-       FILE(REMOVE ${_enabledFile})
-       SET(_summary "${_summary}\n-----------------------------------------------------------------------------\n-- The following dependencies were found.\n-----------------------------------------------------------------------------\n${_enabled}")
-     ENDIF (EXISTS ${_enabledFile})
-
-
-     IF (EXISTS ${_disabledFile})
-       SET(_missingDeps 1)
-       FILE(READ ${_disabledFile} _disabled)
-       FILE(REMOVE ${_disabledFile})
-       SET(_summary "${_summary}\n-----------------------------------------------------------------------------\n-- The following OPTIONAL dependencies could NOT be found.\n-----------------------------------------------------------------------------\n${_disabled}")
-     ENDIF (EXISTS ${_disabledFile})
+   if(_printSummary)
+     set(_missingDeps 0)
+     if (EXISTS ${_enabledFile})
+       file(READ ${_enabledFile} _enabled)
+       file(REMOVE ${_enabledFile})
+       set(_summary "${_summary}\n-----------------------------------------------------------------------------\n-- The following dependencies were found.\n-----------------------------------------------------------------------------\n${_enabled}")
+     endif (EXISTS ${_enabledFile})
 
 
-     IF (EXISTS ${_missingFile})
-       SET(_missingDeps 1)
-       FILE(READ ${_missingFile} _requirements)
-       SET(_summary "${_summary}\n-----------------------------------------------------------------------------\n-- The following REQUIRED dependencies could NOT be found.\n-----------------------------------------------------------------------------\n${_requirements}")
-       FILE(REMOVE ${_missingFile})
-       SET(_haveMissingReq 1)
-     ENDIF (EXISTS ${_missingFile})
+     if (EXISTS ${_disabledFile})
+       set(_missingDeps 1)
+       file(READ ${_disabledFile} _disabled)
+       file(REMOVE ${_disabledFile})
+       set(_summary "${_summary}\n-----------------------------------------------------------------------------\n-- The following OPTIONAL dependencies could NOT be found.\n-----------------------------------------------------------------------------\n${_disabled}")
+     endif (EXISTS ${_disabledFile})
 
 
-     IF (NOT ${_missingDeps})
-       SET(_summary "${_summary}\n-----------------------------------------------------------------------------\n-- Congratulations! All external packages have been found.")
-     ENDIF (NOT ${_missingDeps})
+     if (EXISTS ${_missingFile})
+       set(_missingDeps 1)
+       file(READ ${_missingFile} _requirements)
+       set(_summary "${_summary}\n-----------------------------------------------------------------------------\n-- The following REQUIRED dependencies could NOT be found.\n-----------------------------------------------------------------------------\n${_requirements}")
+       file(REMOVE ${_missingFile})
+       set(_haveMissingReq 1)
+     endif (EXISTS ${_missingFile})
 
 
-     MESSAGE(${_summary})
-     MESSAGE("-----------------------------------------------------------------------------\n")
+     if (NOT ${_missingDeps})
+       set(_summary "${_summary}\n-----------------------------------------------------------------------------\n-- Congratulations! All external packages have been found.")
+     endif (NOT ${_missingDeps})
 
 
-     IF(_haveMissingReq)
-       MESSAGE(FATAL_ERROR "Exiting: Missing Requirements")
-     ENDIF(_haveMissingReq)
+     message(${_summary})
+     message("-----------------------------------------------------------------------------\n")
 
-   ENDIF(_printSummary)
 
-ENDMACRO(MACRO_DISPLAY_FEATURE_LOG)
+     if(_haveMissingReq)
+       message(FATAL_ERROR "Exiting: Missing Requirements")
+     endif(_haveMissingReq)
+
+   endif(_printSummary)
+
+endmacro(MACRO_DISPLAY_FEATURE_LOG)
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

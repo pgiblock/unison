@@ -27,32 +27,32 @@
 
 #include <extensionsystem/ExtensionManager.h>
 
-#include <QtPlugin>
 #include <QDebug>
 
 namespace Lv2 {
   namespace Internal {
 
-Lv2Extension::Lv2Extension()
+Lv2Extension::Lv2Extension ()
 {
   m_pluginProvider = new Lv2PluginProvider;
 }
 
 
-Lv2Extension::~Lv2Extension()
+Lv2Extension::~Lv2Extension ()
 {
+  qDebug() << "LV2 dtor";
   removeObject(m_pluginProvider);
   delete m_pluginProvider;
 }
 
 
-void Lv2Extension::parseArguments(const QStringList &arguments)
+void Lv2Extension::parseArguments (const QStringList& arguments)
 {
   Q_UNUSED(arguments)
 }
 
 
-bool Lv2Extension::initialize(const QStringList &arguments, QString *errorMessage)
+bool Lv2Extension::initialize (const QStringList& arguments, QString* errorMessage)
 {
   Q_UNUSED(errorMessage)
   parseArguments(arguments);
@@ -61,24 +61,25 @@ bool Lv2Extension::initialize(const QStringList &arguments, QString *errorMessag
 }
 
 
-void Lv2Extension::extensionsInitialized()
+void Lv2Extension::extensionsInitialized ()
 {
 }
 
 
-void Lv2Extension::remoteCommand(const QStringList &options, const QStringList &args)
+void Lv2Extension::remoteCommand (const QStringList& options, const QStringList& args)
 {
   Q_UNUSED(options)
   Q_UNUSED(args)
 }
 
-void Lv2Extension::shutdown()
+void Lv2Extension::shutdown ()
 {
+  qDebug() << "LV2 shutdown";
 }
 
-EXPORT_EXTENSION(Lv2Extension)
+EXPORT_EXTENSION( Lv2Extension )
 
   } // Internal
 } // Jack
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

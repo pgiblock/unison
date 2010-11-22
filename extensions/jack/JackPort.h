@@ -27,12 +27,16 @@
 
 #include <unison/BackendPort.h>
 #include <unison/ProcessingContext.h>
+
 #include <jack/jack.h>
+
+namespace Unison {
+  class BufferProvider;
+}
 
 namespace Jack {
   namespace Internal {
 
-class JackBufferProvider;
 class JackBackend;
 
 /**
@@ -40,19 +44,18 @@ class JackBackend;
 class JackPort : public Unison::BackendPort
 {
   public:
-    JackPort(JackBackend & backend, jack_port_t * port) :
-        BackendPort(),
-        m_backend(backend),
-        m_port(port)
+    JackPort (JackBackend& backend, const QString &name, Unison::PortDirection direction);
+
+    bool registerPort ();
+
+    bool isRegistered () const
     {
+      return m_port;
     }
 
-    Unison::Node *parent () const
-    {
-      return NULL;
-    }
+    Unison::Node* parent () const;
 
-    JackBackend &backend () const
+    JackBackend& backend () const
     {
       return m_backend;
     }
@@ -60,26 +63,22 @@ class JackPort : public Unison::BackendPort
 
     QString id () const
     {
-      return jack_port_short_name( m_port );
+      return m_id;
     }
 
     QString name () const
     {
-      return jack_port_name( m_port );
+      return QString::fromLocal8Bit( jack_port_name(m_port) );
     }
 
     Unison::PortDirection direction() const
     {
-      JackPortFlags flags = (JackPortFlags)jack_port_flags( m_port );
-      if (flags & JackPortIsInput)  { return Unison::OUTPUT;  }
-      if (flags & JackPortIsOutput) { return Unison::INPUT; }
-      Q_ASSERT_X(0, "JackPort", "direction is neither Input or Output.");
-      return (Unison::PortDirection)0;
+      return m_direction;
     }
 
     Unison::PortType type () const
     {
-      return Unison::AUDIO_PORT;
+      return Unison::AudioPort;
     }
 
     float value () const
@@ -125,11 +124,25 @@ class JackPort : public Unison::BackendPort
 
     void connectToBuffer ();
 
+    void activate (Unison::BufferProvider& bp);
+    void preProcess ();
+    void postProcess ();
+
+    static Unison::PortDirection directionFromFlags (JackPortFlags flags);
+    
+    /**
+     * Build Jack flags, currently just direction. Which, is reversed since
+     * our Ports' directions are relative to Unison's connections but
+     * jack_port_t's direction is relative to Jack's graph. */
+    static JackPortFlags  flagsFromDirection (Unison::PortDirection dir);
+
   private:
     JackBackend& m_backend;
     jack_port_t* m_port;
 
-    static JackBufferProvider * m_jackBufferProvider;
+    // Need to shadow ID and direction so we can re-register
+    QString m_id;
+    Unison::PortDirection m_direction;
 };
 
   } // Internal
@@ -137,4 +150,4 @@ class JackPort : public Unison::BackendPort
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

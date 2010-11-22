@@ -1,5 +1,5 @@
 /*
- * Lv2Manager.cpp
+ * PluginManager.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,9 +22,10 @@
  *
  */
 
-#include "extensionsystem/ExtensionManager.h"
-#include "IPluginProvider.h"
 #include "PluginManager.h"
+#include "IPluginProvider.h"
+
+#include <extensionsystem/ExtensionManager.h>
 
 using namespace Unison;
 using namespace ExtensionSystem;
@@ -44,20 +45,20 @@ PluginManager::~PluginManager ()
 {}
 
 
-PluginDescriptorPtr PluginManager::descriptor (const QString uniqueId)
+PluginInfoPtr PluginManager::info (const QString& uniqueId)
 {
-  ExtensionManager * em = ExtensionManager::instance();
+  ExtensionManager* em = ExtensionManager::instance();
   QList<IPluginProvider*> providers = em->getObjects<IPluginProvider>();
 
   foreach(IPluginProvider* pp, providers) {
-    if (PluginDescriptorPtr desc = pp->descriptor(uniqueId)) {
-      return desc;
+    if (PluginInfoPtr info = pp->info(uniqueId)) {
+      return info;
     }
   }
 
-  return PluginDescriptorPtr(NULL);
+  return PluginInfoPtr(NULL);
 }
 
 } // Core
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

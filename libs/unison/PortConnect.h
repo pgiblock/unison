@@ -23,28 +23,33 @@
  */
 
 
-#ifndef UNISON_PORT_CONNECT_H
-#define UNISON_PORT_CONNECT_H
+#ifndef UNISON_PORT_CONNECT_H_
+#define UNISON_PORT_CONNECT_H_
 
-#include "unison/Command.h"
-#include "unison/Port.h"
-#include "unison/Patch.h"
+#include "Command.h"
+#include "Patch.h"
 
 namespace Unison {
-  class ProcessingContext;
+
+  class BufferProvider;
+  
   namespace Internal {
+    
+    class Schedule;
 
 class PortConnect : public Command
 {
   public:
-    PortConnect (Port *port1, Port *port2);
+    PortConnect (Port* port1, Port* port2, BufferProvider& bp);
     void preExecute ();
-    void execute (ProcessingContext &context);
+    void execute (ProcessingContext& context);
     void postExecute ();
   private:
-    Port *m_producer, *m_consumer;
-    Patch *m_patch;
-    QList<Patch::CompiledProcessor>* m_compiled;
+    Port* m_producer;
+    Port* m_consumer;
+    Patch* m_patch;
+    Schedule* m_compiled;
+    BufferProvider& m_bufferProvider;
 };
 
   } // Internal
@@ -52,4 +57,4 @@ class PortConnect : public Command
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

@@ -22,6 +22,9 @@
  *
  */
 
+#include "Lv2PluginProvider.h"
+#include "Lv2PluginInfo.h"
+
 #include <QDir>
 #include <QFileInfo>
 #include <QLibrary>
@@ -30,8 +33,6 @@
 #include <QtDebug>
 
 #include <math.h>
-
-#include "Lv2PluginProvider.h"
   
 using namespace Unison;
 
@@ -40,9 +41,10 @@ namespace Lv2 {
 
 Lv2PluginProvider::Lv2PluginProvider() :
   m_lv2World(),
-  m_lv2DescriptorMap()
+  m_lv2InfoMap()
 {
   qDebug( "Initializing Lv2 Plugin Provider" );
+
   if (m_lv2World.world == NULL) {
     qWarning(  "Failed to Initialize slv2_world" );
     return;
@@ -71,15 +73,15 @@ Lv2PluginProvider::~Lv2PluginProvider ()
 {}
 
 
-PluginDescriptorPtr Lv2PluginProvider::descriptor (const QString uniqueId)
+PluginInfoPtr Lv2PluginProvider::info (const QString& uniqueId)
 {
   // returns null on fail
-  return m_lv2DescriptorMap.value( uniqueId );
+  return m_lv2InfoMap.value( uniqueId );
 }
 
 
 /*
-void Lv2Manager::ensureLV2DataExists (Lv2PluginDescriptor* desc) {
+void Lv2Manager::ensureLV2DataExists (Lv2PluginInfo* desc) {
   if (desc->plugin == NULL) {
     printf( " Need to load actual plugin data for '%s'\n",
             (desc->uri).toAscii().constData() );
@@ -104,11 +106,11 @@ void Lv2PluginProvider::addLv2Plugin (SLV2Plugin plugin)
 {
   QString key = slv2_value_as_uri( slv2_plugin_get_uri( plugin ) );
 
-  if (m_lv2DescriptorMap.contains( key )) {
+  if (m_lv2InfoMap.contains( key )) {
     return;
   }
 
-  PluginDescriptorPtr descriptor(new Lv2PluginDescriptor(m_lv2World, plugin));
+  PluginInfoPtr info(new Lv2PluginInfo(m_lv2World, plugin));
 
   // This always seems to return 'Plugin', which isn't so useful to us
   //	SLV2PluginClass pclass = slv2_plugin_get_class( _plugin );
@@ -118,7 +120,7 @@ void Lv2PluginProvider::addLv2Plugin (SLV2Plugin plugin)
   //printf("  Audio (input, output)=(%d,%d)\n",
   //        descriptor->audioInputCount(), descriptor->audioOutputCount());
 
-  m_lv2DescriptorMap.insert(key, descriptor);
+  m_lv2InfoMap.insert(key, info);
 
   //printf("  Type=%d\n", (int)descriptor->type());
 }
@@ -126,4 +128,4 @@ void Lv2PluginProvider::addLv2Plugin (SLV2Plugin plugin)
   } // Internal
 } // Lv2
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

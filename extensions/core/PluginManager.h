@@ -25,12 +25,9 @@
 #ifndef UNISON_PLUGIN_MANAGER_H
 #define UNISON_PLUGIN_MANAGER_H
 
-#include <assert.h>
-#include <stdint.h>
+#include <unison/PluginInfo.h>
 
 #include <QString>
-
-#include "unison/Plugin.h"
 
 namespace Core {
 
@@ -40,12 +37,12 @@ class PluginManager
 
     /** Describes the requested plugin.  
      *  @param plugin  The URI of the plugin to describe
-     *  @return The Plugin Descriptor */
-    Unison::PluginDescriptorPtr descriptor (const QString plugin);
+     *  @return The PluginInfo */
+    Unison::PluginInfoPtr info (const QString& plugin);
 
     /** Creates our singleton instance.  Must be called during application
      *  boot. */
-    static void initializeInstance()
+    static void initializeInstance ()
     {
       if (m_instance == NULL) {
         m_instance = new PluginManager();
@@ -53,13 +50,13 @@ class PluginManager
     }
 
     /** @return The Lv2Manager instance */
-    static PluginManager* instance() {
-      assert(m_instance != NULL);
+    static PluginManager* instance () {
+      Q_ASSERT(m_instance != NULL);
       return m_instance;
     }
 
     /** TODO-NOW: Something better */
-    static void cleanupHack() {
+    static void cleanupHack () {
       delete m_instance;
       m_instance = NULL;
     }
@@ -72,11 +69,11 @@ class PluginManager
 
   private:
 
-    static PluginManager * m_instance;
+    static PluginManager* m_instance;
 };
 
 } // Core
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

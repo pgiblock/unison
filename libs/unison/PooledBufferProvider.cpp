@@ -22,11 +22,12 @@
  *
  */
 
-#include <QDebug>
+#include "PooledBufferProvider.h"
 
-#include "unison/PooledBufferProvider.h"
-#include "unison/AudioBuffer.h"
-#include "unison/ControlBuffer.h"
+#include "AudioBuffer.h"
+#include "ControlBuffer.h"
+
+#include <QtCore/QDebug>
 
 namespace Unison {
 
@@ -41,16 +42,15 @@ PooledBufferProvider::PooledBufferProvider () :
 }
 
 
-SharedBufferPtr PooledBufferProvider::acquire (
-    PortType type, nframes_t nframes)
+SharedBufferPtr PooledBufferProvider::acquire (PortType type, nframes_t nframes)
 {
   Q_ASSERT(nframes == m_periodLength);
   QStack<Buffer*>* stack;
   switch (type) {
-    case AUDIO_PORT:
+    case AudioPort:
       stack = &m_audioBuffers;
       break;
-    case CONTROL_PORT:
+    case ControlPort:
       stack = &m_controlBuffers;
       break;
     default:
@@ -65,13 +65,11 @@ SharedBufferPtr PooledBufferProvider::acquire (
   //TODO ensure we are not in processing thread
   Buffer* buf;
   switch (type) {
-    case AUDIO_PORT:
-      qDebug() << "New Audio Buffer " << nframes << " frames.";
+    case AudioPort:
       buf = new AudioBuffer( *this, nframes );
       break;
 
-    case CONTROL_PORT:
-      qDebug() << "New Control Buffer";
+    case ControlPort:
       buf = new ControlBuffer( *this );
       break;
     default:
@@ -93,7 +91,7 @@ void PooledBufferProvider::setBufferLength (nframes_t nframes)
   m_periodLength = nframes;
 
   qDebug() << "Buffersize changed to" << nframes << "stacksize" << m_audioBuffers.count();
-  //m_zeroBuffer = acquire( AUDIO_PORT, nframes );
+  //m_zeroBuffer = acquire( AudioPort, nframes );
   //Q_ASSERT(nframes == m_periodLength);
   QStack<Buffer*>* stack;
   stack = &m_audioBuffers;
@@ -120,7 +118,7 @@ nframes_t PooledBufferProvider::bufferLength ()
 void PooledBufferProvider::release (Buffer* buf)
 {
   switch (buf->type()) {
-    case AUDIO_PORT:
+    case AudioPort:
       if (((AudioBuffer*)buf)->length() != bufferLength()) {
         qWarning() << "Releasing buffer of wrong size.  Deleting buffer instead!";
         delete buf;
@@ -130,7 +128,7 @@ void PooledBufferProvider::release (Buffer* buf)
       }
       break;
 
-    case CONTROL_PORT:
+    case ControlPort:
       m_controlBuffers.push(buf);
       break;
 
@@ -141,4 +139,4 @@ void PooledBufferProvider::release (Buffer* buf)
 
 } // Unison
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

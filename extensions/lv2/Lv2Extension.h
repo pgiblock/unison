@@ -41,18 +41,18 @@ public:
   Lv2Extension();
   ~Lv2Extension();
 
-  virtual bool initialize(const QStringList &arguments, QString *errorMessage = 0);
+  virtual bool initialize(const QStringList& arguments, QString* errorMessage = 0);
   virtual void extensionsInitialized();
   virtual void shutdown();
-  virtual void remoteCommand(const QStringList &options, const QStringList &args);
+  virtual void remoteCommand(const QStringList& options, const QStringList& args);
 
 //public slots:
 //    void fileOpenRequest(const QString&);
 
 private:
-  void parseArguments(const QStringList &arguments);
+  void parseArguments(const QStringList& arguments);
 
-  Lv2PluginProvider *m_pluginProvider;
+  Lv2PluginProvider* m_pluginProvider;
 };
 
   } // namespace Internal
@@ -60,4 +60,4 @@ private:
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

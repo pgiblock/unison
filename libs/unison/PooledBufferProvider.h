@@ -22,20 +22,23 @@
  *
  */
 
-#ifndef UNISON_POOLED_BUFFER_PROVIDER_H
-#define UNISON_POOLED_BUFFER_PROVIDER_H
+#ifndef UNISON_POOLED_BUFFER_PROVIDER_H_
+#define UNISON_POOLED_BUFFER_PROVIDER_H_
 
-#include <QStack>
+#include "BufferProvider.h"
 
-#include "unison/BufferProvider.h"
+#include <QtCore/QStack>
 
-namespace Unison
-{
+namespace Unison {
+  
+  class Buffer;
 
-
-/** PooledBufferProvider is the 'default' implementation for BufferProviders.
- *  It isn't as smart as it could be, but it at least provides reuse of
- *  released buffers. */
+/**
+ * PooledBufferProvider is the 'default' implementation for BufferProviders.  It isn't as
+ * smart as it could be, but it at least provides reuse of released buffers.  The main
+ * benefit of this class, besides memory reuse, is performing RT-unsafe mallocs outside of 
+ * the processing thread.
+ */
 class PooledBufferProvider : public BufferProvider
 {
   public:
@@ -44,15 +47,26 @@ class PooledBufferProvider : public BufferProvider
     ~PooledBufferProvider()
     {}
 
-    SharedBufferPtr zeroAudioBuffer () const;
+    /**
+     * Change the buffer length of this BufferProvider.  What this means exactly isn't
+     * well defined yet.  We need to finish buffersize and samplerate changes first
+     * @param nframes the new buffer length
+     */
     void setBufferLength (nframes_t nframes);
+
+    /**
+     * @returns the current buffer length used by this BufferProvider
+     */
     nframes_t bufferLength ();
+
+    SharedBufferPtr zeroAudioBuffer () const;
 
     SharedBufferPtr acquire (PortType type, nframes_t nframes);
 
   protected:
     void release (Buffer* buf);
 
+  private:
     // TODO: Use something RT-safe, instead of QStack
     QStack<Buffer*> m_audioBuffers;
     QStack<Buffer*> m_controlBuffers;
@@ -65,4 +79,4 @@ class PooledBufferProvider : public BufferProvider
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

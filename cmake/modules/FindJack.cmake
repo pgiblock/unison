@@ -40,7 +40,7 @@ else (JACK_LIBRARIES AND JACK_INCLUDE_DIRS)
   )
 
   set(JACK_INCLUDE_DIRS
-    ${JACK_INCLUDE_DIR}
+      ${JACK_INCLUDE_DIR}
   )
 
   if (JACK_LIBRARY)
@@ -58,3 +58,4 @@ else (JACK_LIBRARIES AND JACK_INCLUDE_DIRS)
 
 endif (JACK_LIBRARIES AND JACK_INCLUDE_DIRS)
 
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

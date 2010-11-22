@@ -62,7 +62,7 @@ project will be at least the following:
    project are treated equally by the resource-browser while indexing and
    searching.  See 'saving project files' below for details on how resources
    are packaged into a project *file*.
- - Datafiles for unison plugins such as "notepad" ?
+ - Datafiles for unison extensions such as "notepad" ?
 
 When saving a file, there will probably be a few preset behaviors, but the
 overall functionality will be this:

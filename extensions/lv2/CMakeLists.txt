@@ -21,19 +21,21 @@
 # Boston, MA 02110-1301 USA.
 #
 
-configure_file(Lv2.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+configure_file(Lv2.extinfo ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 add_definitions(-DLV2_EXTENSION)
 
-set(UNISON_BUFFER_LENGTH "1024" CACHE STRING
-    "Audio buffer length. A work-around until runtime change is supported.")
-
 
 set(LV2_SRCS
+    Feature.cpp
     Lv2Extension.cpp
     Lv2Plugin.cpp
+    Lv2PluginInfo.cpp
     Lv2PluginProvider.cpp
     Lv2Port.cpp
+    Lv2World.cpp
+    UriMap.cpp
+    UriMapFeature.cpp
 )
 
 set(LV2_MOC_HEADERS
@@ -64,3 +66,5 @@ set_target_properties(Lv2 PROPERTIES
 set(INSTALL_DIR lib/unison/extensions)
 install(FILES   Lv2.extinfo  DESTINATION ${INSTALL_DIR})
 install(TARGETS Lv2 LIBRARY  DESTINATION ${INSTALL_DIR})
+
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai

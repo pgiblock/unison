@@ -44,7 +44,7 @@ namespace Lv2 {
 class Lv2Port : public Unison::Port
 {
   public:
-    Lv2Port (const Lv2World & world, Lv2Plugin * plugin, uint32_t index);
+    Lv2Port (const Lv2World& world, Lv2Plugin* plugin, uint32_t index);
 
     ~Lv2Port ();
 
@@ -89,8 +89,8 @@ class Lv2Port : public Unison::Port
 
 
   private:
-    const Lv2World & m_world;
-    Lv2Plugin * m_plugin;
+    const Lv2World& m_world;
+    Lv2Plugin* m_plugin;
     SLV2Port m_port;
     uint32_t m_index;
 
@@ -106,4 +106,4 @@ class Lv2Port : public Unison::Port
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

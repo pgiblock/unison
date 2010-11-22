@@ -22,13 +22,16 @@
  *
  */
 
-#include "unison/Port.h"
-#include "unison/PortConnect.h"
-#include "unison/PortDisconnect.h"
+#include "Port.h"
 
-#include "unison/Commander.h"
+#include "BufferProvider.h"
+#include "Commander.h"
+#include "PortConnect.h"
+#include "PortDisconnect.h"
 
 #include <QDebug>
+
+#define UNISON_BUFFER_LENGTH 1024
 
 namespace Unison {
 
@@ -47,16 +50,16 @@ void Port::setBufferLength (nframes_t len)
 }
 
 
-void Port::connect (Port* other)
+void Port::connect (Port* other, BufferProvider& bp)
 {
-  Command *cmd = new Internal::PortConnect(this, other);
+  Command* cmd = new Internal::PortConnect(this, other, bp);
   Internal::Commander::instance()->push(cmd);
 }
 
 
-void Port::disconnect (Port* other)
+void Port::disconnect (Port* other, BufferProvider& bp)
 {
-  Command *cmd = new Internal::PortDisconnect(this, other);
+  Command* cmd = new Internal::PortDisconnect(this, other, bp);
   Internal::Commander::instance()->push(cmd);
 }
 
@@ -70,18 +73,20 @@ bool Port::isConnected (Port* other) const
 const QSet<Node* const> Port::dependencies () const
 {
   switch (direction()) {
-    case INPUT:
+    case Input:
     {
       QSet<Node* const> p;
       for (QSet<Port* const>::const_iterator i = m_connectedPorts.begin();
-          i != m_connectedPorts.end(); ++i) {
+           i != m_connectedPorts.end(); ++i) {
         p.insert(*i);
       }
       return p;
     }
 
-    case OUTPUT:
+    case Output:
+    {
       return interfacedNodes();
+    }
   }
 }
 
@@ -89,16 +94,16 @@ const QSet<Node* const> Port::dependencies () const
 
 const QSet<Node* const> Port::dependents () const {
   switch (direction()) {
-    case INPUT:
+    case Input:
     {
       return interfacedNodes();
     }
 
-    case OUTPUT:
+    case Output:
     {
       QSet<Node* const> p;
       for (QSet<Port* const>::const_iterator i = m_connectedPorts.begin();
-          i != m_connectedPorts.end(); ++i) {
+           i != m_connectedPorts.end(); ++i) {
         p.insert(*i);
       }
       return p;
@@ -107,18 +112,26 @@ const QSet<Node* const> Port::dependents () const {
 }
 
 
-/**
- * Utility function to help subclasses implement connectToBuffer.
- * @param provider The provider to acquire a buffer from if needed.  This
- *                 provider will typically belong to the port's parent.
- * @param len      Size of the buffer to acquire
- */
+void Port::acquireBuffer (BufferProvider& provider)
+{
+  switch (direction()) {
+    case Input:
+      acquireInputBuffer(provider, UNISON_BUFFER_LENGTH);
+      break;
+
+    case Output:
+      acquireOutputBuffer(provider, UNISON_BUFFER_LENGTH);
+      break;
+  }
+}
+
+
 void Port::acquireInputBuffer (BufferProvider& provider, nframes_t len)
 {
   int numConnections = dependencies().count();
   switch (numConnections) {
     case 0:
-      if (type() == AUDIO_PORT) {
+      if (type() == AudioPort) {
         // Use silence
         m_buffer = provider.zeroAudioBuffer();
         return;
@@ -128,7 +141,7 @@ void Port::acquireInputBuffer (BufferProvider& provider, nframes_t len)
     {
       // Use the other port's buffer
       // type should match due to validation on connect
-      Port* other = (Port*) *(dependencies().begin());
+      Port* other = static_cast<Port*>( *(dependencies().begin()) );
       m_buffer = other->buffer();
       break;
     }
@@ -145,23 +158,10 @@ void Port::acquireInputBuffer (BufferProvider& provider, nframes_t len)
 }
 
 
-/**
- * Utility function to help subclasses implement connectToBuffer.
- * @param provider The provider to acquire a buffer from if needed.  This
- *                 provider will typically belong to the port's parent.
- * @param len      Size of the buffer to acquire
- */
 void Port::acquireOutputBuffer (BufferProvider& provider, nframes_t len)
 {
-  int numConnections = dependents().count();
-  if (numConnections == 1) {
-    // Use the other port's buffer
-    Port* other = (Port*) *(dependents().begin());
-    m_buffer = other->buffer();
-  }
-  else if (numConnections == 2) {
-    qFatal("Internal mixing is not yet supported");
-  }
+  // TODO: if there are no connections, we should probably just connect to some shared
+  // bit-bucket buffer some place to save memory on plugins with sparsly used ports
 
   if (!m_buffer) {
     m_buffer = provider.acquire(type(), len);
@@ -169,17 +169,12 @@ void Port::acquireOutputBuffer (BufferProvider& provider, nframes_t len)
 }
 
 
-/**
- * Update the buffer's data with the currently shadowed data. Ports are
- * expected to shadow the value when setValue() is called.  This way, the
- * port will always know what the value is.  This allows the port to be
- * connected to a new buffer and still retain the old value.  Note, the
- * shadowed value is only relevant when the port is disconnected. */
 void Port::updateBufferValue ()
 {
-  qDebug() << "Updating value of private buffer for port" << name();
-  if (buffer() && type() == CONTROL_PORT) {
-    float * data = (float*) buffer()->data();
+  //qDebug() << "Updating value of private buffer for port" << name();
+  if (buffer() && type() == ControlPort) {
+    // Verified ControlPort, so data must be a single float
+    float* data = static_cast<float*>( buffer()->data() );
     data[0] = value();
   }
 }
@@ -187,4 +182,4 @@ void Port::updateBufferValue ()
 
 } // Unison
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

@@ -36,25 +36,26 @@ class CoreExtension : public ExtensionSystem::IExtension
   Q_OBJECT
 
 public:
-  CoreExtension();
-  ~CoreExtension();
+  CoreExtension ();
+  ~CoreExtension ();
 
-  virtual bool initialize(const QStringList &arguments, QString *errorMessage = 0);
-  virtual void extensionsInitialized();
-  virtual void shutdown();
-  virtual void remoteCommand(const QStringList & /* options */, const QStringList &args);
+  virtual bool initialize (const QStringList& arguments, QString* errorMessage = 0);
+  virtual void extensionsInitialized ();
+  virtual void shutdown ();
+  virtual void remoteCommand (const QStringList&  /* options */, const QStringList& args);
 
 //public slots:
 //    void fileOpenRequest(const QString&);
 
 private:
-  void parseArguments(const QStringList & arguments);
+  void parseArguments (const QStringList& arguments);
 
   QString m_sampleInfile;
+  int m_lineCount;
 
-//    MainWindow *m_mainWindow;
-//    EditMode *m_editMode;
-//    DesignMode *m_designMode;
+//    MainWindow* m_mainWindow;
+//    EditMode* m_editMode;
+//    DesignMode* m_designMode;
 };
 
   } // namespace Internal
@@ -62,4 +63,4 @@ private:
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

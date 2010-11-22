@@ -22,9 +22,13 @@
  *
  */
 
-#include <QDebug>
+#include "Processor.h"
 
-#include "unison/Patch.h"
+#include "Patch.h"
+#include "Port.h"
+#include "types.h"
+
+#include <QDebug>
 
 namespace Unison {
 
@@ -44,7 +48,7 @@ Processor::~Processor ()
 void Processor::setBufferLength (PortType type, nframes_t len)
 {
   for (int n = 0; n < portCount(); ++n) {
-    Port *p = port(n);
+    Port* p = port(n);
     if (p->type() == type) {
       p->setBufferLength(len);
     }
@@ -72,7 +76,7 @@ const QSet<Node* const> Processor::dependencies () const
   int count = portCount();
   for (int i=0; i<count; ++i) {
     Port* p  = port(i);
-    if (p->direction() == INPUT) {
+    if (p->direction() == Input) {
       n += p;
     }
   }
@@ -85,7 +89,7 @@ const QSet<Node* const> Processor::dependents () const {
   int count = portCount();
   for (int i=0; i<count; ++i) {
     Port* p  = port(i);
-    if (p->direction() == OUTPUT) {
+    if (p->direction() == Output) {
       n += p;
     }
   }
@@ -96,4 +100,4 @@ const QSet<Node* const> Processor::dependents () const {
 
 } // Unison
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

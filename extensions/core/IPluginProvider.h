@@ -26,7 +26,8 @@
 #define UNISON_IPLUGIN_PROVIDER_H
 
 #include "Core_global.h"
-#include "unison/Plugin.h"
+
+#include <unison/PluginInfo.h>
 
 #include <QObject>
 
@@ -43,11 +44,16 @@ class CORE_EXPORT IPluginProvider : public QObject
 {
   Q_OBJECT
   public:
-    IPluginProvider(QObject *parent = 0) : QObject(parent) {};
-    virtual ~IPluginProvider() {};
+    IPluginProvider (QObject* parent = 0) : QObject(parent) {};
+    virtual ~IPluginProvider () {};
 
-    virtual QString displayName() = 0;
-    virtual Unison::PluginDescriptorPtr descriptor(const QString uniqueId) = 0;
+    virtual QString displayName () = 0;
+
+    /** Describes the requested plugin.  
+     *  @param plugin  The Name of the plugin to describe
+     *  @return The Plugin info
+     */
+    virtual Unison::PluginInfoPtr info (const QString& uniqueId) = 0;
 };
 
 } // Core
@@ -55,4 +61,4 @@ class CORE_EXPORT IPluginProvider : public QObject
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

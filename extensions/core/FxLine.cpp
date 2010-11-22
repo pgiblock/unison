@@ -23,40 +23,41 @@
  *
  */
 
-#include <QDebug>
-
 #include "Engine.h"
 #include "FxLine.h"
 #include "PluginManager.h"
+
 #include <unison/Backend.h>
 #include <unison/BackendPort.h>
 #include <unison/Patch.h>
 #include <unison/Plugin.h>
 
+#include <QDebug>
+
 using namespace Unison;
 
 namespace Core {
 
-FxLine::FxLine (Patch& parent, QString name) :
+FxLine::FxLine (Patch& parent, const QString& name) :
   m_name(name),
   m_parent(parent),
   m_entries()
 {
-  m_inPorts[0]  = Engine::backend()->registerPort(name + "/in 1", OUTPUT);
-  m_inPorts[1]  = Engine::backend()->registerPort(name + "/in 2", OUTPUT);
+  m_inPorts[0]  = Engine::backend()->registerPort(name + "/in 1", Output);
+  m_inPorts[1]  = Engine::backend()->registerPort(name + "/in 2", Output);
   Entry entry = Entry();
   entry.outputPorts << m_inPorts[0] << m_inPorts[1];
   m_entries.append(entry);
   
-  m_outPorts[0] = Engine::backend()->registerPort(name + "/out 1", INPUT);
-  m_outPorts[1] = Engine::backend()->registerPort(name + "/out 2", INPUT);
+  m_outPorts[0] = Engine::backend()->registerPort(name + "/out 1", Input);
+  m_outPorts[1] = Engine::backend()->registerPort(name + "/out 2", Input);
   entry = Entry();
   entry.inputPorts << m_outPorts[0] << m_outPorts[1];
   m_entries.append(entry);
 
   // TODO: Bring back once backend ports have patch?
-  // m_inPorts[0]->connect(m_outPorts[0]);
-  // m_inPorts[1]->connect(m_outPorts[1]);
+  m_inPorts[0]->connect(m_outPorts[0], *Engine::bufferProvider());
+  m_inPorts[1]->connect(m_outPorts[1], *Engine::bufferProvider());
 }
 
 
@@ -75,7 +76,7 @@ QString FxLine::name() const
 }
 
 
-void FxLine::collectPorts (Plugin *plugin, QList<Port*> *audioIn, QList<Port*> *audioOut) const
+void FxLine::collectPorts (Plugin* plugin, QList<Port*>* audioIn, QList<Port*>* audioOut) const
 {
   if (audioIn) {
     audioIn->empty();
@@ -85,17 +86,17 @@ void FxLine::collectPorts (Plugin *plugin, QList<Port*> *audioIn, QList<Port*> *
   }
   for (int i = 0; i < plugin->portCount(); i++)
   {
-    Port *p = plugin->port(i);
+    Port* p = plugin->port(i);
 
-    if (p->type() == AUDIO_PORT)
+    if (p->type() == AudioPort)
     {
       switch (p->direction()) {
-        case INPUT:
+        case Input:
           if (audioIn) {
             audioIn->append(p);
           }
           break;
-        case OUTPUT:
+        case Output:
           if (audioOut) {
             audioOut->append(p);
           }
@@ -114,7 +115,7 @@ void FxLine::collectPorts (Plugin *plugin, QList<Port*> *audioIn, QList<Port*> *
 /// pseudo-PortContainer here to represent the input and output ports
 /// Then, all adds/removals will be symetric
 /// ^^^: Or, just wrap Plugin and BackendPorts with a class that acts this way
-void FxLine::addPlugin(const PluginDescriptorPtr descriptor, int pos)
+void FxLine::addPlugin(const PluginInfoPtr info, int pos)
 {
   int idx = pos + 1;
   int pluginCnt = m_entries.length() - 2;
@@ -123,10 +124,10 @@ void FxLine::addPlugin(const PluginDescriptorPtr descriptor, int pos)
   Q_ASSERT(pos <= pluginCnt);
 
   // Create the plugin. TODO: Report error, not fatal
-  Plugin *plugin = descriptor->createPlugin(48000);
-  Q_CHECK_PTR(plugin);
+  Plugin* plugin = info->createPlugin(48000);
+  Q_ASSERT(plugin);
 
-  plugin->activate(Engine::bufferProvider());
+  plugin->activate(*Engine::bufferProvider());
   m_parent.add(plugin);
 
   // Verify number of ports. TODO: Report error, not fatal
@@ -162,22 +163,19 @@ void FxLine::addPlugin(const PluginDescriptorPtr descriptor, int pos)
     Entry producer = m_entries.value(idx-1);
     Entry consumer = m_entries.value(idx);
 
-    qWarning() << "FX LINE ADD producer port count:" << producer.outputPorts.count();
     for (int i=0; i<producer.outputPorts.count(); ++i) {
-      Port *producerPort = producer.outputPorts.at(i);
-      Port *consumerPort = consumer.inputPorts.at(i);
+      Port* producerPort = producer.outputPorts.at(i);
+      Port* consumerPort = consumer.inputPorts.at(i);
       
       // Work around:
       if (producerPort->parentPatch() == NULL && consumerPort->parentPatch() == NULL) {
         qWarning("Probably disconnecting two backend-ports. Ignoring");
       }
       else {
-        producerPort->disconnect(consumerPort);
+        producerPort->disconnect(consumerPort, *Engine::bufferProvider());
       }
-      qWarning() << "FX: Conencting: " << producerPort->name() << " TO " << entry.inputPorts.at(i)->name();
-      qWarning() << "FX: and Conencting: " << consumerPort->name() << " TO " << entry.outputPorts.at(i)->name();
-      producerPort->connect(entry.inputPorts.at(i));
-      consumerPort->connect(entry.outputPorts.at(i));
+      producerPort->connect(entry.inputPorts.at(i), *Engine::bufferProvider());
+      consumerPort->connect(entry.outputPorts.at(i), *Engine::bufferProvider());
     }
 
   m_entries.insert(idx, entry);
@@ -186,4 +184,4 @@ void FxLine::addPlugin(const PluginDescriptorPtr descriptor, int pos)
 
 } // Core
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

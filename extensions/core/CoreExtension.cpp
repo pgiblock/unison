@@ -44,8 +44,10 @@
 
 #include <extensionsystem/ExtensionManager.h>
 
-#include <QtPlugin>
 #include <QtDebug>
+#include <QtPlugin>
+#include <QApplication>
+#include <QTimer>
 
 using namespace ExtensionSystem;
 using namespace Unison;
@@ -53,7 +55,8 @@ using namespace Unison;
 namespace Core {
   namespace Internal {
 
-CoreExtension::CoreExtension()
+CoreExtension::CoreExtension() :
+  m_lineCount(4)
 //  m_mainWindow(new MainWindow), m_editMode(0)
 {
 }
@@ -61,6 +64,10 @@ CoreExtension::CoreExtension()
 
 CoreExtension::~CoreExtension()
 {
+  qDebug() << "CORE dtor";
+  if (Engine::backend()) {
+    delete Engine::backend();
+  }
   /*
   if (m_editMode) {
       removeObject(m_editMode);
@@ -80,23 +87,40 @@ CoreExtension::~CoreExtension()
 }
 
 
-void CoreExtension::parseArguments(const QStringList &arguments)
+void CoreExtension::parseArguments(const QStringList& arguments)
 {
   for (int i = 0; i < arguments.size() - 1; i++) {
     if (arguments.at(i) == QLatin1String("--infile")) {
       i++; // skip to argument
       m_sampleInfile = arguments.at(i);
     }
+    if (arguments.at(i) == QLatin1String("--seconds")) {
+      bool ok;
+      float timeout = arguments.at(i + 1).toFloat(&ok);
+      if (ok) {
+        int timeoutMS = timeout*1000;
+        QTimer::singleShot(timeoutMS, qApp, SLOT(quit()));
+      }
+      i++; // skip the value
+    }
+    if (arguments.at(i) == QLatin1String("--lines")) {
+      bool ok;
+      int count = arguments.at(i + 1).toInt(&ok);
+      if (ok) {
+        m_lineCount = count;
+      }
+      i++; // skip the value
+    }
   }
 }
 
 
-bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessage)
+bool CoreExtension::initialize(const QStringList& arguments, QString* errorMessage)
 {
   Q_UNUSED(errorMessage);
   parseArguments(arguments);
 
-  PooledBufferProvider *bufProvider = new PooledBufferProvider();
+  PooledBufferProvider* bufProvider = new PooledBufferProvider();
   bufProvider->setBufferLength(1024);
   Engine::setBufferProvider(bufProvider);
 
@@ -107,7 +131,7 @@ bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessa
   /*
   const bool success = m_mainWindow->init(errorMessage);
   if (success) {
-    EditorManager *editorManager = m_mainWindow->editorManager();
+    EditorManager* editorManager = m_mainWindow->editorManager();
     m_editMode = new EditMode(editorManager);
     addObject(m_editMode);
 
@@ -120,36 +144,62 @@ bool CoreExtension::initialize(const QStringList &arguments, QString *errorMessa
 }
 
 
+/**
+ * TODO: just about everything allocated here is leaked. It is quick-nasty demo code
+ * at the moment, but should be cleaned-up anyways */
 void CoreExtension::extensionsInitialized()
 {
-  ExtensionManager *extMgr = ExtensionManager::instance();
-  
+  ExtensionManager* extMgr = ExtensionManager::instance();
+
+  // Loading a mix of LADSPA and LV2
+  QStringList plugins;
+  plugins //<< "http://ladspa.org/plugins/2143"
+          << "http://calf.sourceforge.net/plugins/Reverb"
+          << "http://calf.sourceforge.net/plugins/Phaser";
+
   // Find backends, load the first one
-  QList<IBackendProvider *> backends = extMgr->getObjects<IBackendProvider>();
+  QList<IBackendProvider*> backends = extMgr->getObjects<IBackendProvider>();
+
+  if (backends.count() == 0) {
+    qWarning("No backends found, I guess we aren't doing anything");
+    return;
+  }
   qDebug("Found Backends:");
-  foreach (IBackendProvider *bep, backends) {
+  foreach (IBackendProvider* bep, backends) {
     qDebug() << bep->displayName();
   }
 
-  Backend *backend = backends.at(0)->createBackend();
-  
-  Patch *root = new Patch();
+  // We gain control of created backends
+  Backend* backend = backends.at(0)->createBackend();
+
+  Patch* root = new Patch();
   backend->setRootProcessor(root);
-  
+
   Engine::setBackend(backend);
 
   backend->activate();
+  
+  const int effects = 2; // * 5 * 2
 
-  // Silly Fx Line
-  FxLine *fxLine = new FxLine(*root, "Super Duper Fx-Line");
+  for (int l = 1; l <= m_lineCount; ++l) {
 
-  PluginDescriptorPtr desc;
-  desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Reverb");
-  fxLine->addPlugin(desc, 0);
-  desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/VintageDelay");
-  fxLine->addPlugin(desc, 0);
-  desc = PluginManager::instance()->descriptor("http://calf.sourceforge.net/plugins/Phaser");
-  fxLine->addPlugin(desc, 2);
+    FxLine* fxLine = new FxLine(*root, QString("Super Duper Fx-Line %1").arg(l));
+
+    for (int i = 0; i < plugins.size(); ++i) {
+      int j = 0;
+      QString plugin = plugins.at(i);
+      PluginInfoPtr desc = PluginManager::instance()->info(plugin);
+      // Add N of each
+      for (int cnt = 0; cnt < effects; ++cnt) {
+        if (desc) {
+          fxLine->addPlugin(desc, j++);
+        }
+        else {
+          qWarning() << "Could not load plugin: " << plugin;
+        }
+      }
+    }
+  }
 
   // Stupid Sampler
   Demo::StupidSamplerDemo *ssd = new Demo::StupidSamplerDemo(root, "Stupid sampler");
@@ -162,7 +212,7 @@ void CoreExtension::extensionsInitialized()
     }
   }
   else {
-    // Sawtooth oscillator
+    // Fall-back Sawtooth oscillator
     int length = 48000.0f / 440.0f;
     sample_t *samples = new sample_t[length*2]; // 2 chans 
     sample_t *s = samples;
@@ -178,15 +228,11 @@ void CoreExtension::extensionsInitialized()
     ssd->setSampleBuffer(buf);
   }
 
-  // TODO: cleanup
-  // Let these ports leak all over the place. This is a stupid demo
-  //backend->deactivate();
-
   //m_mainWindow->extensionsInitialized();
 }
 
 
-void CoreExtension::remoteCommand(const QStringList &options, const QStringList &args)
+void CoreExtension::remoteCommand(const QStringList& options, const QStringList& args)
 {
   Q_UNUSED(options)
   Q_UNUSED(args)
@@ -195,7 +241,7 @@ void CoreExtension::remoteCommand(const QStringList &options, const QStringList 
 }
 
 /*
-void CoreExtension::fileOpenRequest(const QString &f)
+void CoreExtension::fileOpenRequest(const QString& f)
 {
   remoteCommand(QStringList(), QStringList(f));
 }
@@ -203,6 +249,14 @@ void CoreExtension::fileOpenRequest(const QString &f)
 
 void CoreExtension::shutdown()
 {
+  qDebug() << "CORE shutdown";
+
+  // We don't need to be processing while shutting down
+  // TODO: Probably end up killing the whole engine here
+  if (Engine::backend()) {
+    Engine::backend()->deactivate();
+  }
+
   //m_mainWindow->shutdown();
 }
 
@@ -211,4 +265,4 @@ EXPORT_EXTENSION(CoreExtension)
   } // Internal
 } // Core
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

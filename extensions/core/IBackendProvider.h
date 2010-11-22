@@ -25,9 +25,9 @@
 #ifndef UNISON_IBACKEND_PROVIDER_H
 #define UNISON_IBACKEND_PROVIDER_H
 
-#include <QObject>
-
 #include "Core_global.h"
+
+#include <QObject>
 
 namespace Unison {
   class Backend;
@@ -42,11 +42,11 @@ class CORE_EXPORT IBackendProvider : public QObject
 {
   Q_OBJECT
   public:
-    IBackendProvider(QObject *parent = 0) : QObject(parent) {};
-    virtual ~IBackendProvider() {};
+    IBackendProvider (QObject* parent = 0) : QObject(parent) {};
+    virtual ~IBackendProvider () {};
 
-    virtual QString displayName() = 0;
-    virtual Unison::Backend * createBackend() = 0;
+    virtual QString displayName () = 0;
+    virtual Unison::Backend* createBackend () = 0;
 };
 
 } // Core
@@ -54,4 +54,4 @@ class CORE_EXPORT IBackendProvider : public QObject
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

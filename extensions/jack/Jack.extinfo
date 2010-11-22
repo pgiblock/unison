@@ -20,4 +20,7 @@ this softawre. If not, see http://www.gnu.org/licenses/.
     <dependencies>
         <dependency name="Core" version="0.0.1"/>
     </dependencies>
+    <argumentList>
+        <argument name="--workers" parameter="count">How many workers (threads) to use for processing</argument>
+    </argumentList>
 </extension>

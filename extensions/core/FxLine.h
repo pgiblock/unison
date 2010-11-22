@@ -25,9 +25,9 @@
 #ifndef CORE_FXLINE_H
 #define CORE_FXLINE_H
 
-#include <QString>
+#include <unison/PluginInfo.h>
 
-#include <unison/Plugin.h>
+#include <QString>
 
 namespace Unison {
   class BackendPort;
@@ -57,7 +57,7 @@ class FxLine {
     struct Entry {
       QList<Unison::Port*> inputPorts;
       QList<Unison::Port*> outputPorts;
-      Unison::Plugin *plugin;
+      Unison::Plugin* plugin;
     };
 
   public:
@@ -65,7 +65,7 @@ class FxLine {
      *
      * When an FxLine object is first created, in1 is connected to out1 and 
      * in2 is connected to out2.*/
-    FxLine (Unison::Patch &parent, QString name);
+    FxLine (Unison::Patch& parent, const QString &name);
     ~FxLine ();
 
     QString name () const;
@@ -73,13 +73,14 @@ class FxLine {
 
     /** Insert a plugin into the effects line at the given position.
      *
-     * @param descriptor PluginDescriptor of plugin
+     * @param info PluginInfo of plugin
      * @param pos The index of where plugin will be added
      */
-    void addPlugin (const Unison::PluginDescriptorPtr descriptor, int pos = -1);
+    void addPlugin (const Unison::PluginInfoPtr info, int pos = -1);
 
   private:
-    void collectPorts (Unison::Plugin *plugin, QList<Unison::Port*> *audioIn, QList<Unison::Port*> *audioOut) const;
+    void collectPorts (Unison::Plugin* plugin,
+        QList<Unison::Port*>* audioIn, QList<Unison::Port*>* audioOut) const;
 
     QString m_name;
     Unison::Patch& m_parent;
@@ -95,4 +96,4 @@ class FxLine {
 
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+// vim: tw=90 ts=8 sw=2 sts=2 et sta noai

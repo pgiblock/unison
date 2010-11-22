@@ -45,46 +45,46 @@
 
 
 find_program(SOPRANO_SOPRANOCMD_EXECUTABLE
-  NAMES sopranocmd 
-  HINTS
-  ${BIN_INSTALL_DIR}
+    NAMES sopranocmd 
+    HINTS
+    ${BIN_INSTALL_DIR}
 )
 
 find_program(SOPRANO_ONTO2VOCABULARYCLASS_EXECUTABLE
-  NAMES onto2vocabularyclass
-  HINTS
-  ${BIN_INSTALL_DIR}
+    NAMES onto2vocabularyclass
+    HINTS
+    ${BIN_INSTALL_DIR}
 )
 
 
 find_path(SOPRANO_INCLUDE_DIR 
-  NAMES soprano/soprano.h
-  HINTS
-  ${INCLUDE_INSTALL_DIR}
+    NAMES soprano/soprano.h
+    HINTS
+    ${INCLUDE_INSTALL_DIR}
 )
 
 find_library(SOPRANO_INDEX_LIBRARIES 
-  NAMES sopranoindex
-  HINTS
-  ${LIB_INSTALL_DIR}
+    NAMES sopranoindex
+    HINTS
+    ${LIB_INSTALL_DIR}
 )
 
 find_library(SOPRANO_CLIENT_LIBRARIES 
-  NAMES sopranoclient
-  HINTS
-  ${LIB_INSTALL_DIR}
+    NAMES sopranoclient
+    HINTS
+    ${LIB_INSTALL_DIR}
 )
 
 find_library(SOPRANO_LIBRARIES
-  NAMES soprano
-  HINTS
-  ${LIB_INSTALL_DIR}
+    NAMES soprano
+    HINTS
+    ${LIB_INSTALL_DIR}
 )
 
 find_library(SOPRANO_SERVER_LIBRARIES 
-  NAMES sopranoserver
-  HINTS
-  ${LIB_INSTALL_DIR}
+    NAMES sopranoserver
+    HINTS
+    ${LIB_INSTALL_DIR}
 )
 
 
@@ -122,13 +122,13 @@ if(SOPRANO_INCLUDE_DIR)
   get_filename_component(_SOPRANO_PREFIX ${SOPRANO_INCLUDE_DIR} PATH)
 
   find_path(SOPRANO_PLUGIN_ROOT_DIR 
-    NAMES
-    soprano/plugins
-    HINTS
-    ${_SOPRANO_PREFIX}/share
-    ${SHARE_INSTALL_PREFIX} 
-    PATH_SUFFIXES share
-    )
+      NAMES
+      soprano/plugins
+      HINTS
+      ${_SOPRANO_PREFIX}/share
+      ${SHARE_INSTALL_PREFIX} 
+      PATH_SUFFIXES share
+  )
   set(SOPRANO_PLUGIN_DIR "${SOPRANO_PLUGIN_ROOT_DIR}/soprano/plugins")
 
   if(EXISTS ${SOPRANO_PLUGIN_DIR}/nquadparser.desktop)
@@ -219,3 +219,4 @@ mark_as_advanced(SOPRANO_CLIENT_LIBRARIES
                  SOPRANO_SOPRANOCMD_EXECUTABLE
                  )
 
+# vim: tw=90 ts=8 sw=2 sts=2 et sta noai
