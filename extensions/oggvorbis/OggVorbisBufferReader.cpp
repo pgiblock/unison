@@ -23,6 +23,7 @@
  */
 
 #include <QFile>
+#include <QtDebug>
 #include "vorbis/vorbisfile.h"
 
 #include "OggVorbisBufferReader.h"
@@ -72,6 +73,8 @@ long qfileTellCallback( void * _udata )
 
 Unison::SampleBuffer *OggVorbisBufferReader::read (const QString &filename)
 {
+  qDebug() << "OggVorbisBufferReader called to read" << filename;
+
   static ov_callbacks callbacks =
   {
     qfileReadCallback,
@@ -129,24 +132,23 @@ Unison::SampleBuffer *OggVorbisBufferReader::read (const QString &filename)
 
   ogg_int64_t total = ov_pcm_total( &vf, -1 );
 
+  float **pcm;
   float *buf = new Unison::sample_t[total * channels];
-  int bitstream = 0;
-  long bytes_read = 0;
 
+  int bitstream = 0;
+  long framesRead = 0;
+
+  int j = 0;
   do
   {
-    bytes_read = ov_read( &vf, (char *) &buf[frames * channels],
-        ( total - frames ) * channels *
-        BYTES_PER_INT_SAMPLE,
-        isLittleEndian() ? 0 : 1,
-        BYTES_PER_INT_SAMPLE, 1, &bitstream );
-    if( bytes_read < 0 )
-    {
-      break;
-    }
-    frames += bytes_read / ( channels * BYTES_PER_INT_SAMPLE );
+    framesRead = ov_read_float(&vf, &pcm, 1024, &bitstream);
+
+    for (int i = 0; i < framesRead; i++) {
+            buf[j++] = pcm[0][i];
+            buf[j++] = pcm[1][i];
+    };
   }
-  while( bytes_read != 0 && bitstream == 0 );
+  while( framesRead != 0 && bitstream == 0 );
 
   ov_clear( &vf );
   Unison::SampleBuffer *sampleBuffer = new Unison::SampleBuffer(buf, total, channels, samplerate);

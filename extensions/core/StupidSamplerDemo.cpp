@@ -177,11 +177,10 @@ void Sampler::process (const ProcessingContext & context)
 
   // Sample looper
   for(int i=0; i< context.bufferSize(); ++i) {
-    sample_t s = m_sampleBuff->samples()[m_fcnt];
-    data0[i] = s;
-    data1[i] = s;
+    data0[i] = m_sampleBuff->samples()[m_fcnt];
+    data1[i] = m_sampleBuff->samples()[m_fcnt+1];
     // Advance
-    m_fcnt= (m_fcnt+1)%(m_sampleBuff->frames());
+    m_fcnt= (m_fcnt+2)%(m_sampleBuff->frames());
   }
 
 }
