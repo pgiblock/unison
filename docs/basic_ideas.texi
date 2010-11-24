@@ -4,18 +4,9 @@
 @afourpaper
 @setchapternewpage off
 
-@copying
-GFDL
-@end copying
-@titlepage
-@title Basic ideas
-@author Paul Giblock
-
-@page
-
-@end titlepage
-
 @node Top
+
+@unnumbered Basic Ideas
 
 These ideas are some of the original ideas I had for Unison.  Many of these
 concepts are no longer valid after realizing some the design considerations
@@ -23,7 +14,7 @@ while implementing the curring Graph system, but for the most part this stuff is
 right.
 
 
-@chapter File System
+@section File System
 
 @cindex chapter, first
 
@@ -32,7 +23,7 @@ ability to "map" locations.  This can be used to allow the user to choose
 locations for various resources.
 
 
-@section Styles
+@subsection Styles
 The data dir for the current style can be mounted to "style:". This will allow
 referencing images from CSS and widgets.
 
@@ -41,7 +32,7 @@ project resources such as presets, samples, and projects.  These are covered
 in Resources.
 
 
-@chapter Resources
+@section Resources
 
 This needs more thought, but the general idea should be sound.
 
@@ -71,7 +62,7 @@ digest can be populated by querying the resource provider when saving a
 project file.
 
 
-@chapter Project Files
+@section Project Files
 
 Project files will be a simple directory or ZIP based format.  Inside the
 project will be at least the following:
@@ -133,7 +124,7 @@ in other cases it is not what we want.
 "<some_constant_id>-<version_id>"..
 
 
-@chapter Plugins
+@section Plugins
 
 The goal is to use LV2 plugins whenever appropriate.  We may need to make
 something like gtkgui (QtGui?) to handle the GUI and maybe another optional
@@ -159,7 +150,7 @@ considering using the same, or a simialar concept for Unison's resource
 naming (as opposed to filehashes, which change uncontrollably with time).
 
 
-@chapter Piano Roll
+@section Piano Roll
 
 The piano roll will be implemented, like most editors, as a QGraphicsScene.
 The piano roll can be opened as its own window/pane (however we decide to
@@ -167,7 +158,7 @@ display editors) This will allow advanced control of the editor.  The piano
 roll can also be accessed when a midi-track is zoomed in deep enough.
 
 
-@chapter Meter Changes
+@section Meter Changes
 
 Changes in meter (time signature) will be obtained by maintaining a "MetricMap"
 within the song/sequence.  The MetricMap holds a sorted list of
@@ -181,7 +172,7 @@ It would be nice to have something like time-warp in Cubase, I think our
 metric map interface is capable of adding that complexity to down the road.
 
 
-@chapter Messages
+@section Messages
 
 Instead of printf and MessageBoxes, we should have a messages features.  In
 the GUI, messages are delivered to a pane (or if the severity is high enough,
@@ -192,14 +183,14 @@ resources. Also, this can help with logging, all messages can be logged to
 disk, and we could allow additional data to be logged for debugging purposes.
 
 
-@chapter Key
+@section Key
 
 It would be nice is there can be a single track/timeline for storing the key
 of the song.  This can be used to grey-out notes that aren't in key while
 working in the piano-roll.
 
 
-@chapter Dependency Graph
+@section Dependency Graph
 
 Dependencies between plugins (I guess, more specifically, their ports) will
 be managed as a directed graph.  This will allow for traversal of dependencies
@@ -214,7 +205,7 @@ may be cases where a single GUI element actually represents a group of plugins.
 Example: A non-wirable synth built on oscillator, filter, and envelope plugins
 
 
-@chapter Tracks
+@section Tracks
 
 Unison uses the common "track" concept to model the composition. A single song
 can contain many tracks, each one is used to control different things with
@@ -268,7 +259,7 @@ included with Unison:
 @end itemize
 
 
-@chapter Mixer
+@section Mixer
 
 This is a very grey area right now, at best.  There are lots of mixer models
 out on the market right now - all with varying degrees of flexibility and
