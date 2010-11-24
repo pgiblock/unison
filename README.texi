@@ -1,7 +1,8 @@
 \input texinfo
 @setfilename README.info
 @settitle README
-@afourpaper
+@c Add a @c preceding the next line for US Letter.
+@c @afourpaper
 @setchapternewpage off
 
 @node Top
