@@ -56,7 +56,7 @@ const LADSPA_Descriptor *LadspaPort::pluginInfo() const
 }
 
 
-const LADSPA_PortDescriptor LadspaPort::portDescriptor() const
+LADSPA_PortDescriptor LadspaPort::portDescriptor() const
 {
   return pluginInfo()->PortDescriptors[m_index];
 }
@@ -92,6 +92,7 @@ PortDirection LadspaPort::direction () const
   }
   // TODO: Maybe have an UNDEFINED direction?
   qFatal("Port `%s' is neither input or output", qPrintable(name()));
+  return Input; // suppress no-return warning
 }
 
 
@@ -254,7 +255,7 @@ bool LadspaPort::isBounded () const
   // and upper seperately.  We can enhance our Plugin::isBounded function,
   // but for now, only bound if LADSPA tells us both sides should be bounded
   const int BoundedBoth = (LADSPA_HINT_BOUNDED_BELOW | LADSPA_HINT_BOUNDED_ABOVE);
-  return portRangeHints().HintDescriptor & BoundedBoth == BoundedBoth;
+  return (portRangeHints().HintDescriptor & BoundedBoth) == BoundedBoth;
 }
 
 

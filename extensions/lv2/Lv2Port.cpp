@@ -102,6 +102,7 @@ PortDirection Lv2Port::direction () const
   }
   // TODO: Maybe have an UNDEFINED direction?
   qFatal("Port `%s' is neither input or output", qPrintable(name()));
+  return Input; // suppress no-return warning
 }
 
 

@@ -71,7 +71,7 @@ class LadspaPort : public Unison::Port
 
   private:
     const LADSPA_Descriptor *pluginInfo () const;
-    const LADSPA_PortDescriptor portDescriptor () const;
+    LADSPA_PortDescriptor portDescriptor () const;
     const LADSPA_PortRangeHint portRangeHints () const;
     LadspaPlugin *m_plugin;
 
