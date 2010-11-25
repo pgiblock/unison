@@ -26,13 +26,13 @@ set(AGGREGATION_SRCS
 )
 
 set(AGGREGATION_HEADERS
-    Aggregate.h
-    aggregate.h
-    aggregation_global.h
+    Aggregate.hpp
+    aggregate.hpp
+    aggregation_global.hpp
 )
 
 set(AGGREGATION_MOC_HEADERS
-    aggregate.h
+    aggregate.hpp
 )
 
 qt4_wrap_cpp(AGGREGATION_MOC_SRCS ${AGGREGATION_MOC_HEADERS})

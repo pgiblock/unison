@@ -40,29 +40,29 @@ set(UNISON_SRCS
 )
 
 set(UNISON_MOC_HEADERS
-    Backend.h
+    Backend.hpp
 )
 
 set(UNISON_INCLUDES
-    AudioBuffer.h
-    Backend.h
-    BackendPort.h
-    Buffer.h
-    BufferProvider.h
-    Command.h
-    ControlBuffer.h
-    FastRandom.h
-    Node.h
-    Patch.h
-    Plugin.h
-    PooledBufferProvider.h
-    Port.h
-    ProcessingContext.h
-    Processor.h
-    RingBuffer.h
-    SampleBuffer.h
-    SpinLock.h
-    types.h
+    AudioBuffer.hpp
+    Backend.hpp
+    BackendPort.hpp
+    Buffer.hpp
+    BufferProvider.hpp
+    Command.hpp
+    ControlBuffer.hpp
+    FastRandom.hpp
+    Node.hpp
+    Patch.hpp
+    Plugin.hpp
+    PooledBufferProvider.hpp
+    Port.hpp
+    ProcessingContext.hpp
+    Processor.hpp
+    RingBuffer.hpp
+    SampleBuffer.hpp
+    SpinLock.hpp
+    types.hpp
 )
 
 qt4_wrap_cpp(UNISON_MOC_SRCS ${UNISON_MOC_HEADERS})

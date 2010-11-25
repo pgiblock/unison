@@ -28,9 +28,9 @@
 #include <QFile>
 #include <QtDebug>
 
-#include "LadspaPluginProvider.h"
-#include "LadspaPlugin.h"
-#include "ladspa/ladspa.h"
+#include "LadspaPluginProvider.hpp"
+#include "LadspaPlugin.hpp"
+#include <ladspa/ladspa.h>
 
 #ifdef Q_WS_WIN
 #  define PATH_SEPERATOR ';'

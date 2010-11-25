@@ -22,9 +22,9 @@
  *
  */
 
-#include "Lv2Port.h"
+#include "Lv2Port.hpp"
 
-#include <unison/BufferProvider.h>
+#include <unison/BufferProvider.hpp>
 
 #include <QSet>
 

@@ -22,10 +22,10 @@
  *
  */
 
-#include "PooledBufferProvider.h"
+#include "PooledBufferProvider.hpp"
 
-#include "AudioBuffer.h"
-#include "ControlBuffer.h"
+#include "AudioBuffer.hpp"
+#include "ControlBuffer.hpp"
 
 #include <QtCore/QDebug>
 

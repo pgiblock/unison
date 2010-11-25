@@ -22,7 +22,7 @@
  *
  */
 
-#include "Command.h"
+#include "Command.hpp"
 
 #include <QtCore/QtGlobal>
 

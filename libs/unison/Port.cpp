@@ -22,12 +22,12 @@
  *
  */
 
-#include "Port.h"
+#include "Port.hpp"
 
-#include "BufferProvider.h"
-#include "Commander.h"
-#include "PortConnect.h"
-#include "PortDisconnect.h"
+#include "BufferProvider.hpp"
+#include "Commander.hpp"
+#include "PortConnect.hpp"
+#include "PortDisconnect.hpp"
 
 #include <QDebug>
 

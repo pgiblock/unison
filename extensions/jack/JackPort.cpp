@@ -22,11 +22,11 @@
  *
  */
 
-#include "JackPort.h"
-#include "JackBackend.h"
+#include "JackPort.hpp"
+#include "JackBackend.hpp"
 
-#include <unison/AudioBuffer.h>
-#include <unison/Patch.h>
+#include <unison/AudioBuffer.hpp>
+#include <unison/Patch.hpp>
 
 #include <jack/jack.h>
 #include <QDebug>

@@ -32,8 +32,8 @@ set(JACK_SRCS
 )
 
 set(JACK_MOC_HEADERS
-    JackBackend.h
-    JackExtension.h
+    JackBackend.hpp
+    JackExtension.hpp
 )
 
 qt4_wrap_cpp(JACK_MOC_SRCS ${JACK_MOC_HEADERS})

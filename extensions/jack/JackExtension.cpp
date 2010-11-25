@@ -22,10 +22,10 @@
  *
  */
 
-#include "JackBackend.h"
-#include "JackExtension.h"
+#include "JackBackend.hpp"
+#include "JackExtension.hpp"
 
-#include <extensionsystem/ExtensionManager.h>
+#include <extensionsystem/ExtensionManager.hpp>
 
 #include <QtPlugin>
 #include <QtDebug>

@@ -22,9 +22,9 @@
  *
  */
 
-#include "LadspaPort.h"
+#include "LadspaPort.hpp"
 
-#include <unison/BufferProvider.h>
+#include <unison/BufferProvider.hpp>
 
 #include <QSet>
 

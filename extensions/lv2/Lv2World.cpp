@@ -22,12 +22,12 @@
  *
  */
 
-#include "Lv2World.h"
+#include "Lv2World.hpp"
 
 // Features
-#include "DataAccessFeature.h"
-#include "InstanceAccessFeature.h"
-#include "UriMapFeature.h"
+#include "DataAccessFeature.hpp"
+#include "InstanceAccessFeature.hpp"
+#include "UriMapFeature.hpp"
 
 #include <QDebug>
 

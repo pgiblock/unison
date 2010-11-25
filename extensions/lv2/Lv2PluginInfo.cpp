@@ -22,8 +22,8 @@
  *
  */
 
-#include "Lv2PluginInfo.h"
-#include "Lv2Plugin.h"
+#include "Lv2PluginInfo.hpp"
+#include "Lv2Plugin.hpp"
 
 #include <QDebug>
 #include <QSet>

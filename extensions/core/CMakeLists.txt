@@ -34,11 +34,11 @@ set(CORE_SRCS
 )
 
 set(CORE_MOC_HEADERS
-    CoreExtension.h
-    Engine.h
-    IBackendProvider.h
-    IPluginProvider.h
-    ISampleBufferReader.h
+    CoreExtension.hpp
+    Engine.hpp
+    IBackendProvider.hpp
+    IPluginProvider.hpp
+    ISampleBufferReader.hpp
 )
 
 qt4_wrap_cpp(CORE_MOC_SRCS ${CORE_MOC_HEADERS})

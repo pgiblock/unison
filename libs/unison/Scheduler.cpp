@@ -22,7 +22,7 @@
  *
  */
 
-#include "Scheduler.h"
+#include "Scheduler.hpp"
 
 #include <QAtomicInt>
 #include <QSemaphore>

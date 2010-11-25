@@ -23,11 +23,11 @@
  */
 
 
-#include "PortDisconnect.h"
+#include "PortDisconnect.hpp"
 
-#include "Port.h"
-#include "ProcessingContext.h"
-#include "Scheduler.h"
+#include "Port.hpp"
+#include "ProcessingContext.hpp"
+#include "Scheduler.hpp"
 
 namespace Unison {
   namespace Internal {

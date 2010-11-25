@@ -22,10 +22,10 @@
  *
  */
 
-#include "Lv2Extension.h"
-#include "Lv2PluginProvider.h"
+#include "Lv2Extension.hpp"
+#include "Lv2PluginProvider.hpp"
 
-#include <extensionsystem/ExtensionManager.h>
+#include <extensionsystem/ExtensionManager.hpp>
 
 #include <QDebug>
 

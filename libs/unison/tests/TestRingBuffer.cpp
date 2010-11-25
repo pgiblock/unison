@@ -24,7 +24,7 @@
  *
  */
 
-#include <unison/RingBuffer.h>
+#include <unison/RingBuffer.hpp>
 
 #include <iostream>
 

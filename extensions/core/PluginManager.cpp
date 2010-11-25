@@ -22,10 +22,10 @@
  *
  */
 
-#include "PluginManager.h"
-#include "IPluginProvider.h"
+#include "PluginManager.hpp"
+#include "IPluginProvider.hpp"
 
-#include <extensionsystem/ExtensionManager.h>
+#include <extensionsystem/ExtensionManager.hpp>
 
 using namespace Unison;
 using namespace ExtensionSystem;

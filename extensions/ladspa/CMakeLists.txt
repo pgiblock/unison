@@ -33,8 +33,8 @@ set(LADSPA_SRCS
 )
 
 set(LADSPA_MOC_HEADERS
-    LadspaExtension.h
-    LadspaPluginProvider.h
+    LadspaExtension.hpp
+    LadspaPluginProvider.hpp
 )
 
 qt4_wrap_cpp(LADSPA_MOC_SRCS ${LADSPA_MOC_HEADERS})

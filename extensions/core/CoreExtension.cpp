@@ -22,24 +22,24 @@
  *
  */
 
-#include "CoreExtension.h"
+#include "CoreExtension.hpp"
 
-#include "IBackendProvider.h"
+#include "IBackendProvider.hpp"
 
 // For Engine
-#include "Engine.h"
-#include <unison/Backend.h>
-#include <unison/BufferProvider.h>
-#include <unison/Commander.h>
-#include <unison/Patch.h>
-#include <unison/PooledBufferProvider.h>
+#include "Engine.hpp"
+#include <unison/Backend.hpp>
+#include <unison/BufferProvider.hpp>
+#include <unison/Commander.hpp>
+#include <unison/Patch.hpp>
+#include <unison/PooledBufferProvider.hpp>
 
 // For connection frenzy
-#include "FxLine.h"
-#include "PluginManager.h"
-#include <unison/Plugin.h>
+#include "FxLine.hpp"
+#include "PluginManager.hpp"
+#include <unison/Plugin.hpp>
 
-#include <extensionsystem/ExtensionManager.h>
+#include <extensionsystem/ExtensionManager.hpp>
 
 #include <QtDebug>
 #include <QtPlugin>

@@ -22,10 +22,10 @@
  *
  */
 
-#include "Engine.h"
+#include "Engine.hpp"
 
-#include <unison/Backend.h>
-#include <unison/BufferProvider.h>
+#include <unison/Backend.hpp>
+#include <unison/BufferProvider.hpp>
 
 namespace Core {
 

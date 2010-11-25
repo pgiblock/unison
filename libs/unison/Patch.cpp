@@ -22,11 +22,11 @@
  *
  */
 
-#include "Patch.h"
+#include "Patch.hpp"
 
-#include "Node.h"
-#include "Port.h"
-#include "Scheduler.h"
+#include "Node.hpp"
+#include "Port.hpp"
+#include "Scheduler.hpp"
 
 #include <QtCore/QDebug>
 

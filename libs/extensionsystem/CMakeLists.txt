@@ -32,18 +32,18 @@ set(EXTENSIONSYSTEM_SRCS
 )
 
 set(EXTENSIONSYSTEM_HEADERS
-    IExtension.h
-    OptionsParser.h
-    ExtensionCollection.h
-    ExtensionInfo.h
-    ExtensionManager.h
-    extensionsystem_global.h
+    IExtension.hpp
+    OptionsParser.hpp
+    ExtensionCollection.hpp
+    ExtensionInfo.hpp
+    ExtensionManager.hpp
+    extensionsystem_global.hpp
 )
 
 set(EXTENSIONSYSTEM_MOC_HEADERS
-    IExtension.h
-    ExtensionInfo_p.h
-    ExtensionManager.h
+    IExtension.hpp
+    ExtensionInfo_p.hpp
+    ExtensionManager.hpp
 )
 
 qt4_wrap_cpp(EXTENSIONSYSTEM_MOC_SRCS ${EXTENSIONSYSTEM_MOC_HEADERS})

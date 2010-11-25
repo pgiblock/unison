@@ -27,10 +27,10 @@
 **
 **************************************************************************/
 
-#include "IExtension.h"
-#include "IExtension_p.h"
-#include "ExtensionManager.h"
-#include "ExtensionInfo.h"
+#include "IExtension.hpp"
+#include "IExtension_p.hpp"
+#include "ExtensionManager.hpp"
+#include "ExtensionInfo.hpp"
 
 /*!
     \class ExtensionSystem::IExtension

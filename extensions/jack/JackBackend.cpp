@@ -22,10 +22,10 @@
  *
  */
 
-#include "JackBackend.h"
-#include "JackPort.h"
+#include "JackBackend.hpp"
+#include "JackPort.hpp"
 
-#include <unison/Processor.h>
+#include <unison/Processor.hpp>
 
 #include <QDebug>
 #include <QThread>
@@ -33,15 +33,14 @@
 #include <jack/jack.h>
 
 // For connect-and-copy hackfest in processCb
-#include <core/Engine.h>
-#include <unison/AudioBuffer.h>
-#include <unison/Commander.h>
-#include <unison/Patch.h>
-#include <unison/Scheduler.h>
+#include <core/Engine.hpp>
+#include <unison/AudioBuffer.hpp>
+#include <unison/Commander.hpp>
+#include <unison/Patch.hpp>
+#include <unison/Scheduler.hpp>
 
 // For pthread hack - abstract to platform-agnostic utils
 #include <pthread.h>
-#include <mcheck.h>
 
 using namespace Unison;
 
@@ -442,7 +441,6 @@ int JackBackend::processCb (nframes_t nframes, void* a)
     backend->port(i)->postProcess();
   }
 
-  muntrace();
   return 0;
 }
 

@@ -22,9 +22,9 @@
  *
  */
 
-#include "extensionsystem/ExtensionManager.h"
-#include "extensionsystem/ExtensionInfo.h"
-#include "extensionsystem/IExtension.h"
+#include "extensionsystem/ExtensionManager.hpp"
+#include "extensionsystem/ExtensionInfo.hpp"
+#include "extensionsystem/IExtension.hpp"
 
 #include <QDir>
 #include <QDebug>

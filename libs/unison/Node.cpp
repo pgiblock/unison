@@ -22,8 +22,8 @@
  *
  */
 
-#include "Node.h"
-#include "Patch.h"
+#include "Node.hpp"
+#include "Patch.hpp"
 
 namespace Unison {
 

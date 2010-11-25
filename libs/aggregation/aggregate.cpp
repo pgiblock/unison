@@ -27,7 +27,7 @@
 **
 **************************************************************************/
 
-#include "aggregate.h"
+#include "aggregate.hpp"
 
 #include <QWriteLocker>
 
