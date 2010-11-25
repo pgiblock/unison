@@ -22,10 +22,10 @@
  *
  */
 
-#include "LadspaPlugin.h"
-#include "LadspaPort.h"
+#include "LadspaPlugin.hpp"
+#include "LadspaPort.hpp"
 
-#include <unison/ProcessingContext.h>
+#include <unison/ProcessingContext.hpp>
 
 #include <QDebug>
 #include <QSet>

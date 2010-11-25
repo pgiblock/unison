@@ -22,7 +22,7 @@
  *
  */
 
-#include "unison/SampleBuffer.h"
+#include "unison/SampleBuffer.hpp"
 
 #include <QtGlobal>
 #include <cstring>

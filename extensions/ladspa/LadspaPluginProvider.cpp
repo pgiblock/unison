@@ -28,9 +28,9 @@
 #include <QFile>
 #include <QtDebug>
 
-#include "LadspaPluginProvider.h"
-#include "LadspaPlugin.h"
-#include "ladspa/ladspa.h"
+#include "LadspaPluginProvider.hpp"
+#include "LadspaPlugin.hpp"
+#include <ladspa/ladspa.h>
 
 #ifdef Q_WS_WIN
 #  define PATH_SEPERATOR ';'
@@ -106,8 +106,11 @@ int LadspaPluginProvider::discoverFromLibrary (const QString &path)
     return 0;
   }
 
+  #ifdef __GNUC__
+  __extension__
+  #endif
   LADSPA_Descriptor_Function descriptorFunction = 
-      (LADSPA_Descriptor_Function) lib.resolve("ladspa_descriptor");
+      reinterpret_cast<LADSPA_Descriptor_Function>(lib.resolve("ladspa_descriptor"));
     
   if (descriptorFunction == NULL) {
     // Couldn't find function, no worries, maybe the SO isn't a LADSPA

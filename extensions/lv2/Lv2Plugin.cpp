@@ -22,10 +22,10 @@
  *
  */
 
-#include "Lv2Plugin.h"
-#include "Lv2Port.h"
+#include "Lv2Plugin.hpp"
+#include "Lv2Port.hpp"
 
-#include <unison/ProcessingContext.h>
+#include <unison/ProcessingContext.hpp>
 
 #include <QDebug>
 #include <QSet>

@@ -22,7 +22,7 @@
  *
  */
 
-#include "UriMap.h"
+#include "UriMap.hpp"
 
 #include <QMutexLocker>
 

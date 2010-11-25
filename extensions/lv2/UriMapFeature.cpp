@@ -22,8 +22,8 @@
  *
  */
 
-#include "UriMapFeature.h"
-#include "UriMap.h"
+#include "UriMapFeature.hpp"
+#include "UriMap.hpp"
 
 #include <QtDebug>
 

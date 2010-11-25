@@ -23,14 +23,14 @@
  *
  */
 
-#include "Engine.h"
-#include "FxLine.h"
-#include "PluginManager.h"
+#include "Engine.hpp"
+#include "FxLine.hpp"
+#include "PluginManager.hpp"
 
-#include <unison/Backend.h>
-#include <unison/BackendPort.h>
-#include <unison/Patch.h>
-#include <unison/Plugin.h>
+#include <unison/Backend.hpp>
+#include <unison/BackendPort.hpp>
+#include <unison/Patch.hpp>
+#include <unison/Plugin.hpp>
 
 #include <QDebug>
 

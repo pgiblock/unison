@@ -22,7 +22,7 @@
  *
  */
 
-#include "Feature.h"
+#include "Feature.hpp"
 
 #include <QSharedPointer>
 #include <string.h>

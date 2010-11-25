@@ -22,11 +22,11 @@
  *
  */
 
-#include "Processor.h"
+#include "Processor.hpp"
 
-#include "Patch.h"
-#include "Port.h"
-#include "types.h"
+#include "Patch.hpp"
+#include "Port.hpp"
+#include "types.hpp"
 
 #include <QDebug>
 

@@ -22,7 +22,7 @@
  *
  */
 
-#include "SpinLock.h"
+#include "SpinLock.hpp"
 #include <QThread>
 
 namespace Unison {

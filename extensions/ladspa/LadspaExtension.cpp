@@ -22,10 +22,10 @@
  *
  */
 
-#include "LadspaExtension.h"
-#include "LadspaPluginProvider.h"
+#include "LadspaExtension.hpp"
+#include "LadspaPluginProvider.hpp"
 
-#include <extensionsystem/ExtensionManager.h>
+#include <extensionsystem/ExtensionManager.hpp>
 
 #include <QDebug>
 

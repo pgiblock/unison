@@ -22,8 +22,8 @@
  *
  */
 
-#include "Lv2PluginProvider.h"
-#include "Lv2PluginInfo.h"
+#include "Lv2PluginProvider.hpp"
+#include "Lv2PluginInfo.hpp"
 
 #include <QDir>
 #include <QFileInfo>

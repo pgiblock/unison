@@ -30,7 +30,7 @@ set(GUICORE_SRCS
 )
 
 set(GUICORE_MOC_HEADERS
-    GuiCoreExtension.h
+    GuiCoreExtension.hpp
 )
 
 qt4_wrap_cpp(GUICORE_MOC_SRCS ${GUICORE_MOC_HEADERS})

@@ -22,8 +22,8 @@
  *
  */
 
-#include "Commander.h"
-#include "Command.h"
+#include "Commander.hpp"
+#include "Command.hpp"
 
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>

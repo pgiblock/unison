@@ -22,12 +22,12 @@
  *
  */
 
-#include "Port.h"
+#include "Port.hpp"
 
-#include "BufferProvider.h"
-#include "Commander.h"
-#include "PortConnect.h"
-#include "PortDisconnect.h"
+#include "BufferProvider.hpp"
+#include "Commander.hpp"
+#include "PortConnect.hpp"
+#include "PortDisconnect.hpp"
 
 #include <QDebug>
 
@@ -44,6 +44,7 @@ Port::Port () :
 
 void Port::setBufferLength (nframes_t len)
 {
+  Q_UNUSED(len);
   // TODO: Forcefully resize the buffer we own. Who cares? changing
   // bufferlength won't happen in the middle of a song, realloc
   // should be safe.
@@ -88,6 +89,7 @@ const QSet<Node* const> Port::dependencies () const
       return interfacedNodes();
     }
   }
+  return QSet<Node* const>();
 }
 
 
@@ -109,6 +111,7 @@ const QSet<Node* const> Port::dependents () const {
       return p;
     }
   }
+  return QSet<Node* const>();
 }
 
 

@@ -27,7 +27,7 @@
 **
 **************************************************************************/
 
-#include "OptionsParser.h"
+#include "OptionsParser.hpp"
 
 #include <QCoreApplication>
 

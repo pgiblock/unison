@@ -39,8 +39,8 @@ set(LV2_SRCS
 )
 
 set(LV2_MOC_HEADERS
-    Lv2Extension.h
-    Lv2PluginProvider.h
+    Lv2Extension.hpp
+    Lv2PluginProvider.hpp
 )
 
 qt4_wrap_cpp(LV2_MOC_SRCS ${LV2_MOC_HEADERS})

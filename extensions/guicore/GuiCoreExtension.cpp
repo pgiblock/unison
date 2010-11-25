@@ -22,9 +22,9 @@
  *
  */
 
-#include "GuiCoreExtension.h"
+#include "GuiCoreExtension.hpp"
 
-#include <extensionsystem/ExtensionManager.h>
+#include <extensionsystem/ExtensionManager.hpp>
 
 #include <QtPlugin>
 

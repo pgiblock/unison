@@ -22,10 +22,10 @@
  *
  */
 
-#include "JackBackend.h"
-#include "JackPort.h"
+#include "JackBackend.hpp"
+#include "JackPort.hpp"
 
-#include <unison/Processor.h>
+#include <unison/Processor.hpp>
 
 #include <QDebug>
 #include <QThread>
@@ -33,15 +33,14 @@
 #include <jack/jack.h>
 
 // For connect-and-copy hackfest in processCb
-#include <core/Engine.h>
-#include <unison/AudioBuffer.h>
-#include <unison/Commander.h>
-#include <unison/Patch.h>
-#include <unison/Scheduler.h>
+#include <core/Engine.hpp>
+#include <unison/AudioBuffer.hpp>
+#include <unison/Commander.hpp>
+#include <unison/Patch.hpp>
+#include <unison/Scheduler.hpp>
 
 // For pthread hack - abstract to platform-agnostic utils
 #include <pthread.h>
-#include <mcheck.h>
 
 using namespace Unison;
 
@@ -337,24 +336,34 @@ JackPort* JackBackend::port (int index) const
 
 JackPort* JackBackend::port (const QString& name) const
 {
-  return NULL; // TODO: implement
+  Q_UNUSED(name);
+  qFatal("JackBackend::port not implemented");
+  return NULL;
 }
 
 
 int JackBackend::connect (const QString& source, const QString& dest)
 {
+  Q_UNUSED(source);
+  Q_UNUSED(dest);
+  qFatal("JackBackend::connect not implemented");
   return 0;
 }
 
 
 int JackBackend::disconnect (const QString& source, const QString& dest)
 {
+  Q_UNUSED(source);
+  Q_UNUSED(dest);
+  qFatal("JackBackend::disconnect not implemented");
   return 0;
 }
 
 
 int JackBackend::disconnect (Unison::BackendPort* port)
 {
+  Q_UNUSED(port);
+  qFatal("JackBackend::disconnect not implemented");
   return 0;
 }
 
@@ -390,7 +399,7 @@ void JackBackend::freewheelCb (int starting, void* a)
 
 int JackBackend::graphOrderCb (void* a)
 {
-  JackBackend* backend = static_cast<JackBackend*>(a);
+  Q_UNUSED(a);
   qDebug() << "JACK graph order changed";
   return 0;
 }
@@ -432,7 +441,6 @@ int JackBackend::processCb (nframes_t nframes, void* a)
     backend->port(i)->postProcess();
   }
 
-  muntrace();
   return 0;
 }
 
@@ -443,6 +451,7 @@ int JackBackend::processST (Unison::Internal::Schedule* sched, ProcessingContext
   m_workers.liveWorkers = 1;
   worker->pushReadyWorkUnsafe(sched->readyWork, sched->readyWorkCount);
   worker->run(ctx);
+  return 0;
 }
 
 
@@ -458,6 +467,7 @@ int JackBackend::processMT (Unison::Internal::Schedule* sched, ProcessingContext
 
   //m_workers.done.acquire(numThreads);
   m_workers.done.acquire(1);
+  return 0;
 }
 
 
@@ -471,23 +481,32 @@ int JackBackend::sampleRateCb (nframes_t nframes, void* a) {
 }
 
 
-int JackBackend::syncCb (jack_transport_state_t, jack_position_t*, void* eng) {
+int JackBackend::syncCb (jack_transport_state_t ts, jack_position_t* pos, void* eng) {
+  Q_UNUSED(ts);
+  Q_UNUSED(pos);
+  Q_UNUSED(eng);
   //qDebug() << "JACK sync";
   return 0;
 }
 
 
 void JackBackend::threadInitCb (void* backend) {
+  Q_UNUSED(backend);
   qDebug() << "JACK thread init";
 }
 
 
-void JackBackend::timebaseCb (jack_transport_state_t, nframes_t, jack_position_t*, int, void*) {
+void JackBackend::timebaseCb (jack_transport_state_t ts, nframes_t frames,
+                              jack_position_t* pos, int, void*) {
+  Q_UNUSED(ts);
+  Q_UNUSED(frames);
+  Q_UNUSED(pos);
   //qCritical() << "Timebase master currently not supported";
 }
 
 
 int JackBackend::xrunCb (void* backend) {
+  Q_UNUSED(backend);
   return 0;
 }
 

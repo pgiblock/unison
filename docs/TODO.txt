@@ -3,9 +3,11 @@ Core TODO:
 ===============
   CLEANUP!!  (Just libunison first)
       exceptions assert qFatal
-      fix all warnings
+    x fix all warnings
       Make sure we are managing memory correctly.
         pointer vs ref vs smart pointers
+        Commander cleanup
+        Demo cleanup
   Copy to/from Jack or fix AudioBuffer "owns" Jack data relationship
   QFlagify enums
 
