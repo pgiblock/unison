@@ -2,7 +2,7 @@
 @setfilename README.info
 @settitle README
 @c Add a @c preceding the next line for US Letter.
-@afourpaper
+@c @afourpaper
 @setchapternewpage off
 
 @node Top
