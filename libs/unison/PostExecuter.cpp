@@ -1,5 +1,5 @@
 /*
- * Command.cpp
+ * PostExecuter.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,74 +22,82 @@
  *
  */
 
-#include "Command.hpp"
-#include "Commander.hpp"
+#include "PostExecuter.hpp"
 
-#include <QtCore/QtGlobal>
+#include "Command.hpp"
+
+#include <QDebug>
+#include <QWaitCondition>
 
 namespace Unison {
-
-Command::Command (bool blocking) :
-  m_blocking(blocking),
-  m_state(Invalid),
-  m_errorCode(0)
-{}
+  namespace Internal {
 
 
-void Command::preExecute ()
+PostExecuter::PostExecuter() :
+  QThread(),
+  m_buffer(COMMAND_BUFFER_LENGTH),
+  m_done(false)
 {
-  Q_ASSERT(m_state == Created);
-  m_state = PreExecuted;
 }
 
 
-void Command::execute (ProcessingContext& ctx)
+PostExecuter::~PostExecuter()
 {
-  Q_UNUSED(ctx);
-  Q_ASSERT(m_state == PreExecuted);
-  m_state = Executed;
+  stop();
 }
 
 
-void Command::postExecute ()
+void PostExecuter::push (Command* command)
 {
-  Q_ASSERT(m_state == Executed);
-  if (isBlocking()) {
-    Internal::Commander::instance()->release();
+  m_buffer.write(&command, 1);
+
+}
+
+
+void PostExecuter::run ()
+{
+  const int bufSize = 8;
+  Command* buf[bufSize];
+
+  setPriority(QThread::LowestPriority);
+
+  forever {
+    QThread::msleep(IDLE_TIMEOUT);
+    const bool done = m_done;
+
+    // Hold on to done, and check after loop, gives us a final iteration for cleanup
+    int cnt;
+    do {
+      cnt = m_buffer.read(buf, bufSize);
+      for (int i=0; i<cnt; ++i) {
+        postExecute(buf[i]);
+      }
+
+    } while (cnt > 0);
+
+    if (done)
+      break;
   }
-  m_state = PostExecuted;
 }
 
 
-bool Command::isBlocking () const
+bool PostExecuter::stop ()
 {
-  return m_blocking;
+  m_done = true;
+  // Wait for another iteration
+  return wait();
 }
 
 
-void Command::setState (Command::State state)
+void PostExecuter::postExecute (Command* cmd)
 {
-  m_state = state;
+  cmd->postExecute();
+  delete cmd;
 }
 
 
-Command::State Command::state () const
-{
-  return m_state;
-}
-
-
-bool Command::hasError () const
-{
-  return m_errorCode != 0;
-}
-
-
-int Command::errorCode () const
-{
-  return m_errorCode;
-}
-
+  } // Internal
 } // Unison
+
 
 // vim: tw=90 ts=8 sw=2 sts=2 et sta noai

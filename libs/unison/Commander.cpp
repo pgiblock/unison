@@ -24,7 +24,9 @@
 
 #include "Commander.hpp"
 #include "Command.hpp"
+#include "PostExecuter.hpp"
 
+#include <QtCore/QtDebug>
 #include <QtCore/QMutex>
 #include <QtCore/QMutexLocker>
 
@@ -44,7 +46,17 @@ Commander::Commander () :
   m_writeLock(),
   m_blockWait(),
   m_buffer(COMMAND_BUFFER_LENGTH)
-{}
+{
+  m_postExecuter = new PostExecuter();
+  m_postExecuter->start();
+}
+
+
+Commander::~Commander ()
+{
+  // stop and delete
+  delete m_postExecuter;
+}
 
 
 void Commander::push (Command* command)
@@ -57,7 +69,7 @@ void Commander::push (Command* command)
   if (block) {
     m_blockWait.acquire();
   }
-} 
+}
 
 
 void Commander::process (ProcessingContext& context)
@@ -67,8 +79,11 @@ void Commander::process (ProcessingContext& context)
 
   for (int i=0; i<cnt; ++i) {
     commands[i]->execute(context);
+    m_postExecuter->push(commands[i]);
   }
+
 }
+
 
   } // Internal
 } // Unison

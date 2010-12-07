@@ -38,6 +38,8 @@ namespace Unison {
 
   namespace Internal {
 
+    class PostExecuter;
+
 /**
  * Commander is a centralized place for components to queue commands that require
  * synchronization with the processing thread.
@@ -49,6 +51,8 @@ class Commander
 {
   Q_DISABLE_COPY(Commander)
   public:
+    ~Commander ();
+
     /**
      * Initialize the static Commander instance
      */
@@ -107,7 +111,10 @@ class Commander
     static Commander* m_instance;   ///< The instance
     QMutex m_writeLock;             ///< Protect us from affinity issues
     QSemaphore m_blockWait;         ///< Blocking for blocking Commands
-    RingBuffer<Command*> m_buffer; ///< Storage for queued Commands
+
+    RingBuffer<Command*> m_buffer;  ///< Storage for queued Commands
+
+    PostExecuter* m_postExecuter;
 };
 
   } // Internal

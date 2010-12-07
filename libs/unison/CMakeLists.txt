@@ -33,6 +33,7 @@ set(UNISON_SRCS
     Port.cpp
     PortConnect.cpp
     PortDisconnect.cpp
+    PostExecuter.cpp
     Processor.cpp
     SampleBuffer.cpp
     Scheduler.cpp
@@ -41,6 +42,7 @@ set(UNISON_SRCS
 
 set(UNISON_MOC_HEADERS
     Backend.hpp
+    PostExecuter.hpp
 )
 
 set(UNISON_INCLUDES
