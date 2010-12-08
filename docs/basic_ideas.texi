@@ -4,6 +4,7 @@
 @c Add a @c preceding the next line for US Letter.
 @c @afourpaper
 @setchapternewpage off
+@headings on
 @node Top
 
 @unnumbered Basic Ideas
