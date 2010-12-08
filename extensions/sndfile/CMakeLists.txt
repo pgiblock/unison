@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt - Core Plugin CMake file
+# CMakeLists.txt - libsndfile extension CMake file
 #
 # Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
 #
@@ -21,46 +21,38 @@
 # Boston, MA 02110-1301 USA.
 #
 
-configure_file(Core.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+configure_file(SndFile.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
-add_definitions(-DCORE_EXTENSION)
+add_definitions(-DSNDFILE_EXTENSION)
 
-set(CORE_SRCS
-    CoreExtension.cpp
-    Engine.cpp
-    PluginManager.cpp
-    # Might belongs in new extension:
-    FxLine.cpp
-    # Silly demo
-    StupidSamplerDemo.cpp
+set(SNDFILE_SRCS
+    SndFileExtension.cpp
+    SndFileBufferReader.cpp
 )
 
-set(CORE_MOC_HEADERS
-    CoreExtension.hpp
-    Engine.hpp
-    IBackendProvider.hpp
-    IPluginProvider.hpp
-    ISampleBufferReader.hpp
+set(SNDFILE_MOC_HEADERS
+    SndFileExtension.h
+    SndFileBufferReader.h
 )
 
-qt4_wrap_cpp(CORE_MOC_SRCS ${CORE_MOC_HEADERS})
+qt4_wrap_cpp(SNDFILE_MOC_SRCS ${SNDFILE_MOC_HEADERS})
 
-include_directories(
-    ${COMMON_LIBS_INCLUDE_DIR}
-    ${PRG_INCLUDE_DIR}
-    )
+include_directories(.. ${COMMON_LIBS_INCLUDE_DIR} ${SNDFILE_INCLUDE_DIR})
 
-add_library(Core SHARED ${CORE_MOC_SRCS} ${CORE_SRCS})
+add_library(SndFile SHARED ${SNDFILE_MOC_SRCS} ${SNDFILE_SRCS})
 
-target_link_libraries(Core
+target_link_libraries(SndFile
     ${QT_LIBRARIES}
+    ${SNDFILE_LIBRARIES}
     aggregation
     extensionsystem
-    unison
+    Core
+)
+
+set_target_properties(SndFile PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${EXTENSIONS_RPATH}"
 )
 
 set(INSTALL_DIR lib/unison/extensions)
-install(FILES   Core.extinfo DESTINATION ${INSTALL_DIR})
-install(TARGETS Core    LIBRARY DESTINATION ${INSTALL_DIR})
-
-# vim: tw=90 ts=8 sw=2 sts=2 et sta noai
+install(FILES   SndFile.extinfo  DESTINATION ${INSTALL_DIR})
+install(TARGETS SndFile LIBRARY  DESTINATION ${INSTALL_DIR})

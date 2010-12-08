@@ -184,33 +184,6 @@ void Lv2Plugin::process (const ProcessingContext& context)
 }
 
 
-const QSet<Node* const> Lv2Plugin::dependencies () const
-{
-  QSet<Node* const> n;
-  int count = portCount();
-  for (int i=0; i<count; ++i) {
-    Port* p  = port(i);
-    if (p->direction() == Input) {
-      n += p;
-    }
-  }
-  return n;
-}
-
-
-const QSet<Node* const> Lv2Plugin::dependents () const {
-  QSet<Node* const> n;
-  int count = portCount();
-  for (int i=0; i<count; ++i) {
-    Port* p  = port(i);
-    if (p->direction() == Output) {
-      n += p;
-    }
-  }
-  return n;
-}
-
-
   } // Internal
 } // Lv2
 

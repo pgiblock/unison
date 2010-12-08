@@ -1,5 +1,5 @@
 #
-# CMakeLists.txt - CMake for extensions
+# CMakeLists.txt - libFlac++ extension CMake file
 #
 # Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
 #
@@ -21,33 +21,38 @@
 # Boston, MA 02110-1301 USA.
 #
 
-set(EXTENSIONS_RPATH ${CMAKE_INSTALL_PREFIX}/lib/unison/extensions)
+configure_file(Flac.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
-add_subdirectory(core)
-add_subdirectory(guicore)
+add_definitions(-DFlac_EXTENSION)
 
-if(BUILD_FLAC_EXTENSION)
-  add_subdirectory(flac)
-endif(BUILD_FLAC_EXTENSION)
+set(Flac_SRCS
+    FlacExtension.cpp
+    FlacBufferReader.cpp
+)
 
-if(BUILD_JACK_EXTENSION)
-  add_subdirectory(jack)
-endif(BUILD_JACK_EXTENSION)
+set(Flac_MOC_HEADERS
+    FlacExtension.h
+    FlacBufferReader.h
+)
 
-if(BUILD_LADSPA_EXTENSION)
-  add_subdirectory(ladspa)
-endif(BUILD_LADSPA_EXTENSION)
+qt4_wrap_cpp(Flac_MOC_SRCS ${Flac_MOC_HEADERS})
 
-if(BUILD_LV2_EXTENSION)
-  add_subdirectory(lv2)
-endif(BUILD_LV2_EXTENSION)
+include_directories(.. ${COMMON_LIBS_INCLUDE_DIR} ${FLAC_INCLUDE_DIR})
 
-if(BUILD_OGGVORBIS_EXTENSION)
-  add_subdirectory(oggvorbis)
-endif(BUILD_OGGVORBIS_EXTENSION)
+add_library(Flac SHARED ${Flac_MOC_SRCS} ${Flac_SRCS})
 
-if(BUILD_SNDFILE_EXTENSION)
-  add_subdirectory(sndfile)
-endif(BUILD_SNDFILE_EXTENSION)
+target_link_libraries(Flac
+    ${QT_LIBRARIES}
+    ${FLAC_LIBRARIES}
+    aggregation
+    extensionsystem
+    Core
+)
 
-# vim: tw=90 ts=8 sw=2 sts=2 et sta noai
+set_target_properties(Flac PROPERTIES
+    INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${EXTENSIONS_RPATH}"
+)
+
+set(INSTALL_DIR lib/unison/extensions)
+install(FILES   Flac.extinfo  DESTINATION ${INSTALL_DIR})
+install(TARGETS Flac LIBRARY  DESTINATION ${INSTALL_DIR})

@@ -1,5 +1,5 @@
 /*
- * CoreExtension.hpp
+ * SndFileExtension.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -23,44 +23,37 @@
  */
 
 
-#ifndef UNISON_COREEXTENSION_H
-#define UNISON_COREEXTENSION_H
+#ifndef UNISON_SNDFILEEXTENSION_H
+#define UNISON_SNDFILEEXTENSION_H
 
-#include <extensionsystem/IExtension.hpp>
+#include <extensionsystem/IExtension.h>
 
-namespace Core {
+namespace SndFile {
   namespace Internal {
 
-class CoreExtension : public ExtensionSystem::IExtension
+class SndFileBufferReader;
+
+class SndFileExtension : public ExtensionSystem::IExtension
 {
   Q_OBJECT
 
 public:
-  CoreExtension ();
-  ~CoreExtension ();
+  SndFileExtension();
+  ~SndFileExtension();
 
-  virtual bool initialize (const QStringList& arguments, QString* errorMessage = 0);
-  virtual void extensionsInitialized ();
-  virtual void shutdown ();
-  virtual void remoteCommand (const QStringList&  /* options */, const QStringList& args);
-
-//public slots:
-//    void fileOpenRequest(const QString&);
+  bool initialize(const QStringList &arguments, QString *errorMessage = 0);
+  void extensionsInitialized();
+  void shutdown();
+  void remoteCommand(const QStringList &options, const QStringList &args);
 
 private:
-  void parseArguments (const QStringList& arguments);
-
-  QString m_sampleInfile;
-  int m_lineCount;
-
-//    MainWindow* m_mainWindow;
-//    EditMode* m_editMode;
-//    DesignMode* m_designMode;
+  SndFileBufferReader *m_bufferReader;
+  
 };
 
   } // namespace Internal
-} // namespace Core
+} // namespace SndFile
 
 #endif
 
-// vim: tw=90 ts=8 sw=2 sts=2 et sta noai
+// vim: ts=8 sw=2 sts=2 et sta noai

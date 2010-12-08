@@ -43,9 +43,12 @@ set(BACKENDS_ENABLED "")
 
 ## Options ########
 
+option(WANT_FLAC_EXTENSION "Include FLAC file support extension" OFF)
 option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" ON)
 option(WANT_LADSPA_EXTENSION "Include LADSPA plugin support extension" ON)
 option(WANT_LV2_EXTENSION "Include LV2 plugin support extension" ON)
+option(WANT_OGGVORBIS_EXTENSION "Include OGG/Vorbis file support extension" ON)
+option(WANT_SNDFILE_EXTENSION "Include libsndfile support (WAV,AIFF,SND,VOC,etc..) extension" ON)
 
 option(COMPILE_TESTS "Compile unit-tests" OFF)
 
@@ -58,6 +61,19 @@ macro_log_feature(QT4_FOUND "Qt4"
     TRUE "" "")
 
 ## Find dependencies based on features selected ########
+
+if(WANT_FLAC_EXTENSION)
+  find_package(Flac)
+  macro_log_feature(FLAC_FOUND "Flac"
+    "Needed for the Flac audio file extension."
+    "http://flac.sourceforge.net/"
+    FALSE "" "")
+  #find_package(Flac++)
+  #macro_log_feature( FLAC++_FOUND "Flac++"
+  #  "Needed for the Flac support extension."
+  #  "http://flac.sourceforge.net/"
+  #  FALSE "" "")
+endif(WANT_FLAC_EXTENSION)
 
 if(WANT_JACK_EXTENSION)
   find_package(Jack)
@@ -77,7 +93,27 @@ if(WANT_LV2_EXTENSION)
       FALSE "" "")
 endif(WANT_LV2_EXTENSION)
 
+if(WANT_OGGVORBIS_EXTENSION)
+  find_package(OggVorbis)
+  macro_log_feature(OGGVORBIS_FOUND "Ogg Vorbis"
+    "Needed for the Ogg Vorbis audio file extention."
+    "http://www.vorbis.com/"
+    FALSE "" "")
+endif(WANT_OGGVORBIS_EXTENSION)
+
+if(WANT_SNDFILE_EXTENSION)
+  find_package(Sndfile)
+  macro_log_feature(SNDFILE_FOUND "Sndfile"
+    "Needed for the libsndfile extension which supports many audio types."
+    "http://www.mega-nerd.com/libsndfile/"
+    FALSE "" "")
+endif(WANT_SNDFILE_EXTENSION)
+
 ## Now, enable features based on which deps are found ########
+
+if(WANT_FLAC_EXTENSION AND FLAC_FOUND) # AND FLAC++_FOUND)
+  set(BUILD_FLAC_EXTENSION 1)
+endif(WANT_FLAC_EXTENSION AND FLAC_FOUND) # AND FLAC++_FOUND)
 
 if(WANT_JACK_EXTENSION AND JACK_FOUND)
   set(BUILD_JACK_EXTENSION 1)
@@ -90,6 +126,14 @@ endif(WANT_LADSPA_EXTENSION)
 if(WANT_LV2_EXTENSION AND SLV2_FOUND)
   set(BUILD_LV2_EXTENSION 1)
 endif(WANT_LV2_EXTENSION AND SLV2_FOUND)
+
+if(WANT_OGGVORBIS_EXTENSION AND OGGVORBIS_FOUND)
+  set(BUILD_OGGVORBIS_EXTENSION 1)
+endif(WANT_OGGVORBIS_EXTENSION AND OGGVORBIS_FOUND)
+
+if(WANT_SNDFILE_EXTENSION AND SNDFILE_FOUND)
+  set(BUILD_SNDFILE_EXTENSION 1)
+endif(WANT_SNDFILE_EXTENSION AND SNDFILE_FOUND)
 
 ## Doxygen ########
 

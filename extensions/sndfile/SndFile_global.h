@@ -1,5 +1,5 @@
 /*
- * CoreExtension.hpp
+ * SndFile_global.h
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,45 +22,15 @@
  *
  */
 
+#ifndef SNDFILE_GLOBAL_H
+#define SNDFILE_GLOBAL_H
 
-#ifndef UNISON_COREEXTENSION_H
-#define UNISON_COREEXTENSION_H
+#include <qglobal.h>
 
-#include <extensionsystem/IExtension.hpp>
-
-namespace Core {
-  namespace Internal {
-
-class CoreExtension : public ExtensionSystem::IExtension
-{
-  Q_OBJECT
-
-public:
-  CoreExtension ();
-  ~CoreExtension ();
-
-  virtual bool initialize (const QStringList& arguments, QString* errorMessage = 0);
-  virtual void extensionsInitialized ();
-  virtual void shutdown ();
-  virtual void remoteCommand (const QStringList&  /* options */, const QStringList& args);
-
-//public slots:
-//    void fileOpenRequest(const QString&);
-
-private:
-  void parseArguments (const QStringList& arguments);
-
-  QString m_sampleInfile;
-  int m_lineCount;
-
-//    MainWindow* m_mainWindow;
-//    EditMode* m_editMode;
-//    DesignMode* m_designMode;
-};
-
-  } // namespace Internal
-} // namespace Core
-
+#if defined(SNDFILE_EXTENSION)
+#  define SNDFILE_EXPORT Q_DECL_EXPORT
+#else
+#  define SNDFILE_EXPORT Q_DECL_IMPORT
 #endif
 
-// vim: tw=90 ts=8 sw=2 sts=2 et sta noai
+#endif

@@ -17,10 +17,10 @@ this softawre. If not, see http://www.gnu.org/licenses/.
     </license>
     <description>Required core features</description>
     <url>http://www.unisonstudio.org</url>
+
     <argumentList>
+        <argument name="--infile" parameter="infile">Input sample-file for the sampler demo</argument>
         <argument name="--lines" parameter="count">How many FX-lines (of 4 FX) to create</argument>
-    </argumentList>
-    <argumentList>
         <argument name="--seconds" parameter="duration">How long to run, in seconds</argument>
     </argumentList>
 </extension>

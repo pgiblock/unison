@@ -73,7 +73,8 @@ extensions/
 
     sndfile/
 
-    mp3/
+    mad/
+    lame/
 
     drumsynth/
 
@@ -81,7 +82,9 @@ extensions/
 
     flac/
 
-    aac/
+    faac/
+
+    ffmpeg/
 
     gui_core/                   // # http://unisonstudio.org/ns/gui_core
         GuiCorePlugin           // Creation of main-window, hooks into decorating the gui with widgets and stuff

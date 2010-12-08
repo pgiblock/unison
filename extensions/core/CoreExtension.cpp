@@ -25,6 +25,7 @@
 #include "CoreExtension.hpp"
 
 #include "IBackendProvider.hpp"
+#include "ISampleBufferReader.h"
 
 // For Engine
 #include "Engine.hpp"
@@ -33,9 +34,11 @@
 #include <unison/Commander.hpp>
 #include <unison/Patch.hpp>
 #include <unison/PooledBufferProvider.hpp>
+#include <unison/SampleBuffer.h>
 
 // For connection frenzy
 #include "FxLine.hpp"
+#include "StupidSamplerDemo.h"
 #include "PluginManager.hpp"
 #include <unison/Plugin.hpp>
 
@@ -87,6 +90,10 @@ CoreExtension::~CoreExtension()
 void CoreExtension::parseArguments(const QStringList& arguments)
 {
   for (int i = 0; i < arguments.size() - 1; i++) {
+    if (arguments.at(i) == QLatin1String("--infile")) {
+      i++; // skip to argument
+      m_sampleInfile = arguments.at(i);
+    }
     if (arguments.at(i) == QLatin1String("--seconds")) {
       bool ok;
       float timeout = arguments.at(i + 1).toFloat(&ok);
@@ -137,6 +144,9 @@ bool CoreExtension::initialize(const QStringList& arguments, QString* errorMessa
 }
 
 
+/**
+ * TODO: just about everything allocated here is leaked. It is quick-nasty demo code
+ * at the moment, but should be cleaned-up anyways */
 void CoreExtension::extensionsInitialized()
 {
   ExtensionManager* extMgr = ExtensionManager::instance();
@@ -189,7 +199,33 @@ void CoreExtension::extensionsInitialized()
         }
       }
     }
+  }
 
+  // Stupid Sampler
+  Demo::StupidSamplerDemo *ssd = new Demo::StupidSamplerDemo(root, "Stupid sampler");
+  SampleBuffer *buf = NULL;
+  if (!m_sampleInfile.isNull()) {
+    QList<ISampleBufferReader *> readers = extMgr->getObjects<ISampleBufferReader>();
+    QListIterator<ISampleBufferReader *> i(readers);
+    while (i.hasNext() && buf == NULL) {
+      buf = i.next()->read(m_sampleInfile);
+    }
+  }
+  else {
+    // Fall-back Sawtooth oscillator
+    int length = 48000.0f / 440.0f;
+    sample_t *samples = new sample_t[length*2]; // 2 chans 
+    sample_t *s = samples;
+    sample_t val;
+    for(int i=0; i<length; ++i) {
+      val = (2.0f*i/length) - 1.0f;  // Range is -1,1
+      *(s++) = val; // clone left
+      *(s++) = val; //   and right
+    }
+    buf = new SampleBuffer(samples, length, 2, 48000.0f);
+  }
+  if (buf) {
+    ssd->setSampleBuffer(buf);
   }
 
   //m_mainWindow->extensionsInitialized();

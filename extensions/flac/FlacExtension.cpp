@@ -1,5 +1,5 @@
 /*
- * CoreExtension.hpp
+ * FlacExtension.cpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,45 +22,54 @@
  *
  */
 
+#include "FlacExtension.h"
+#include "FlacBufferReader.h"
 
-#ifndef UNISON_COREEXTENSION_H
-#define UNISON_COREEXTENSION_H
+#include <extensionsystem/ExtensionManager.h>
 
-#include <extensionsystem/IExtension.hpp>
+#include <QtPlugin>
 
-namespace Core {
-  namespace Internal {
+using namespace Flac;
+using namespace Flac::Internal;
 
-class CoreExtension : public ExtensionSystem::IExtension
+FlacExtension::FlacExtension()
 {
-  Q_OBJECT
+  m_bufferReader = new FlacBufferReader();
+}
 
-public:
-  CoreExtension ();
-  ~CoreExtension ();
 
-  virtual bool initialize (const QStringList& arguments, QString* errorMessage = 0);
-  virtual void extensionsInitialized ();
-  virtual void shutdown ();
-  virtual void remoteCommand (const QStringList&  /* options */, const QStringList& args);
+FlacExtension::~FlacExtension()
+{
+  removeObject(m_bufferReader);
+  delete m_bufferReader;
+}
 
-//public slots:
-//    void fileOpenRequest(const QString&);
 
-private:
-  void parseArguments (const QStringList& arguments);
+bool FlacExtension::initialize(const QStringList &arguments, QString *errorMessage)
+{
+  Q_UNUSED(errorMessage)
+  Q_UNUSED(arguments)
+  addObject(m_bufferReader);
+  return true;
+}
 
-  QString m_sampleInfile;
-  int m_lineCount;
 
-//    MainWindow* m_mainWindow;
-//    EditMode* m_editMode;
-//    DesignMode* m_designMode;
-};
+void FlacExtension::extensionsInitialized()
+{
+}
 
-  } // namespace Internal
-} // namespace Core
 
-#endif
+void FlacExtension::remoteCommand(const QStringList &options, const QStringList &args)
+{
+  Q_UNUSED(options)
+  Q_UNUSED(args)
+}
 
-// vim: tw=90 ts=8 sw=2 sts=2 et sta noai
+
+void FlacExtension::shutdown()
+{
+}
+
+EXPORT_EXTENSION(FlacExtension)
+
+// vim: ts=8 sw=2 sts=2 et sta noai
