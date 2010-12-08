@@ -28,7 +28,6 @@
 #include "Core_global.hpp"
 
 #include <unison/types.hpp>
-#include <prg/Uncopyable.h>
 
 #include <QObject>
 
@@ -39,9 +38,10 @@ namespace Unison {
 
 namespace Core {
 
-class CORE_EXPORT Engine : public QObject, public PRG::Uncopyable
+class CORE_EXPORT Engine : public QObject
 {
   Q_OBJECT
+  Q_DISABLE_COPY(Engine);
 
   public:
     Engine () {};

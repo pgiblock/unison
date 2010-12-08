@@ -24,8 +24,8 @@
 
 #include <FLAC++/decoder.h>
 
-#include "FlacBufferReader.h"
-#include "unison/SampleBuffer.h"
+#include "FlacBufferReader.hpp"
+#include "unison/SampleBuffer.hpp"
 
 using namespace Flac::Internal;
 using namespace Core;

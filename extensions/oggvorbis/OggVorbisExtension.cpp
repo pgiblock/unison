@@ -22,10 +22,10 @@
  *
  */
 
-#include "OggVorbisExtension.h"
-#include "OggVorbisBufferReader.h"
+#include "OggVorbisExtension.hpp"
+#include "OggVorbisBufferReader.hpp"
 
-#include <extensionsystem/ExtensionManager.h>
+#include <extensionsystem/ExtensionManager.hpp>
 
 #include <QtPlugin>
 

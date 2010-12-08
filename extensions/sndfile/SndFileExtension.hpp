@@ -1,5 +1,5 @@
 /*
- * FlacExtension.h
+ * SndFileExtension.hpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -23,23 +23,23 @@
  */
 
 
-#ifndef UNISON_FLACEXTENSION_H
-#define UNISON_FLACEXTENSION_H
+#ifndef UNISON_SNDFILEEXTENSION_HPP
+#define UNISON_SNDFILEEXTENSION_HPP
 
-#include <extensionsystem/IExtension.h>
+#include <extensionsystem/IExtension.hpp>
 
-namespace Flac {
-namespace Internal {
+namespace SndFile {
+  namespace Internal {
 
-class FlacBufferReader;
+class SndFileBufferReader;
 
-class FlacExtension : public ExtensionSystem::IExtension
+class SndFileExtension : public ExtensionSystem::IExtension
 {
   Q_OBJECT
 
 public:
-  FlacExtension();
-  ~FlacExtension();
+  SndFileExtension();
+  ~SndFileExtension();
 
   bool initialize(const QStringList &arguments, QString *errorMessage = 0);
   void extensionsInitialized();
@@ -47,12 +47,12 @@ public:
   void remoteCommand(const QStringList &options, const QStringList &args);
 
 private:
-  FlacBufferReader *m_bufferReader;
+  SndFileBufferReader *m_bufferReader;
   
 };
 
-} // namespace Internal
-} // namespace Flac
+  } // namespace Internal
+} // namespace SndFile
 
 #endif
 

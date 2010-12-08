@@ -31,8 +31,8 @@ set(SNDFILE_SRCS
 )
 
 set(SNDFILE_MOC_HEADERS
-    SndFileExtension.h
-    SndFileBufferReader.h
+    SndFileExtension.hpp
+    SndFileBufferReader.hpp
 )
 
 qt4_wrap_cpp(SNDFILE_MOC_SRCS ${SNDFILE_MOC_HEADERS})

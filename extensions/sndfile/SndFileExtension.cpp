@@ -22,10 +22,10 @@
  *
  */
 
-#include "SndFileExtension.h"
-#include "SndFileBufferReader.h"
+#include "SndFileExtension.hpp"
+#include "SndFileBufferReader.hpp"
 
-#include <extensionsystem/ExtensionManager.h>
+#include <extensionsystem/ExtensionManager.hpp>
 
 #include <QtPlugin>
 

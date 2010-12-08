@@ -25,7 +25,7 @@
 #include "CoreExtension.hpp"
 
 #include "IBackendProvider.hpp"
-#include "ISampleBufferReader.h"
+#include "ISampleBufferReader.hpp"
 
 // For Engine
 #include "Engine.hpp"
@@ -34,11 +34,11 @@
 #include <unison/Commander.hpp>
 #include <unison/Patch.hpp>
 #include <unison/PooledBufferProvider.hpp>
-#include <unison/SampleBuffer.h>
+#include <unison/SampleBuffer.hpp>
 
 // For connection frenzy
 #include "FxLine.hpp"
-#include "StupidSamplerDemo.h"
+#include "StupidSamplerDemo.hpp"
 #include "PluginManager.hpp"
 #include <unison/Plugin.hpp>
 

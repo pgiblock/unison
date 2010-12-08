@@ -24,14 +24,14 @@
 
 #include <QDebug>
 
-#include "Engine.h"
-#include "StupidSamplerDemo.h"
-#include <unison/Backend.h>
-#include <unison/BackendPort.h>
-#include <unison/BufferProvider.h>
-#include <unison/Patch.h>
-#include <unison/ProcessingContext.h>
-#include <unison/SampleBuffer.h>
+#include "Engine.hpp"
+#include "StupidSamplerDemo.hpp"
+#include <unison/Backend.hpp>
+#include <unison/BackendPort.hpp>
+#include <unison/BufferProvider.hpp>
+#include <unison/Patch.hpp>
+#include <unison/ProcessingContext.hpp>
+#include <unison/SampleBuffer.hpp>
 
 #define UNISON_BUFFER_LENGTH 1024
 

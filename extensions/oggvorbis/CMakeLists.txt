@@ -31,8 +31,8 @@ set(OGGVORBIS_SRCS
 )
 
 set(OGGVORBIS_MOC_HEADERS
-    OggVorbisExtension.h
-    OggVorbisBufferReader.h
+    OggVorbisExtension.hpp
+    OggVorbisBufferReader.hpp
 )
 
 qt4_wrap_cpp(OGGVORBIS_MOC_SRCS ${OGGVORBIS_MOC_HEADERS})

@@ -22,10 +22,10 @@
  *
  */
 
-#include "FlacExtension.h"
-#include "FlacBufferReader.h"
+#include "FlacExtension.hpp"
+#include "FlacBufferReader.hpp"
 
-#include <extensionsystem/ExtensionManager.h>
+#include <extensionsystem/ExtensionManager.hpp>
 
 #include <QtPlugin>
 

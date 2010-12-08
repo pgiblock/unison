@@ -1,5 +1,5 @@
 /*
- * SndFileBufferReader.h
+ * SndFileBufferReader.hpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef UNISON_SNDFILE_BUFFER_READER_H
-#define UNISON_SNDFILE_BUFFER_READER_H
+#ifndef UNISON_SNDFILE_BUFFER_READER_HPP
+#define UNISON_SNDFILE_BUFFER_READER_HPP
 
-#include "SndFile_global.h"
+#include "SndFile_global.hpp"
 
-#include <core/ISampleBufferReader.h>
+#include <core/ISampleBufferReader.hpp>
 #include <QObject>
 
 namespace SndFile {

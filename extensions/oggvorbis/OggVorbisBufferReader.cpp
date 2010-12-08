@@ -26,8 +26,8 @@
 #include <QtDebug>
 #include "vorbis/vorbisfile.h"
 
-#include "OggVorbisBufferReader.h"
-#include "unison/SampleBuffer.h"
+#include "OggVorbisBufferReader.hpp"
+#include "unison/SampleBuffer.hpp"
 #include "unison/endian_handling.h"
 
 using namespace OggVorbis::Internal;

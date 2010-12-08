@@ -1,5 +1,5 @@
 /*
- * OggVorbisExtension.h
+ * SndFile_global.hpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,37 +22,15 @@
  *
  */
 
+#ifndef SNDFILE_GLOBAL_HPP
+#define SNDFILE_GLOBAL_HPP
 
-#ifndef UNISON_OGGVORBISEXTENSION_H
-#define UNISON_OGGVORBISEXTENSION_H
+#include <qglobal.h>
 
-#include <extensionsystem/IExtension.h>
-
-namespace OggVorbis {
-  namespace Internal {
-
-class OggVorbisBufferReader;
-
-class OggVorbisExtension : public ExtensionSystem::IExtension
-{
-  Q_OBJECT
-
-public:
-  OggVorbisExtension();
-  ~OggVorbisExtension();
-
-  bool initialize(const QStringList &arguments, QString *errorMessage = 0);
-  void extensionsInitialized();
-  void shutdown();
-  void remoteCommand(const QStringList &options, const QStringList &args);
-
-private:
-  OggVorbisBufferReader *m_bufferReader;
-};
-
-  } // namespace Internal
-} // namespace OggVorbis
-
+#if defined(SNDFILE_EXTENSION)
+#  define SNDFILE_EXPORT Q_DECL_EXPORT
+#else
+#  define SNDFILE_EXPORT Q_DECL_IMPORT
 #endif
 
-// vim: ts=8 sw=2 sts=2 et sta noai
+#endif

@@ -25,8 +25,8 @@
 #include <QtDebug>
 #include <sndfile.h>
 
-#include "SndFileBufferReader.h"
-#include "unison/SampleBuffer.h"
+#include "SndFileBufferReader.hpp"
+#include "unison/SampleBuffer.hpp"
 
 using namespace SndFile::Internal;
 using namespace Core;

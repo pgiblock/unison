@@ -1,5 +1,5 @@
 /*
- * StupidSamplerDemo.h
+ * StupidSamplerDemo.hpp
  *
  * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,13 +22,13 @@
  *
  */
 
-#ifndef STUPID_SAMPLER_DEMO_H
-#define STUPID_SAMPLER_DEMO_H
+#ifndef STUPID_SAMPLER_DEMO_HPP
+#define STUPID_SAMPLER_DEMO_HPP
 
 #include <QString>
 
-#include <unison/Port.h>
-#include <unison/Processor.h>
+#include <unison/Port.hpp>
+#include <unison/Processor.hpp>
 
 namespace Unison {
   class BackendPort;
