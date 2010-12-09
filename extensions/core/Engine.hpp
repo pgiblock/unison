@@ -41,7 +41,7 @@ namespace Core {
 class CORE_EXPORT Engine : public QObject
 {
   Q_OBJECT
-  Q_DISABLE_COPY(Engine);
+  Q_DISABLE_COPY(Engine)
 
   public:
     Engine () {};

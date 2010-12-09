@@ -176,7 +176,7 @@ void Sampler::process (const ProcessingContext & context)
   sample_t *data1 = (sample_t*)(m_ports[1]->buffer()->data());
 
   // Sample looper
-  for(int i=0; i< context.bufferSize(); ++i) {
+  for(int i=0; i< (int)context.bufferSize(); ++i) {
     data0[i] = m_sampleBuff->samples()[m_fcnt];
     data1[i] = m_sampleBuff->samples()[m_fcnt+1];
     // Advance

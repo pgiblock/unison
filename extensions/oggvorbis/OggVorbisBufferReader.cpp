@@ -37,38 +37,38 @@ const int BYTES_PER_INT_SAMPLE = sizeof(uint16_t);
 
 size_t qfileReadCallback( void * _ptr, size_t _size, size_t _n, void * _udata )
 {
-	return static_cast<QFile *>( _udata )->read( (char*) _ptr,
-								_size * _n );
+  return static_cast<QFile *>( _udata )->read( (char*) _ptr,
+                _size * _n );
 }
 
 int qfileSeekCallback( void * _udata, ogg_int64_t _offset, int _whence )
 {
-	QFile * f = static_cast<QFile *>( _udata );
+  QFile * f = static_cast<QFile *>( _udata );
 
-	if( _whence == SEEK_CUR )
-	{
-		f->seek( f->pos() + _offset );
-	}
-	else if( _whence == SEEK_END )
-	{
-		f->seek( f->size() + _offset );
-	}
-	else
-	{
-		f->seek( _offset );
-	}
-	return 0;
+  if( _whence == SEEK_CUR )
+  {
+    f->seek( f->pos() + _offset );
+  }
+  else if( _whence == SEEK_END )
+  {
+    f->seek( f->size() + _offset );
+  }
+  else
+  {
+    f->seek( _offset );
+  }
+  return 0;
 }
 
 int qfileCloseCallback( void * _udata )
 {
-	delete static_cast<QFile *>( _udata );
-	return 0;
+  delete static_cast<QFile *>( _udata );
+  return 0;
 }
 
 long qfileTellCallback( void * _udata )
 {
-	return static_cast<QFile *>( _udata )->pos();
+  return static_cast<QFile *>( _udata )->pos();
 }
 
 Unison::SampleBuffer *OggVorbisBufferReader::read (const QString &filename)
@@ -85,8 +85,6 @@ Unison::SampleBuffer *OggVorbisBufferReader::read (const QString &filename)
 
   OggVorbis_File vf;
 
-  int frames = 0;
-
   QFile * f = new QFile( filename );
   if( f->open( QFile::ReadOnly ) == false )
   {
@@ -101,23 +99,23 @@ Unison::SampleBuffer *OggVorbisBufferReader::read (const QString &filename)
     switch( err )
     {
       case OV_EREAD:
-        printf( "sampleBuffer::decodeSampleOGGVorbis():"
+        qDebug( "sampleBuffer::decodeSampleOGGVorbis():"
             " media read error\n" );
         break;
       case OV_ENOTVORBIS:
-        /*				printf( "sampleBuffer::decodeSampleOGGVorbis():"
+        /*				qDebug( "sampleBuffer::decodeSampleOGGVorbis():"
                                         " not an Ogg Vorbis file\n" );*/
         break;
       case OV_EVERSION:
-        printf( "sampleBuffer::decodeSampleOGGVorbis():"
+        qDebug( "sampleBuffer::decodeSampleOGGVorbis():"
             " vorbis version mismatch\n" );
         break;
       case OV_EBADHEADER:
-        printf( "sampleBuffer::decodeSampleOGGVorbis():"
+        qDebug( "sampleBuffer::decodeSampleOGGVorbis():"
             " invalid Vorbis bitstream header\n" );
         break;
       case OV_EFAULT:
-        printf( "sampleBuffer::decodeSampleOgg(): "
+        qDebug( "sampleBuffer::decodeSampleOgg(): "
             "internal logic fault\n" );
         break;
     }
