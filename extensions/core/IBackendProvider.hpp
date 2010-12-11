@@ -42,10 +42,10 @@ class CORE_EXPORT IBackendProvider : public QObject
 {
   Q_OBJECT
   public:
-    IBackendProvider (QObject* parent = 0) : QObject(parent) {};
-    virtual ~IBackendProvider () {};
+    IBackendProvider (QObject* parent = 0) : QObject(parent) {}
+    virtual ~IBackendProvider () {}
 
-    virtual QString displayName () = 0;
+    virtual QString displayName () const = 0;
     virtual Unison::Backend* createBackend () = 0;
 };
 

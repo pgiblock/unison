@@ -50,15 +50,15 @@ class JackBackendProvider : public Core::IBackendProvider
     JackBackendProvider (QObject* parent = 0, int workerCount = 1) :
       Core::IBackendProvider(parent),
       m_workerCount(workerCount)
-    {};
+    {}
 
     ~JackBackendProvider ()
-    {};
+    {}
 
-    QString displayName ()
+    QString displayName () const
     {
       return "jack";
-    };
+    }
 
     Unison::Backend* createBackend();
 

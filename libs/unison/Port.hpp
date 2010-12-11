@@ -45,7 +45,7 @@ class Port : public Node
     Port ();
 
     virtual ~Port ()
-    {};
+    {}
 
     /**
      * @returns the name of port, for example "OSC1 Attack".
@@ -142,13 +142,10 @@ class Port : public Node
      */
     const QSet<Node* const> dependents () const;
 
-    
-    
     // TODO: Probably move this connection stuff into Patch
     void connect (Port* other, BufferProvider& bp);
     void disconnect (Port* other, BufferProvider& bp);
     bool isConnected (Port* other) const;
-    
 
     // Private API
     QSet<Port* const>::const_iterator connectionsBegin ()

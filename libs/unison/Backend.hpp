@@ -49,17 +49,17 @@ class Backend : public QObject
   public:
     Backend () :
       m_rootPatch(NULL)
-    {};
+    {}
 
-    virtual ~Backend () {};
+    virtual ~Backend () {}
 
     /**
-     * @returns the current buffer-length of the audio Backend
+     * @returns the current buffer-length of the audio Backend in frames
      */
     virtual nframes_t bufferLength () const = 0;
 
     /**
-     * Returns the current sample-rate of the audio Backend
+     * Returns the current sample-rate of the audio Backend in frames per second
      */
     virtual nframes_t sampleRate () const = 0;
 
