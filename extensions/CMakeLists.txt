@@ -26,13 +26,17 @@ set(EXTENSIONS_RPATH ${CMAKE_INSTALL_PREFIX}/lib/unison/extensions)
 add_subdirectory(core)
 add_subdirectory(guicore)
 
-if(BUILD_FLAC_EXTENSION)
-  add_subdirectory(flac)
-endif(BUILD_FLAC_EXTENSION)
-
 if(BUILD_JACK_EXTENSION)
   add_subdirectory(jack)
 endif(BUILD_JACK_EXTENSION)
+
+if(BUILD_ALSA_EXTENSION)
+  add_subdirectory(alsa)
+endif(BUILD_ALSA_EXTENSION)
+
+if(BUILD_FLAC_EXTENSION)
+  add_subdirectory(flac)
+endif(BUILD_FLAC_EXTENSION)
 
 if(BUILD_LADSPA_EXTENSION)
   add_subdirectory(ladspa)
