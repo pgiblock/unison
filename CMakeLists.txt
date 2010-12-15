@@ -33,6 +33,8 @@ include(DefineCompilerFlags)
 include(MacroLogFeature)
 
 find_package(PkgConfig)
+find_package(Jack)
+find_package(Slv2)
 
 # TODO: use these to ensure the user has at least one backend supported.
 # Since JACK is the only backend right now, we simply require JACK
@@ -41,10 +43,8 @@ set(BACKENDS_ENABLED "")
 
 ## Options ########
 
-option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" ON)
-option(WANT_ALSA_EXTENSION "Include ALSA (Advanced Linux Sound Architecture) backend extension" ON)
-
 option(WANT_FLAC_EXTENSION "Include FLAC file support extension" OFF)
+option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" ON)
 option(WANT_LADSPA_EXTENSION "Include LADSPA plugin support extension" ON)
 option(WANT_LV2_EXTENSION "Include LV2 plugin support extension" ON)
 option(WANT_OGGVORBIS_EXTENSION "Include OGG/Vorbis file support extension" ON)
@@ -62,24 +62,6 @@ macro_log_feature(QT4_FOUND "Qt4"
 
 ## Find dependencies based on features selected ########
 
-if(WANT_JACK_EXTENSION)
-  find_package(Jack)
-  # JACK is technically optional, but it is required since it is the only
-  # backend implementation at the current time
-  macro_log_feature(JACK_FOUND "Jack"
-      "Needed for the Jack (Jack Audio Connection Kit) backend extension."
-      "http://jackaudio.org/"
-      TRUE "" "")
-endif(WANT_JACK_EXTENSION)
-
-if(WANT_ALSA_EXTENSION)
-  find_package(ALSA)
-  macro_log_feature(ALSA_FOUND "Alsa"
-      "Needed for the Alsa (Advanced Linux Sound Architecture) backend extension."
-      "http://www.alsa-project.org/"
-      FALSE "" "")
-endif(WANT_ALSA_EXTENSION)
-
 if(WANT_FLAC_EXTENSION)
   find_package(Flac)
   macro_log_feature(FLAC_FOUND "Flac"
@@ -92,6 +74,16 @@ if(WANT_FLAC_EXTENSION)
   #  "http://flac.sourceforge.net/"
   #  FALSE "" "")
 endif(WANT_FLAC_EXTENSION)
+
+if(WANT_JACK_EXTENSION)
+  find_package(Jack)
+  # JACK is technically optional, but it is required since it is the only
+  # backend implementation at the current time
+  macro_log_feature(JACK_FOUND "Jack"
+      "Needed for the Jack (Jack Audio Connection Kit) backend extension."
+      "http://jackaudio.org/"
+      TRUE "" "")
+endif(WANT_JACK_EXTENSION)
 
 if(WANT_LV2_EXTENSION)
   find_package(Slv2)
@@ -119,17 +111,13 @@ endif(WANT_SNDFILE_EXTENSION)
 
 ## Now, enable features based on which deps are found ########
 
-if(WANT_JACK_EXTENSION AND JACK_FOUND)
-  set(BUILD_JACK_EXTENSION 1)
-endif(WANT_JACK_EXTENSION AND JACK_FOUND)
-
-if(WANT_ALSA_EXTENSION AND ALSA_FOUND)
-  set(BUILD_ALSA_EXTENSION 1)
-endif(WANT_ALSA_EXTENSION AND ALSA_FOUND)
-
 if(WANT_FLAC_EXTENSION AND FLAC_FOUND) # AND FLAC++_FOUND)
   set(BUILD_FLAC_EXTENSION 1)
 endif(WANT_FLAC_EXTENSION AND FLAC_FOUND) # AND FLAC++_FOUND)
+
+if(WANT_JACK_EXTENSION AND JACK_FOUND)
+  set(BUILD_JACK_EXTENSION 1)
+endif(WANT_JACK_EXTENSION AND JACK_FOUND)
 
 if(WANT_LADSPA_EXTENSION)
   set(BUILD_LADSPA_EXTENSION 1)
@@ -174,7 +162,7 @@ set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 
 # when building, don't use the install RPATH already
 # (but later on when installing)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 
 # the RPATH to be used when installing
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/unison")
