@@ -1,21 +1,20 @@
-     __  ___  ______________  _  __
-    / / / / |/ /  _/ __/ __ \/ |/ /
-   / /_/ /    // /_\ \/ /_/ /    /
-   \____/_/|_/___/___/\____/_/|_/  
+      __  ___  ______________  _  __
+     / / / / |/ /  _/ __/ __ \/ |/ /
+    / /_/ /    // /_\ \/ /_/ /    /
+    \____/_/|_/___/___/\____/_/|_/  
 
-Unison Studio
-*************
+            Unison Studio
 
 What is Unison?
 ===============
 
-Unison is a project that needs a better README file. The docs/
+Unison is a project that needs a better `README` file. The `docs/`
 directory has  some interesting readings.
 
 Building
 ========
 
-Checkout INSTALL for building and installation instructions.
+Checkout `INSTALL` for building and installation instructions.
 
 Join Unison Development
 =======================
@@ -37,6 +36,6 @@ ideas for themes, layout, and user workflows.  Even if you are an
 experienced user of other audio software and have a wishlist, please
 share it with me!
 
-Contact me if you are interested in helping out.  See AUTHORS for
+Contact me if you are interested in helping out.  See `AUTHORS` for
 more info.
 

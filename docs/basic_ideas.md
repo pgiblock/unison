@@ -1,13 +1,5 @@
-\input texinfo
-@setfilename unison_ideas.info
-@settitle Basic ideas
-@c Add a @c preceding the next line for US Letter.
-@c @afourpaper
-@setchapternewpage off
-@headings on
-@node Top
-
-@unnumbered Basic Ideas
+Basic Ideas
+===========
 
 These ideas are some of the original ideas I had for Unison.  Many of these
 concepts are no longer valid after realizing some the design considerations
@@ -16,16 +8,15 @@ right.
 
 
 
-@section File System
-
-@cindex chapter, first
+File System
+-----------
 
 Unison will use Qt for File I/O.  One feature provided by Qt is the ability to
 "map" locations.  This can be used to allow the user to choose
 locations for various resources.
 
-@subsection Styles
-The data dir for the current style can be mounted to "style:". This will allow
+### Styles
+The data dir for the current style can be mounted to `style:`. This will allow
 referencing images from CSS and widgets.
 
 Other paths may come in handy.  But, this abstraction must not be used for
@@ -33,7 +24,8 @@ project resources such as presets, samples, and projects.  These are covered in
 Resources.
 
 
-@section Resources
+Resources
+---------
 
 This needs more thought, but the general idea should be sound.
 
@@ -41,14 +33,10 @@ Unison will support an abstract resource framework inspired by LMMS.  Resources
 can be identified by a unique code.  Unison will search for the resource in a
 list of user specified providers.  The default list of providers will include:
 
-@itemize
-
-@item The current project
-@item The shared resource directory ($PREFIX/share/unison/resources)
-@item The user's resource directory ($HOME/unison/resources)
-@item The official Unison repository (http://unison-studio.org/stuff)
-
-@end itemize
+* The current project
+* The shared resource directory (`$PREFIX/share/unison/resources`)
+* The user's resource directory (`$HOME/unison/resources`)
+* The official Unison repository (`http://unison-studio.org/stuff`)
 
 Of course, the default path names will be finalized later.
 
@@ -63,22 +51,22 @@ digest can be populated by querying the resource provider when saving a
 project file.
 
 
-@section Project Files
+Project Files
+-------------
 
 Project files will be a simple directory or ZIP based format.  Inside the
 project will be at least the following:
 
-@itemize
-@item @b{A Descriptor file} - possible values are the project's creator, type,
+* __A Descriptor file__- possible values are the project's creator, type,
   version, etc..  Perhaps merge this with the resource-digest (below).
 
-@item @b{A Resource digest} - enumerates all the distinct resources used in the 
+* __A Resource digest__- enumerates all the distinct resources used in the 
   project.  This can be used to give the user hints when trying to resolve
   missing resources.  This will also contain the meta data for internal 
   resources, so that the editor only needs to read one file out of the ZIP in
   order to index the included resources.
 
-@item @b{One (or more) resources} - the directory/ZIP will contain at least one
+* __One (or more) resources__- the directory/ZIP will contain at least one
   actual resource.  These resources are called internal resources.  Internal
   resources have the highest priority when resolving from resource-id.  (On
   second thought, maybe they should be one of the lowest priorities..)  The idea
@@ -89,31 +77,26 @@ project will be at least the following:
   files' below for details on how resources are packaged into a project
   @emph{file}.
 
-@item @b{Data files} - for Unison extensions such as "notepad" ?
-@end itemize
+* __Data files__- for Unison extensions such as "notepad" ?
 
 When saving a file, there will probably be a few preset behaviors, but the
 overall functionality will be this:
 
-@itemize
-
-@item @b{Save the project.}  This doesn't cause any external resources to be
+* __Save the project.__  This doesn't cause any external resources to be
   copied into the project (no external resources become internal resources).
   The project is a directory for speed-sake.  This allows live recording, etc..
   to be saved directly into the project.
 
-@item @b{Export the project.}  You can export as a directory, or archive file
+* __Export the project.__  You can export as a directory, or archive file
   (ZIP?) The user is presented with a checkbox-list on export that lets them
   choose which resources to include in the project.  Any 'factory files' should
   be automatically unchecked.  Any resources already internal should be checked.
   This leaves non-internal, non-factory files to determine a default value for.
 
-@item @b{Exporting a sub-project.}  ...
-
-@end itemize
+* __Exporting a sub-project.__ ...
 
 
-@subsection Thoughts
+### Thoughts
 It may be that we want resources internal to the project
 to actually have lower priority than other local-resource (resources on the hard
 drive).
@@ -122,11 +105,12 @@ This all needs to be rethought to a degree because "resource-id" will change
 through different versions of a file --- in some cases, this is what we want
 in other cases it is not what we want. 
 
-** The resource-id should actually be a more explicit identifier.
-"<some_constant_id>-<version_id>"...
+*The resource-id should actually be a more explicit identifier.
+`<some_constant_id>-<version_id>`...*
 
 
-@section Plugins
+Plugins
+-------
 
 The goal is to use LV2 plugins whenever appropriate.  We may need to make
 something like gtkgui (QtGui?) to handle the GUI and maybe another optional
@@ -151,7 +135,8 @@ considering using the same, or a simialar concept for Unison's resource
 naming (as opposed to filehashes, which change uncontrollably with time).
 
 
-@section Piano Roll
+Piano Roll
+----------
 
 The piano roll will be implemented, like most editors, as a QGraphicsScene. The
 piano roll can be opened as its own window/pane (however we decide to display
@@ -159,7 +144,8 @@ editors) This will allow advanced control of the editor.  The piano roll can
 also be accessed when a MIDI track is zoomed in deep enough.
 
 
-@section Meter Changes
+Meter Changes
+-------------
 
 Changes in meter (time signature) will be obtained by maintaining a "MetricMap"
 within the song/sequence.  The MetricMap holds a sorted list of MetricSections.
@@ -173,7 +159,8 @@ It would be nice to have something like time-warp in Cubase, I think our metric
 map interface is capable of adding that complexity to down the road.
 
 
-@section Messages
+Messages
+--------
 
 Instead of printf and MessageBoxes, we should have a messages features.  In the
 GUI, messages are delivered to a pane (or if the severity is high enough, then
@@ -184,14 +171,16 @@ this can help with logging, all messages can be logged to disk, and we could
 allow additional data to be logged for debugging purposes.
 
 
-@section Key
+Key
+---
 
 It would be nice is there can be a single track/timeline for storing the key of
 the song.  This can be used to grey-out notes that aren't in key while working
 in the piano-roll.
 
 
-@section Dependency Graph
+Dependency Graph
+----------------
 
 Dependencies between plugins (I guess, more specifically, their ports) will be
 managed as a directed graph.  This will allow for traversal of dependencies and
@@ -206,7 +195,8 @@ cases where a single GUI element actually represents a group of plugins.
 Example: A non-wirable synth built on oscillator, filter, and envelope plugins.
 
 
-@section Tracks
+Tracks
+------
 
 Unison uses the common "track" concept to model the composition. A single song
 can contain many tracks, each one is used to control different things with
@@ -214,15 +204,14 @@ respect to time.  A track contains multiple segments.  The type of segment
 varies dending on the track type.  Here are a few tracks that will be included
 with Unison:
 
-@itemize
-@item @b{Instrument Track} - Contains Patterns. Each pattern contains a sequence
+* __Instrument Track__- Contains Patterns. Each pattern contains a sequence
   of MIDI events.  These are represented to the user as notes in a piano roll,
   and as notes in the track-segment itself.  The track has a single instrument
   associated with it, the track is the sole MIDI insert for that instrument.
   Perhaps this one-to-one restriction can be broadened as we get more
   comfortable with the architecture of Unison.
 
-@item @b{Automation Track} - Contains automation data for a control. Automation
+* __Automation Track__- Contains automation data for a control. Automation
   data can be recorded live and also be created or modified using the automation
   editor and inline editor in the song editor.  When recording automation,
   Unison can track changes in the GUI, changes to associated MIDI controls
@@ -234,14 +223,14 @@ with Unison:
   setting.  The recording will be more "true" with a smaller simplification
   level.
 
-@item @b{Audio Track} - Contains clips of audio.  The audio can reference
+* __Audio Track__- Contains clips of audio.  The audio can reference
   external files, or the audio can be recorded straight within Unison (from
   audio inserts).  If the user has "audio takes" set, then looping over a
   section of audio while recording will cause a stack of multiple "takes" to be
   recorded the user can then choose or crossfade between the different takes as
   desired.
 
-@item @b{BB Track or Folder Track} - I am unsure if I really like the BB Editor
+* __BB Track or Folder Track__- I am unsure if I really like the BB Editor
   from LMMS or FL Studio.  This, however, could be the way we decide to group
   similar parts.  This allows the song editor to be more organized, and allows
   for looping.  Another possiblity is to allow for Folder-tracks.  A folder
@@ -249,17 +238,17 @@ with Unison:
   Certain actions performed on the group will be propagated to the children
   tracks (such as cutting, muting, and repositioning of segments).
 
-@item @b{Layer Track} - This is a popular feature from FL Studio, and is
+* __Layer Track__- This is a popular feature from FL Studio, and is
   frequently requested by LMMS users.  This allows multiple instruments to be
   contained in a group.  All instruments in the layer play the same MIDI events.
   Not only does this allow for more lush sounds, but it also allows saving the
   layer as a preset to easily use in new projects.  Perhaps Layer Tracks can be
   realized as a specific kind of "Folder Track", except, only Instrument tracks
   are allowed as children, and the children cannot have their own patterns.
-@end itemize
 
 
-@section Mixer
+Mixer
+-----
 
 This is a very grey area right now, at best.  There are lots of mixer models out
 on the market right now --- all with varying degrees of flexibility and
@@ -295,4 +284,3 @@ for organizational purposes should be included.
 
 Comments regarding the mixer are greatly appreciated!
 
-@bye
