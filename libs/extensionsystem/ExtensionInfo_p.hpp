@@ -30,7 +30,7 @@
 #ifndef EXTENSIONINFO_P_H
 #define EXTENSIONINFO_P_H
 
-#include "ExtensionInfo.hpp"
+#include "extensionsystem/ExtensionInfo.hpp"
 
 #include <QObject>
 #include <QStringList>

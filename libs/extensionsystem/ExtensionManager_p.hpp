@@ -30,7 +30,7 @@
 #ifndef EXTENSIONMANAGER_P_H
 #define EXTENSIONMANAGER_P_H
 
-#include "ExtensionInfo.hpp"
+#include "extensionsystem/ExtensionInfo.hpp"
 
 #include <QList>
 #include <QSet>

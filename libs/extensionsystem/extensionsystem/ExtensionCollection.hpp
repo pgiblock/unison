@@ -3,7 +3,7 @@
 
 #include <QList>
 #include <QString>
-#include "extensionsystem_global.hpp"
+#include "extensionsystem/extensionsystem_global.hpp"
 
 
 namespace ExtensionSystem {

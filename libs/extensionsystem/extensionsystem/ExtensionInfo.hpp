@@ -30,7 +30,7 @@
 #ifndef EXTENSIONINFO_H
 #define EXTENSIONINFO_H
 
-#include "extensionsystem_global.hpp"
+#include "extensionsystem/extensionsystem_global.hpp"
 
 #include <QString>
 #include <QList>

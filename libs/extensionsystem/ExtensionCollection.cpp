@@ -1,5 +1,5 @@
-#include "ExtensionCollection.hpp"
-#include "ExtensionInfo.hpp"
+#include "extensionsystem/ExtensionCollection.hpp"
+#include "extensionsystem/ExtensionInfo.hpp"
 
 namespace ExtensionSystem {
 

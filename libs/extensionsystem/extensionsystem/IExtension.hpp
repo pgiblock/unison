@@ -30,7 +30,7 @@
 #ifndef IEXTENSION_H
 #define IEXTENSION_H
 
-#include "extensionsystem_global.hpp"
+#include "extensionsystem/extensionsystem_global.hpp"
 
 #include <QObject>
 #include <QtPlugin>

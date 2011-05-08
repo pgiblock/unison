@@ -30,7 +30,7 @@
 #ifndef EXTENSIONSYSTEM_EXTENSIONMANAGER_H
 #define EXTENSIONSYSTEM_EXTENSIONMANAGER_H
 
-#include "extensionsystem_global.hpp"
+#include "extensionsystem/extensionsystem_global.hpp"
 #include <aggregation/aggregate.hpp>
 
 #include <QObject>

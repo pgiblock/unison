@@ -30,7 +30,7 @@
 #ifndef IEXTENSION_P_H
 #define IEXTENSION_P_H
 
-#include "IExtension.hpp"
+#include "extensionsystem/IExtension.hpp"
 
 #include <QString>
 

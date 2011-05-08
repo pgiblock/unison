@@ -27,12 +27,12 @@
 **
 **************************************************************************/
 
-#include "ExtensionInfo.hpp"
+#include "extensionsystem/ExtensionInfo.hpp"
 
+#include "extensionsystem/IExtension.hpp"
+#include "extensionsystem/ExtensionManager.hpp"
 #include "ExtensionInfo_p.hpp"
-#include "IExtension.hpp"
 #include "IExtension_p.hpp"
-#include "ExtensionManager.hpp"
 
 #include <QDir>
 #include <QFile>

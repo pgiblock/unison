@@ -27,13 +27,13 @@
 **
 **************************************************************************/
 
-#include "ExtensionManager.hpp"
-#include "ExtensionManager_p.hpp"
-#include "ExtensionInfo.hpp"
-#include "ExtensionInfo_p.hpp"
+#include "extensionsystem/ExtensionManager.hpp"
+#include "extensionsystem/ExtensionInfo.hpp"
+#include "extensionsystem/IExtension.hpp"
+#include "extensionsystem/ExtensionCollection.hpp"
 #include "OptionsParser.hpp"
-#include "IExtension.hpp"
-#include "ExtensionCollection.hpp"
+#include "ExtensionManager_p.hpp"
+#include "ExtensionInfo_p.hpp"
 
 #include <QMetaProperty>
 #include <QDir>
