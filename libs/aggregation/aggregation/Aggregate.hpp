@@ -21,6 +21,6 @@
  */
 
 // Just expose the aggregate feature though a Unison-style header filename
-#include "aggregate.hpp"
+#include "aggregation/aggregate.hpp"
 
 // vim: tw=90 ts=8 sw=2 sts=2 et sta noai

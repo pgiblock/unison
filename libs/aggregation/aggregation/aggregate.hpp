@@ -30,7 +30,7 @@
 #ifndef QAGGREGATION_H
 #define QAGGREGATION_H
 
-#include "aggregation_global.hpp"
+#include "aggregation/aggregation_global.hpp"
 
 #include <QObject>
 #include <QList>

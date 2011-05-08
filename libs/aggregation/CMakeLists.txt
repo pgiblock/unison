@@ -1,7 +1,7 @@
 #
 # CMakeLists.txt - Aggregation CMake file
 #
-# Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
+# Copyright (c) 2010-2011 Paul Giblock <pgib/at/users.sourceforge.net>
 #
 # This file is part of Unison - http://unison.sourceforge.net/
 #
@@ -22,17 +22,17 @@
 #
 
 set(AGGREGATION_SRCS
-    aggregate.cpp
+  aggregate.cpp
 )
 
 set(AGGREGATION_HEADERS
-    Aggregate.hpp
-    aggregate.hpp
-    aggregation_global.hpp
+  aggregation/Aggregate.hpp
+  aggregation/aggregate.hpp
+  aggregation/aggregation_global.hpp
 )
 
 set(AGGREGATION_MOC_HEADERS
-    aggregate.hpp
+  aggregation/aggregate.hpp
 )
 
 qt4_wrap_cpp(AGGREGATION_MOC_SRCS ${AGGREGATION_MOC_HEADERS})
@@ -40,11 +40,13 @@ qt4_wrap_cpp(AGGREGATION_MOC_SRCS ${AGGREGATION_MOC_HEADERS})
 add_library(aggregation SHARED ${AGGREGATION_MOC_SRCS} ${AGGREGATION_SRCS})
 
 target_link_libraries(aggregation
-    ${QT_LIBRARIES}
+  ${QT_LIBRARIES}
 )
 
 install(TARGETS aggregation LIBRARY
         DESTINATION lib/unison)
 
 install(FILES ${AGGREGATION_HEADERS}
-        DESTINATION include/unison/aggregation)
+        DESTINATION include/unison)
+
+# vim: tw=90 ts=8 sw=2 sts=4 et sta
