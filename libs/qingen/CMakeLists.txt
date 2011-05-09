@@ -1,7 +1,7 @@
 #
-# CMakeLists.txt - Aggregation CMake file
+# CMakeLists.txt - QIngen CMake file
 #
-# Copyright (c) 2010-2011 Paul Giblock <pgib/at/users.sourceforge.net>
+# Copyright (c) 2011 Paul Giblock <pgib/at/users.sourceforge.net>
 #
 # This file is part of Unison - http://unison.sourceforge.net/
 #
@@ -21,32 +21,38 @@
 # Boston, MA 02110-1301 USA.
 #
 
-set(AGGREGATION_SRCS
-  aggregate.cpp
+set(QINGEN_SRCS
+  src/World.cpp
 )
 
-set(AGGREGATION_HEADERS
-  aggregation/Aggregate.hpp
-  aggregation/aggregate.hpp
-  aggregation/aggregation_global.hpp
+set(QINGEN_MOC_HEADERS
+  qingen/QObjectClientInterface.hpp
 )
 
-set(AGGREGATION_MOC_HEADERS
-  aggregation/aggregate.hpp
+set(QINGEN_INCLUDES
+  qingen/QObjectClientInterface.hpp
+  qingen/World.hpp
 )
 
-qt4_wrap_cpp(AGGREGATION_MOC_SRCS ${AGGREGATION_MOC_HEADERS})
+qt4_wrap_cpp(QINGEN_MOC_SRCS ${QINGEN_MOC_HEADERS})
 
-add_library(aggregation SHARED ${AGGREGATION_MOC_SRCS} ${AGGREGATION_SRCS})
+include_directories(
+  ${Ingen_module_INCLUDE_DIRS}
+  ${Ingen_shared_INCLUDE_DIRS}
+  ${Raul_INCLUDE_DIRS}
+  qingen
+)
 
-target_link_libraries(aggregation
+add_library(qingen SHARED ${QINGEN_SRCS} ${QINGEN_MOC_SRCS})
+
+target_link_libraries(qingen
   ${QT_LIBRARIES}
+  ${Ingen_module_LIBRARIES}
+  ${Ingen_shared_LIBRARIES}
+  ${Raul_LIBRARIES}
 )
 
-install(TARGETS aggregation LIBRARY
-        DESTINATION lib/unison)
-
-install(FILES ${AGGREGATION_HEADERS}
-        DESTINATION include/unison/aggregation)
+install(TARGETS qingen LIBRARY      DESTINATION lib/)
+install(FILES   ${QINGEN_INCLUDES}  DESTINATION include/qingen/)
 
 # vim: tw=90 ts=8 sw=2 sts=4 et sta

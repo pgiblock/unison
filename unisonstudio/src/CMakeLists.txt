@@ -1,7 +1,7 @@
 #
-# CMakeLists.txt - The sources CMake file
+# CMakeLists.txt - Main unisonstudio executable CMake file
 #
-# Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
+# Copyright (c) 2010-2011 Paul Giblock <pgib/at/users.sourceforge.net>
 #
 # This file is part of Unison - http://unison.sourceforge.net/
 #
@@ -21,26 +21,45 @@
 # Boston, MA 02110-1301 USA.
 #
 
-#file(GLOB UNISONSTUDIO_SRCS *.cpp)
 set(UNISONSTUDIO_SRCS
-    main.cpp
+  main.cpp
 )
 
+set(UNISONSTUDIO_MOC_HEADERS
+  BackgroundStuff.hpp
+)
+
+qt4_wrap_cpp(UNISONSTUDIO_MOC_SRCS ${UNISONSTUDIO_MOC_HEADERS})
+
+# QIngen stuff (for now at least)
+set(QINGEN_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/libs/qingen)
+set(QINGEN_INCLUDE_DIRS ${QINGEN_INCLUDE_DIR} ${Ingen_INCLUDE_DIRS} ${Raul_INCLUDE_DIRS})
+set(QINGEN_LIBRARIES qingen)
+# Extension system stuff
+set(AGGREGATION_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/libs/aggregation)
+set(EXTSYSTEM_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/libs/extensionsystem)
+set(EXTSYSTEM_INCLUDE_DIRS ${AGGREGATION_INCLUDE_DIR} ${EXTSYSTEM_INCLUDE_DIR})
+set(EXTSYSTEM_LIBRARIES extensionsystem)
+
 include_directories(
-    ${COMMON_LIBS_INCLUDE_DIR}
-    #${UNISON_INCLUDE_DIR}
-    #${PRG_INCLUDE_DIR}
+  ${EXTSYSTEM_INCLUDE_DIRS}
+  ${QINGEN_INCLUDE_DIRS}
+  ${QT_INCLUDE_DIRS}
 )
 
 add_executable(unisonstudio
-    ${UNISONSTUDIO_SRCS}
+  ${UNISONSTUDIO_SRCS}
+  ${UNISONSTUDIO_MOC_SRCS}
 )
 
 target_link_libraries(unisonstudio
-    extensionsystem
+  ${EXTSYSTEM_LIBRARIES}
+  ${QINGEN_LIBRARIES}
+  ${QT_LIBRARIES}
 )
 
 install(TARGETS unisonstudio RUNTIME
         DESTINATION bin/)
 
-# vim: tw=90 ts=8 sw=2 sts=2 et sta noai
+
+# vim: tw=90 ts=8 sw=2 sts=4 et sta

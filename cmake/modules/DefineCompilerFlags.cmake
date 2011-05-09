@@ -7,7 +7,7 @@ if (UNIX AND NOT WIN32)
     #set(CMAKE_C_FLAGS "-g -ggdb -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_C_FLAGS}")
     #set(CMAKE_CXX_FLAGS "-g -ggdb  -fno-exceptions -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_CXX_FLAGS}")
     set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_C_FLAGS}")
-    set(CMAKE_CXX_FLAGS "-fno-exceptions -Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-long-long -ansi -pedantic -ftree-vectorize ${CMAKE_CXX_FLAGS}")
     # warning-mania set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -pedantic -Wall -Wextra -Wshadow -Wmissing-prototypes -Wdeclaration-after-statement -Wunused -Wfloat-equal -Wpointer-arith -Wwrite-strings -Wformat-security -Wmissing-format-attribute")
 
     # with -fPIC

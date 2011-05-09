@@ -1,7 +1,7 @@
 #
 # CMakeLists.txt - The main CMake file
 #
-# Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
+# Copyright (c) 2010-2011 Paul Giblock <pgib/at/users.sourceforge.net>
 #
 # This file is part of Unison - http://unison.sourceforge.net/
 #
@@ -33,8 +33,8 @@ include(DefineCompilerFlags)
 include(MacroLogFeature)
 
 find_package(PkgConfig)
-find_package(Jack)
-find_package(Slv2)
+find_package(Raul)
+find_package(Ingen)
 
 # TODO: use these to ensure the user has at least one backend supported.
 # Since JACK is the only backend right now, we simply require JACK
@@ -44,11 +44,11 @@ set(BACKENDS_ENABLED "")
 ## Options ########
 
 option(WANT_FLAC_EXTENSION "Include FLAC file support extension" OFF)
-option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" ON)
-option(WANT_LADSPA_EXTENSION "Include LADSPA plugin support extension" ON)
-option(WANT_LV2_EXTENSION "Include LV2 plugin support extension" ON)
-option(WANT_OGGVORBIS_EXTENSION "Include OGG/Vorbis file support extension" ON)
-option(WANT_SNDFILE_EXTENSION "Include libsndfile support (WAV,AIFF,SND,VOC,etc..) extension" ON)
+option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" OFF)
+option(WANT_LADSPA_EXTENSION "Include LADSPA plugin support extension" OFF)
+option(WANT_LV2_EXTENSION "Include LV2 plugin support extension" OFF)
+option(WANT_OGGVORBIS_EXTENSION "Include OGG/Vorbis file support extension" OFF)
+option(WANT_SNDFILE_EXTENSION "Include libsndfile support (WAV,AIFF,SND,VOC,etc..) extension" OFF)
 
 option(COMPILE_TESTS "Compile unit-tests" OFF)
 
@@ -164,17 +164,12 @@ set(CMAKE_SKIP_BUILD_RPATH  FALSE)
 # (but later on when installing)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 
-# the RPATH to be used when installing
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/unison")
+# the RPATH to be used when installing TODO: Improve
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/unison" "${CMAKE_INSTALL_PREFIX}/lib")
 
 # don't add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-
-#Internal location, TODO: Don't hardcode platform-specific paths!!
-set(PRG_INCLUDE_DIR    ${CMAKE_SOURCE_DIR}/libs/prg)
-set(UNISON_INCLUDE_DIR ) #${CMAKE_SOURCE_DIR}/libs/unison)
-set(COMMON_LIBS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs)
 
 #Directories
 add_subdirectory(libs)

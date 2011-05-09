@@ -61,6 +61,6 @@ install(TARGETS extensionsystem LIBRARY
         DESTINATION lib/unison)
 
 install(FILES ${EXTENSIONSYSTEM_HEADERS}
-        DESTINATION include/unison)
+        DESTINATION include/unison/extensionsystem)
 
 # vim: tw=90 ts=8 sw=2 sts=4 et sta

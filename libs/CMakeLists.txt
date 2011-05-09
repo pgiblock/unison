@@ -1,7 +1,7 @@
 #
-# CMakeLists.txt - The sources CMake file
+# CMakeLists.txt - CMake file for our libraries
 #
-# Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
+# Copyright (c) 2010-2011 Paul Giblock <pgib/at/users.sourceforge.net>
 #
 # This file is part of Unison - http://unison.sourceforge.net/
 #
@@ -24,6 +24,6 @@
 add_subdirectory(aggregation)
 add_subdirectory(extensionsystem)
 add_subdirectory(prg)
-add_subdirectory(unison)
+add_subdirectory(qingen)
 
 # vim: tw=90 ts=8 sw=2 sts=2 et sta noai
