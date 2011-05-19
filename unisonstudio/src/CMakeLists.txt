@@ -31,10 +31,6 @@ set(UNISONSTUDIO_MOC_HEADERS
 
 qt4_wrap_cpp(UNISONSTUDIO_MOC_SRCS ${UNISONSTUDIO_MOC_HEADERS})
 
-# QIngen stuff (for now at least)
-set(QINGEN_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/libs/qingen)
-set(QINGEN_INCLUDE_DIRS ${QINGEN_INCLUDE_DIR} ${Ingen_INCLUDE_DIRS} ${Raul_INCLUDE_DIRS})
-set(QINGEN_LIBRARIES qingen)
 # Extension system stuff
 set(AGGREGATION_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/libs/aggregation)
 set(EXTSYSTEM_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/libs/extensionsystem)
@@ -43,7 +39,8 @@ set(EXTSYSTEM_LIBRARIES extensionsystem)
 
 include_directories(
   ${EXTSYSTEM_INCLUDE_DIRS}
-  ${QINGEN_INCLUDE_DIRS}
+  ${Ingen_client_qt_INCLUDE_DIRS}
+  ${IngenConfig_INCLUDE_DIR}
   ${QT_INCLUDE_DIRS}
 )
 
@@ -54,7 +51,7 @@ add_executable(unisonstudio
 
 target_link_libraries(unisonstudio
   ${EXTSYSTEM_LIBRARIES}
-  ${QINGEN_LIBRARIES}
+  ${Ingen_client_qt_LIBRARIES}
   ${QT_LIBRARIES}
 )
 

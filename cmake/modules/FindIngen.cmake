@@ -1,13 +1,15 @@
 # - Try to find Ingen
 #
-#  Ingen_FOUND                - system has Ingen
-#  Ingen_INCLUDE_DIRS         - the Ingen interface include directories
-#  Ingen_shared_INCLUDE_DIRS  - the Ingen shared include directories
-#  Ingen_shared_LIBRARIES     - the Ingen shared libraries
-#  Ingen_client_INCLUDE_DIRS  - the Ingen client include directories
-#  Ingen_client_LIBRARIES     - the Ingen shared libraries
-#  Ingen_server _INCLUDE_DIRS - the Ingen server  include directories
-#  Ingen_server _LIBRARIES    - the Ingen shared libraries
+#  Ingen_FOUND                  - system has Ingen
+#  Ingen_INCLUDE_DIRS           - the Ingen interface include directories
+#  Ingen_shared_INCLUDE_DIRS    - the Ingen shared include directories
+#  Ingen_shared_LIBRARIES       - the Ingen shared libraries
+#  Ingen_client_INCLUDE_DIRS    - the Ingen client include directories
+#  Ingen_client_LIBRARIES       - the Ingen shared libraries
+#  Ingen_client_qt_INCLUDE_DIRS - the Ingen client include directories
+#  Ingen_client_qt_LIBRARIES    - the Ingen shared libraries
+#  Ingen_server _INCLUDE_DIRS   - the Ingen server  include directories
+#  Ingen_server _LIBRARIES      - the Ingen shared libraries
 #  Ingen_serialisation_INCLUDE_DIRS - the Ingen serialisation include directories
 #  Ingen_serialisation_LIBRARIES - the Ingen shared libraries
 #
@@ -41,6 +43,13 @@ set(Ingen_PROCESS_LIBS
   Raul_LIBRARIES
 )
 libfind_process(Ingen)
+
+find_path(IngenConfig_INCLUDE_DIR
+  NAMES ingen-config.h
+  PATHS /usr/local/lib /usr/lib
+  PATH_SUFFIXES ingen/include
+)
+
 
 # Ingen Shared
 
@@ -89,6 +98,34 @@ set(Ingen_client_PROCESS_LIBS
   Suil_LIBRARIES
 )
 libfind_process(Ingen_client)
+
+# Ingen Client (Qt)
+
+find_library(Ingen_client_qt_LIBRARY
+  NAMES ingen_client_qt
+)
+
+set(Ingen_client_qt_PROCESS_INCLUDES
+  Ingen_INCLUDE_DIR
+  # ${Ingen_INCLUDE_DIR}/shared # Headers reference shared without directory
+  Boost_INCLUDE_DIRS
+  Glibmm_INCLUDE_DIRS
+  LILV_INCLUDE_DIRS
+  Raul_INCLUDE_DIRS
+  Sord_INCLUDE_DIRS
+  Suil_INCLUDE_DIRS
+)
+set(Ingen_client_qt_PROCESS_LIBS
+  Ingen_client_qt_LIBRARY
+  # Ingen_shared_LIBRARY ??
+  Boost_LIBRARIES
+  Glibmm_LIBRARIES
+  LILV_LIBRARIES
+  Raul_LIBRARIES
+  Sord_LIBRARIES
+  Suil_LIBRARIES
+)
+libfind_process(Ingen_client_qt)
 
 # Ingen Server
 
