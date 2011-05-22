@@ -202,7 +202,7 @@ Aggregate::Aggregate(QObject *parent)
 Aggregate::~Aggregate()
 {
     QWriteLocker locker(&lock());
-    foreach (QObject *component, m_components) {
+    Q_FOREACH (QObject *component, m_components) {
         disconnect(component, SIGNAL(destroyed(QObject*)), this, SLOT(deleteSelf(QObject*)));
         aggregateMap().remove(component);
     }

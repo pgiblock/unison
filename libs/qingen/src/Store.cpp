@@ -85,11 +85,11 @@ Store:: Store(QSharedPointer<QObjectClientInterface> emitter) :
 
 //  Shared::LV2URIMap& uris() { return *_uris.get(); }
 
-signals:
+Q_SIGNALS:
   void newObject(QSharedPointer<GraphObject>);
 //      void newPlugin(SharedPtr<PluginModel>);
 
-protected slots:
+protected Q_SLOTS:
   void propertyPut(Raul::URI                        subject,
                    Ingen::Resource::Properties      properties,
                    Ingen::Resource::Graph           context);

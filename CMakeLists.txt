@@ -147,6 +147,8 @@ configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
 
 include(${QT_USE_FILE})
 
+add_definitions(-DQT_NO_KEYWORDS)
+
 # Qt translations feedback
 if(EXISTS "${QT_TRANSLATIONS_DIR}")
   message("-- Found Qt translations in ${QT_TRANSLATIONS_DIR}")

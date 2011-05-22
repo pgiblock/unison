@@ -267,7 +267,7 @@ IExtension::IExtension()
 IExtension::~IExtension()
 {
     ExtensionManager *pm = ExtensionManager::instance();
-    foreach (QObject *obj, d->addedObjectsInReverseOrder)
+    Q_FOREACH (QObject *obj, d->addedObjectsInReverseOrder)
         pm->removeObject(obj);
     qDeleteAll(d->addedObjectsInReverseOrder);
     d->addedObjectsInReverseOrder.clear();

@@ -29,7 +29,7 @@ public:
 
   virtual ~BackgroundStuff() {};
 
-public slots:
+public Q_SLOTS:
   void printConnected (Raul::Path s, Raul::Path d)
   {
     std::cout << "CONNECTED!!!!" << std::endl;

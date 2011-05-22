@@ -804,10 +804,10 @@ bool ExtensionInfoPrivate::resolveDependencies(const QList<ExtensionInfo *> &inf
         return false;
     }
     QList<ExtensionInfo *> resolvedDependencies;
-    foreach (const ExtensionDependency &dependency, dependencies) {
+    Q_FOREACH (const ExtensionDependency &dependency, dependencies) {
         ExtensionInfo *found = 0;
 
-        foreach (ExtensionInfo *info, infos) {
+        Q_FOREACH (ExtensionInfo *info, infos) {
             if (info->provides(dependency.name, dependency.version)) {
                 found = info;
                 if (!info->isEnabled() || info->isDisabledByDependency())

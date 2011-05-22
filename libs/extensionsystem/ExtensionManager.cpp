@@ -359,7 +359,7 @@ QString ExtensionManager::serializedArguments() const
 {
     const QChar separator = QLatin1Char('|');
     QString rc;
-    foreach (const ExtensionInfo *ps, extensions()) {
+    Q_FOREACH (const ExtensionInfo *ps, extensions()) {
         if (!ps->arguments().isEmpty()) {
             if (!rc.isEmpty())
                 rc += separator;
@@ -375,7 +375,7 @@ QString ExtensionManager::serializedArguments() const
         rc += QLatin1String(argumentKeywordC);
         // If the argument appears to be a file, make it absolute
         // when sending to another instance.
-        foreach(const QString &argument, d->arguments) {
+        Q_FOREACH(const QString &argument, d->arguments) {
             rc += separator;
             const QFileInfo fi(argument);
             if (fi.exists() && fi.isRelative()) {
@@ -419,7 +419,7 @@ void ExtensionManager::remoteArguments(const QString &serializedArgument)
         return;
     QStringList serializedArguments = serializedArgument.split(QLatin1Char('|'));
     const QStringList arguments = subList(serializedArguments, QLatin1String(argumentKeywordC));
-    foreach (const ExtensionInfo *ps, extensions()) {
+    Q_FOREACH (const ExtensionInfo *ps, extensions()) {
         if (ps->state() == ExtensionInfo::Running) {
             const QStringList extensionOptions = subList(serializedArguments, QLatin1Char(':') + ps->name());
             ps->extension()->remoteCommand(extensionOptions, arguments);
@@ -532,11 +532,11 @@ void ExtensionManager::formatExtensionVersions(QTextStream &str) const
 void ExtensionManager::startTests()
 {
 #ifdef WITH_TESTS
-    foreach (ExtensionInfo *extensionInfo, d->testInfos) {
+    Q_FOREACH (ExtensionInfo *extensionInfo, d->testInfos) {
         const QMetaObject *mo = extensionInfo->extension()->metaObject();
         QStringList methods;
         methods.append("arg0");
-        // We only want slots starting with "test"
+        // We only want Q_SLOTS starting with "test"
         for (int i = mo->methodOffset(); i < mo->methodCount(); ++i) {
             if (QByteArray(mo->method(i).signature()).startsWith("test") &&
                 !QByteArray(mo->method(i).signature()).endsWith("_data()")) {
@@ -628,7 +628,7 @@ void ExtensionManagerPrivate::writeSettings()
 
     QStringList tempDisabledExtensions;
     QStringList tempForceEnabledExtensions;
-    foreach(ExtensionInfo *info, extensionInfos) {
+    Q_FOREACH(ExtensionInfo *info, extensionInfos) {
         if (!info->isExperimental() && !info->isEnabled())
             tempDisabledExtensions.append(info->name());
         if (info->isExperimental() && info->isEnabled())
@@ -651,7 +651,7 @@ void ExtensionManagerPrivate::loadSettings()
 void ExtensionManagerPrivate::stopAll()
 {
     QList<ExtensionInfo *> queue = loadQueue();
-    foreach (ExtensionInfo *info, queue) {
+    Q_FOREACH (ExtensionInfo *info, queue) {
         loadExtension(info, ExtensionInfo::Stopped);
     }
     QListIterator<ExtensionInfo *> it(queue);
@@ -683,7 +683,7 @@ void ExtensionManagerPrivate::addObject(QObject *obj)
 
         allObjects.append(obj);
     }
-    emit q->objectAdded(obj);
+    Q_EMIT q->objectAdded(obj);
 }
 
 /*!
@@ -705,7 +705,7 @@ void ExtensionManagerPrivate::removeObject(QObject *obj)
     if (debugLeaks)
         qDebug() << "ExtensionManagerPrivate::removeObject" << obj << obj->objectName();
 
-    emit q->aboutToRemoveObject(obj);
+    Q_EMIT q->aboutToRemoveObject(obj);
     QWriteLocker lock(&(q->m_lock));
     allObjects.removeAll(obj);
 }
@@ -717,10 +717,10 @@ void ExtensionManagerPrivate::removeObject(QObject *obj)
 void ExtensionManagerPrivate::loadExtensions()
 {
     QList<ExtensionInfo *> queue = loadQueue();
-    foreach (ExtensionInfo *info, queue) {
+    Q_FOREACH (ExtensionInfo *info, queue) {
         loadExtension(info, ExtensionInfo::Loaded);
     }
-    foreach (ExtensionInfo *info, queue) {
+    Q_FOREACH (ExtensionInfo *info, queue) {
         loadExtension(info, ExtensionInfo::Initialized);
     }
     QListIterator<ExtensionInfo *> it(queue);
@@ -728,7 +728,7 @@ void ExtensionManagerPrivate::loadExtensions()
     while (it.hasPrevious()) {
         loadExtension(it.previous(), ExtensionInfo::Running);
     }
-    emit q->extensionsChanged();
+    Q_EMIT q->extensionsChanged();
 }
 
 /*!
@@ -738,7 +738,7 @@ void ExtensionManagerPrivate::loadExtensions()
 QList<ExtensionInfo *> ExtensionManagerPrivate::loadQueue()
 {
     QList<ExtensionInfo *> queue;
-    foreach (ExtensionInfo *info, extensionInfos) {
+    Q_FOREACH (ExtensionInfo *info, extensionInfos) {
         QList<ExtensionInfo *> circularityCheckQueue;
         loadQueue(info, queue, circularityCheckQueue);
     }
@@ -777,7 +777,7 @@ bool ExtensionManagerPrivate::loadQueue(ExtensionInfo *info, QList<ExtensionInfo
         return false;
     }
     // add dependencies
-    foreach (ExtensionInfo *depInfo, info->dependencyInfos()) {
+    Q_FOREACH (ExtensionInfo *depInfo, info->dependencyInfos()) {
         if (!loadQueue(depInfo, queue, circularityCheckQueue)) {
             info->d->hasError = true;
             info->d->errorString =
@@ -812,7 +812,7 @@ void ExtensionManagerPrivate::loadExtension(ExtensionInfo *info, ExtensionInfo::
     default:
         break;
     }
-    foreach (const ExtensionInfo *depInfo, info->dependencyInfos()) {
+    Q_FOREACH (const ExtensionInfo *depInfo, info->dependencyInfos()) {
         if (depInfo->state() != destState) {
             info->d->hasError = true;
             info->d->errorString =
@@ -870,16 +870,16 @@ void ExtensionManagerPrivate::readExtensionPaths()
         const QDir dir(searchPaths.takeFirst());
         const QString pattern = QLatin1String("*.") + extension;
         const QFileInfoList files = dir.entryInfoList(QStringList(pattern), QDir::Files);
-        foreach (const QFileInfo &file, files)
+        Q_FOREACH (const QFileInfo &file, files)
             infoFiles << file.absoluteFilePath();
         const QFileInfoList dirs = dir.entryInfoList(QDir::Dirs|QDir::NoDotAndDotDot);
-        foreach (const QFileInfo &subdir, dirs)
+        Q_FOREACH (const QFileInfo &subdir, dirs)
             searchPaths << subdir.absoluteFilePath();
     }
     defaultCollection = new ExtensionCollection(QString());
     extensionCategories.insert("", defaultCollection);
 
-    foreach (const QString &infoFile, infoFiles) {
+    Q_FOREACH (const QString &infoFile, infoFiles) {
         ExtensionInfo *info = new ExtensionInfo;
         info->d->read(infoFile);
 
@@ -902,12 +902,12 @@ void ExtensionManagerPrivate::readExtensionPaths()
     resolveDependencies();
     // ensure deterministic extension load order by sorting
     qSort(extensionInfos.begin(), extensionInfos.end(), lessThanByExtensionName);
-    emit q->extensionsChanged();
+    Q_EMIT q->extensionsChanged();
 }
 
 void ExtensionManagerPrivate::resolveDependencies()
 {
-    foreach (ExtensionInfo *info, extensionInfos) {
+    Q_FOREACH (ExtensionInfo *info, extensionInfos) {
         info->d->resolveDependencies(extensionInfos);
     }
 }
@@ -943,7 +943,7 @@ void ExtensionManagerPrivate::removeExtensionInfo(ExtensionInfo *info)
     if (extensionCategories.contains(info->category()))
         extensionCategories.value(info->category())->removeExtension(info);
 
-    foreach(ExtensionInfo *dep, info->dependencyInfos()) {
+    Q_FOREACH(ExtensionInfo *dep, info->dependencyInfos()) {
         dep->removeDependentExtension(info);
     }
 
@@ -953,7 +953,7 @@ void ExtensionManagerPrivate::removeExtensionInfo(ExtensionInfo *info)
 
 ExtensionInfo *ExtensionManagerPrivate::extensionByName(const QString &name) const
 {
-    foreach (ExtensionInfo *info, extensionInfos)
+    Q_FOREACH (ExtensionInfo *info, extensionInfos)
         if (info->name() == name)
             return info;
     return 0;

@@ -71,7 +71,7 @@ public:
         QList<T *> results;
         QList<QObject *> all = allObjects();
         QList<T *> result;
-        foreach (QObject *obj, all) {
+        Q_FOREACH (QObject *obj, all) {
             result = Aggregation::query_all<T>(obj);
             if (!result.isEmpty())
                 results += result;
@@ -83,7 +83,7 @@ public:
         QReadLocker lock(&m_lock);
         QList<QObject *> all = allObjects();
         T *result = 0;
-        foreach (QObject *obj, all) {
+        Q_FOREACH (QObject *obj, all) {
             if ((result = Aggregation::query<T>(obj)) != 0)
                 break;
         }
@@ -118,16 +118,16 @@ public:
     bool runningTests() const;
     QString testDataDirectory() const;
 
-signals:
+Q_SIGNALS:
     void objectAdded(QObject *obj);
     void aboutToRemoveObject(QObject *obj);
 
     void extensionsChanged();
 
-public slots:
+public Q_SLOTS:
     void remoteArguments(const QString &serializedArguments);
 
-private slots:
+private Q_SLOTS:
     void startTests();
 
 private:

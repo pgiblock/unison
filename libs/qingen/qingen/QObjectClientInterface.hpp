@@ -35,7 +35,7 @@ namespace QIngen {
 /**
  * A QObject-based interface for Qt clients to use.
  *
- * The signals here correlated to class on Ingen::ClientInterface, but have
+ * The Q_SIGNALS here correlated to class on Ingen::ClientInterface, but have
  * been renamed slightly to match Qt naming suggestions.
  */
 class QObjectClientInterface : public QObject, public Ingen::ClientInterface
@@ -47,7 +47,7 @@ public:
 
   Raul::URI uri() const { return "http://TODO.com/ns/qingen#client"; }
 
-signals:
+Q_SIGNALS:
   void responseOk(int32_t id);
   void responseError(int32_t id, std::string msg);
   void engineError(const std::string msg);
@@ -85,55 +85,55 @@ signals:
 
 protected:
 
-    // ClientInterface hooks that fire the above signals
+    // ClientInterface hooks that fire the above Q_SIGNALS
     void bundle_begin()
-    { emit bundleBegin(); }
+    { Q_EMIT bundleBegin(); }
 
     void bundle_end()
-    { emit bundleEnd(); }
+    { Q_EMIT bundleEnd(); }
 
     void transfer_begin() {}
     void transfer_end()   {}
 
     void response_ok(int32_t id)
-    { emit responseOk(id); }
+    { Q_EMIT responseOk(id); }
 
     void response_error(int32_t id, const std::string& msg)
-    { emit responseError(id, msg); }
+    { Q_EMIT responseError(id, msg); }
 
     void error(const std::string& msg)
-    { emit engineError(msg); }
+    { Q_EMIT engineError(msg); }
 
     void put(const Raul::URI& uri,
              const Ingen::Resource::Properties& properties,
              Ingen::Resource::Graph ctx=Ingen::Resource::DEFAULT)
-    { emit propertyPut(uri, properties, ctx); }
+    { Q_EMIT propertyPut(uri, properties, ctx); }
 
     void delta(const Raul::URI& uri,
                const Ingen::Resource::Properties& remove,
                const Ingen::Resource::Properties& add)
-    { emit propertyDelta(uri, remove, add); }
+    { Q_EMIT propertyDelta(uri, remove, add); }
 
     void connect(const Raul::Path& src_port_path, const Raul::Path& dst_port_path)
-    { emit connected(src_port_path, dst_port_path); }
+    { Q_EMIT connected(src_port_path, dst_port_path); }
 
     void del(const Raul::URI& uri)
-    { emit objectDeleted(uri); }
+    { Q_EMIT objectDeleted(uri); }
 
     void move(const Raul::Path& old_path, const Raul::Path& new_path)
-    { emit objectMoved(old_path, new_path); }
+    { Q_EMIT objectMoved(old_path, new_path); }
 
     void disconnect(const Raul::URI& src, const Raul::URI& dst)
-    { emit disconnected(src, dst); }
+    { Q_EMIT disconnected(src, dst); }
 
     void disconnect_all(const Raul::Path& parent_patch_path, const Raul::Path& path)
-    { emit disconnectedAll(parent_patch_path, path); }
+    { Q_EMIT disconnectedAll(parent_patch_path, path); }
 
     void set_property(const Raul::URI& subject, const Raul::URI& key, const Raul::Atom& value)
-    { emit propertyChanged(subject, key, value); }
+    { Q_EMIT propertyChanged(subject, key, value); }
 
     void activity(const Raul::Path& port_path)
-    { emit portActivity(port_path); }
+    { Q_EMIT portActivity(port_path); }
   };
 
 } // namespace QIngen

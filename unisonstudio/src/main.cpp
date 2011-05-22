@@ -249,7 +249,7 @@ int main (int argc, char** argv)
   // Loop through discovered extensions, find core extension
   const QList<ExtensionSystem::ExtensionInfo*> extensions = extensionManager.extensions();
   ExtensionSystem::ExtensionInfo* coreextension = 0;
-  foreach (ExtensionSystem::ExtensionInfo* info, extensions) {
+  Q_FOREACH (ExtensionSystem::ExtensionInfo* info, extensions) {
     if (info->name() == QLatin1String(CORE_EXTENSION_NAME)) {
       coreextension = info;
       break;
@@ -276,7 +276,7 @@ int main (int argc, char** argv)
   }
   {
     QStringList errors;
-    foreach (ExtensionSystem::ExtensionInfo* p, extensionManager.extensions()) {
+    Q_FOREACH (ExtensionSystem::ExtensionInfo* p, extensionManager.extensions()) {
       if (p->hasError()) {
         errors.append(p->errorString());
       }

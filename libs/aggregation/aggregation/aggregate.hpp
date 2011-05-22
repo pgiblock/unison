@@ -53,7 +53,7 @@ public:
 
     template <typename T> T *component() {
         QReadLocker(&lock());
-        foreach (QObject *component, m_components) {
+        Q_FOREACH (QObject *component, m_components) {
             if (T *result = qobject_cast<T *>(component))
                 return result;
         }
@@ -63,7 +63,7 @@ public:
     template <typename T> QList<T *> components() {
         QReadLocker(&lock());
         QList<T *> results;
-        foreach (QObject *component, m_components) {
+        Q_FOREACH (QObject *component, m_components) {
             if (T *result = qobject_cast<T *>(component)) {
                 results << result;
             }
@@ -74,7 +74,7 @@ public:
     static Aggregate *parentAggregate(QObject *obj);
     static QReadWriteLock &lock();
 
-private slots:
+private Q_SLOTS:
     void deleteSelf(QObject *obj);
 
 private:

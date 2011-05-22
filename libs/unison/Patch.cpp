@@ -66,7 +66,7 @@ Port* Patch::port (const QString& id) const
 
 void Patch::activate (BufferProvider& bp)
 {
-  foreach (Processor* p, m_processors) {
+  Q_FOREACH (Processor* p, m_processors) {
     p->activate(bp);
   }
 }
@@ -74,7 +74,7 @@ void Patch::activate (BufferProvider& bp)
 
 void Patch::deactivate ()
 {
-  foreach (Processor* p, m_processors) {
+  Q_FOREACH (Processor* p, m_processors) {
     p->deactivate();
   }
 }
@@ -82,7 +82,7 @@ void Patch::deactivate ()
 
 void Patch::setBufferLength (PortType type, nframes_t len)
 {
-  foreach (Processor* p, m_processors) {
+  Q_FOREACH (Processor* p, m_processors) {
     p->setBufferLength(type, len);
   }
 }
@@ -263,7 +263,7 @@ void Patch::compile (BufferProvider&  bufferProvider) {
 
   //qDebug() << "Aquiring 'fixed' buffers";
   qDebug() << name() << "Compiled, sequence is:";
-  foreach (CompiledProcessor cp, *compiledSwap) {
+  Q_FOREACH (CompiledProcessor cp, *compiledSwap) {
     qDebug() << "  " << cp.processor->name();
     for (int i=0; i<cp.processor->portCount(); ++i) {
       Port* port = cp.processor->port(i);
