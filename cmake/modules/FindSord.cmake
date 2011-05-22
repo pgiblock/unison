@@ -17,6 +17,8 @@ include(LibFindMacros)
 
 libfind_pkg_check_modules(Sord_PKGCONF sord-0)
 
+libfind_package(Ingen Serd)
+
 find_path(Sord_INCLUDE_DIR
   NAMES sord/sord.h
   PATHS ${Sord_PKGCONF_INCLUDE_DIRS}
@@ -29,10 +31,12 @@ find_library(Sord_LIBRARY
 
 set(Sord_PROCESS_INCLUDES
   Sord_INCLUDE_DIR
+  Serd_INCLUDE_DIRS
 )
 
 set(Sord_PROCESS_LIBS
   Sord_LIBRARY
+  Serd_LIBRARY
 )
 
 libfind_process(Sord)

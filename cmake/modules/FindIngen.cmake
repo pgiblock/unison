@@ -27,6 +27,8 @@ libfind_package(Ingen Glibmm)
 libfind_package(Ingen LILV)
 libfind_package(Ingen Raul)
 libfind_package(Ingen Suil)
+libfind_package(Ingen Serd)
+libfind_package(Ingen Sord)
 
 # Ingen API
 
@@ -160,6 +162,7 @@ set(Ingen_serialisation_PROCESS_INCLUDES
   # ${Ingen_INCLUDE_DIR}/shared # Headers reference shared without directory
   Glibmm_INCLUDE_DIRS
   Raul_INCLUDE_DIRS
+  Serd_INCLUDE_DIRS
   Sord_INCLUDE_DIRS
 )
 set(Ingen_serialisation_PROCESS_LIBS
@@ -167,6 +170,7 @@ set(Ingen_serialisation_PROCESS_LIBS
   # Ingen_shared_LIBRARY ??
   Glibmm_LIBRARIES
   Raul_LIBRARIES
+  Serd_LIBRARIES
   Sord_LIBRARIES
 )
 libfind_process(Ingen_serialisation)
