@@ -1,7 +1,7 @@
 /*
- * IBackendProvider.hpp
+ * JackDriverProvider.cpp
  *
- * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
+ * Copyright (c) 2010-2011 Paul Giblock <pgib/at/users.sourceforge.net>
  *
  * This file is part of Unison - http://unison.sourceforge.net
  *
@@ -22,36 +22,34 @@
  *
  */
 
-#ifndef UNISON_IBACKEND_PROVIDER_H
-#define UNISON_IBACKEND_PROVIDER_H
 
-#include "Core_global.hpp"
+#include <QDebug>
 
-#include <QObject>
+#include "JackDriverProvider.hpp"
+#include "ingen/shared/World.hpp"
 
-namespace Unison {
-  class Backend;
+#include "extensionsystem/ExtensionManager.hpp"
+#include "core/Engine.hpp"
+
+using namespace ExtensionSystem;
+
+namespace Jack {
+  namespace Internal {
+
+bool JackDriverProvider::loadDriver ()
+{
+  ExtensionManager* em = ExtensionManager::instance();
+  Core::Engine* engine = em->getObject<Core::Engine>();
+
+  Ingen::Shared::World* world = engine->ingenWorld();
+  if (world->local_engine()) {
+    return world->load_module("jack");
+  }
+  return false;
 }
 
-namespace Core {
+  } // Internal
+} // Jack
 
-/**
- * Enumerates and creates a backend.  Used to describe which backends are
- * available, so that engine can pick the right one during startup. */
-class CORE_EXPORT IBackendProvider : public QObject
-{
-  Q_OBJECT
-  public:
-    IBackendProvider (QObject* parent = 0) : QObject(parent) {}
-    virtual ~IBackendProvider () {}
-
-    virtual QString displayName () const = 0;
-    virtual Unison::Backend* createBackend () = 0;
-};
-
-} // Core
-
-
-#endif
 
 // vim: tw=90 ts=8 sw=2 sts=2 et sta noai

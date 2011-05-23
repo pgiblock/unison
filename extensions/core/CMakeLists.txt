@@ -28,35 +28,37 @@ add_definitions(-DCORE_EXTENSION)
 set(CORE_SRCS
     CoreExtension.cpp
     Engine.cpp
-    PluginManager.cpp
     # Might belongs in new extension:
-    FxLine.cpp
-    # Silly demo
-    StupidSamplerDemo.cpp
+    #FxLine.cpp
+    #PluginManager.cpp
 )
 
 set(CORE_MOC_HEADERS
+    BackgroundStuff.hpp
     CoreExtension.hpp
     Engine.hpp
-    IBackendProvider.hpp
-    IPluginProvider.hpp
+    IDriverProvider.hpp
     ISampleBufferReader.hpp
+    #IPluginProvider.hpp
 )
 
 qt4_wrap_cpp(CORE_MOC_SRCS ${CORE_MOC_HEADERS})
 
 include_directories(
-    ${COMMON_LIBS_INCLUDE_DIR}
-    ${PRG_INCLUDE_DIR}
-    )
+  ${IngenConfig_INCLUDE_DIR}
+  ${Ingen_client_qt_INCLUDE_DIRS}
+  ${QT_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/libs/aggregation
+  ${CMAKE_SOURCE_DIR}/libs/extensionsystem
+)
 
 add_library(Core SHARED ${CORE_MOC_SRCS} ${CORE_SRCS})
 
 target_link_libraries(Core
+    ${Ingen_client_qt_LIBRARIES}
     ${QT_LIBRARIES}
     aggregation
     extensionsystem
-    unison
 )
 
 set(INSTALL_DIR lib/unison/extensions)

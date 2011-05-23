@@ -22,13 +22,13 @@
  *
  */
 
-#include "JackBackend.hpp"
-#include "JackExtension.hpp"
-
 #include <extensionsystem/ExtensionManager.hpp>
-
 #include <QtPlugin>
 #include <QtDebug>
+
+#include "JackExtension.hpp"
+#include "JackDriverProvider.hpp"
+
 
 /*!
     \namespace Jack
@@ -48,8 +48,7 @@
 namespace Jack {
   namespace Internal {
 
-JackExtension::JackExtension() :
-  m_workerCount(0)
+JackExtension::JackExtension()
 {
 }
 
@@ -57,23 +56,12 @@ JackExtension::JackExtension() :
 JackExtension::~JackExtension()
 {
   qDebug() << "JACK dtor";
-  // BackendProvider is auto-released
+  // DriverProvider is auto-released
 }
 
 
 void JackExtension::parseArguments(const QStringList& arguments)
 {
-  for (int i = 0; i < arguments.size() - 1; i++) {
-    if (arguments.at(i) == QLatin1String("--workers")) {
-      bool ok;
-      int workers = arguments.at(i + 1).toInt(&ok);
-
-      if (ok) {
-        m_workerCount = workers;
-      }
-      i++; // skip the value
-    }
-  }
 }
 
 
@@ -82,13 +70,8 @@ bool JackExtension::initialize(const QStringList& arguments, QString* errorMessa
   Q_UNUSED(errorMessage)
 
   parseArguments(arguments);
-  
-  // Sanity
-  if (m_workerCount <= 0) {
-    m_workerCount = 1;
-  }
 
-  addAutoReleasedObject(new JackBackendProvider(0, m_workerCount));
+  addAutoReleasedObject(new JackDriverProvider());
   return true;
 }
 

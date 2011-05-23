@@ -1,7 +1,7 @@
 /*
  * Engine.cpp
  *
- * Copyright (c) 2010 Paul Giblock <pgib/at/users.sourceforge.net>
+ * Copyright (c) 2010-2011 Paul Giblock <pgib/at/users.sourceforge.net>
  *
  * This file is part of Unison - http://unison.sourceforge.net
  *
@@ -24,24 +24,31 @@
 
 #include "Engine.hpp"
 
-#include <unison/Backend.hpp>
-#include <unison/BufferProvider.hpp>
+#include <ingen/shared/World.hpp>
+#include <ingen/client/ClientStore.hpp>
 
 namespace Core {
 
-Unison::Backend* Engine::m_backend = 0;
-Unison::BufferProvider* Engine::m_bufferProvider = 0;
-
-
-void Engine::setBackend (Unison::Backend* backend)
+Engine::~Engine ()
 {
-  m_backend = backend;
+  if (m_store) {
+    delete m_store;
+  }
+
+  if (m_world) {
+    delete m_world;
+  }
+}
+
+void Engine::setIngenWorld (Ingen::Shared::World* world)
+{
+  m_world = world;
 }
 
 
-void Engine::setBufferProvider(Unison::BufferProvider* bufferProvider)
+void Engine::setStore (Ingen::Client::ClientStore* store)
 {
-  m_bufferProvider = bufferProvider;
+  m_store = store;
 }
 
 } // Core

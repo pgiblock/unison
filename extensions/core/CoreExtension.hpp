@@ -27,6 +27,8 @@
 #define UNISON_COREEXTENSION_H
 
 #include <extensionsystem/IExtension.hpp>
+#include "ingen/shared/Configuration.hpp"
+#include "Engine.hpp"
 
 namespace Core {
   namespace Internal {
@@ -53,6 +55,8 @@ private:
   QString m_sampleInfile;
   int m_lineCount;
 
+  Ingen::Shared::Configuration conf;
+  Engine* m_engine;
 //    MainWindow* m_mainWindow;
 //    EditMode* m_editMode;
 //    DesignMode* m_designMode;

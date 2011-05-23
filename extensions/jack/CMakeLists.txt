@@ -26,28 +26,32 @@ configure_file(Jack.extinfo   ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 add_definitions(-DJACK_EXTENSION)
 
 set(JACK_SRCS
-    JackBackend.cpp
+    JackDriverProvider.cpp
     JackExtension.cpp
-    JackPort.cpp
 )
 
 set(JACK_MOC_HEADERS
-    JackBackend.hpp
+    JackDriverProvider.hpp
     JackExtension.hpp
 )
 
 qt4_wrap_cpp(JACK_MOC_SRCS ${JACK_MOC_HEADERS})
 
-include_directories(.. ${COMMON_LIBS_INCLUDE_DIR} ${PRG_INCLUDE_DIR})
+include_directories(
+  ${Ingen_shared_INCLUDE_DIRS}
+  ${QT_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/libs/aggregation
+  ${CMAKE_SOURCE_DIR}/libs/extensionsystem
+  ${CMAKE_SOURCE_DIR}/extensions
+  )
 
 add_library(Jack SHARED ${JACK_MOC_SRCS} ${JACK_SRCS})
 
 target_link_libraries(Jack
+    ${Ingen_shared_LIBRARIES}
     ${QT_LIBRARIES}
-    ${JACK_LIBRARIES}
     aggregation
     extensionsystem
-    unison
     Core
 )
 

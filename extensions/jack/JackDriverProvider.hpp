@@ -1,5 +1,5 @@
 /*
- * Engine.hpp
+ * JackDriverProvider.hpp
  *
  * Copyright (c) 2010-2011 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,60 +22,37 @@
  *
  */
 
-#ifndef CORE_ENGINE_H
-#define CORE_ENGINE_H
+#ifndef UNISON_JACK_DRIVERPROVIDER_H
+#define UNISON_JACK_DRIVERPROVIDER_H
 
-#include "Core_global.hpp"
+#include <core/IDriverProvider.hpp>
 
 #include <QObject>
 
-namespace Ingen {
-namespace Client {
-class ClientStore;
-} // namespace Client
+namespace Jack {
+  namespace Internal {
 
-namespace Shared {
-class World;
-} // namespace Shared
-} // namespace Ingen
-
-namespace Core {
-
-class CORE_EXPORT Engine : public QObject
+class JackDriverProvider : public Core::IDriverProvider
 {
   Q_OBJECT
-  Q_DISABLE_COPY(Engine)
-
   public:
-    Engine () {};
-    virtual ~Engine ();
+    JackDriverProvider (QObject* parent = 0) :
+      Core::IDriverProvider(parent)
+    {}
 
-    inline Ingen::Shared::World* ingenWorld ()
+    ~JackDriverProvider ()
+    {}
+
+    QString displayName () const
     {
-      return m_world;
+      return "jack";
     }
 
-    inline Ingen::Client::ClientStore* store ()
-    {
-      return m_store;
-    }
-
-    /**
-     * Not public API - do not call
-     */
-    void setIngenWorld (Ingen::Shared::World* world);
-
-    /**
-     * Not public API - do not call
-     */
-    void setStore (Ingen::Client::ClientStore* store);
-
-  private:
-    Ingen::Shared::World*       m_world;
-    Ingen::Client::ClientStore* m_store;
+    bool loadDriver ();
 };
 
-} // Core
+  } // Internal
+} // Jack
 
 #endif
 

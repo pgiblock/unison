@@ -24,22 +24,9 @@
 
 #define USE_QT_SIGNALS
 
-#include "ingen/client/ClientStore.hpp"
-
 #include "extensionsystem/ExtensionManager.hpp"
 #include "extensionsystem/ExtensionInfo.hpp"
 #include "extensionsystem/IExtension.hpp"
-#include "raul/Configuration.hpp"
-#include "raul/SharedPtr.hpp"
-
-#include "ingen/EngineBase.hpp"
-#include "ingen/ServerInterface.hpp"
-#include "ingen/Resource.hpp"
-#include "ingen/client/PluginModel.hpp"
-#include "ingen/client/SigClientInterface.hpp"
-#include "ingen/shared/Configuration.hpp"
-#include "ingen/shared/World.hpp"
-#include "ingen/shared/runtime_paths.hpp"
 
 #include <QDir>
 #include <QDebug>
@@ -49,38 +36,7 @@
 
 #include <QApplication>
 
-#include "BackgroundStuff.hpp"
-
 using namespace std;
-using namespace Raul;
-using namespace Ingen;
-using namespace Ingen::Client;
-
-Shared::World* world = NULL;
-
-
-//void initializeIngen();
-//void startIngenDemo();
-
-void ingen_interrupt(int)
-{
-  cout << "ingen: Interrupted" << endl;
-  if (world->local_engine())
-    world->local_engine()->quit();
-  delete world;
-  exit(EXIT_FAILURE);
-}
-
-
-void ingen_try(bool cond, const char* msg)
-{
-  if (!cond) {
-    cerr << "ingen: Error: " << msg << endl;
-    delete world;
-    exit(EXIT_FAILURE);
-  }
-}
-
 
 enum { OptionIndent = 2, DescriptionIndent = 24 };
 
@@ -88,6 +44,22 @@ static const char *CORE_EXTENSION_NAME = "Core";
 static const char *HELP_OPTION         = "--help";
 static const char *VERSION_OPTION      = "--version";
 
+
+#ifdef Q_OS_UNIX
+#include <signal.h>
+
+void signalHandler(int sig)
+{
+  switch (sig){
+    case SIGHUP:  printf("SIGHUP");  break;
+    case SIGINT:  printf("SIGINT");  break;
+    case SIGQUIT: printf("SIGQUIT"); break;
+    case SIGTERM: printf("SIGTERM"); break;
+    default: break;
+  }
+  QApplication::quit();
+}
+#endif // Q_OS_UNIX
 
 /** Draws an ascii UNISON logo */
 void printLogo()
@@ -167,20 +139,30 @@ int main (int argc, char** argv)
   bool createGui = false;
   printLogo();
 
-  QCoreApplication* appPtr;
+  QScopedPointer<QCoreApplication> app;
   if (createGui) {
-    appPtr = new QApplication(argc, argv);
+    app.reset(new QApplication(argc, argv));
   }
   else {
     printDisclaimer();
-    appPtr = new QCoreApplication(argc, argv);
+    app.reset(new QCoreApplication(argc, argv));
   }
-  QScopedPointer<QCoreApplication> app(appPtr);
-  appPtr = NULL;
-
   app->setApplicationName("Unison");
   app->setOrganizationDomain("unison.sourceforge.net");
   app->setOrganizationName("Paul Giblock");
+
+  // Handle OS signals
+#ifdef Q_OS_UNIX
+  struct sigaction act, oact;
+  memset((void*)&act, 0, sizeof(struct sigaction));
+  memset((void*)&oact, 0, sizeof(struct sigaction));
+  act.sa_flags = 0;
+  act.sa_handler = &signalHandler;
+  sigaction(SIGHUP,  &act, &oact);
+  sigaction(SIGINT,  &act, &oact);
+  sigaction(SIGQUIT, &act, &oact);
+  sigaction(SIGTERM, &act, &oact);
+#endif // Q_OS_UNIX
 
   //QTranslator translator;
   //QTranslator qtTranslator;
@@ -255,7 +237,7 @@ int main (int argc, char** argv)
       break;
     }
   }
-  /*
+  
   if (!coreextension) {
     QString nativePaths = QDir::toNativeSeparators(extensionPaths.join(QLatin1String(",")));
     const QString reason = QCoreApplication::translate("Application",
@@ -287,129 +269,8 @@ int main (int argc, char** argv)
       qWarning() << errors.join(QString::fromLatin1("\n\n"));
     }
   }
-  */
 
-  //void initializeIngen()
-
-  // Prepare configuration for Ingen
-  Shared::Configuration conf;
-
-  int         ingen_argc = 3;
-  const char* ingen_argv_data[] = {"ingen", "-n", "Unison"};
-  char**      ingen_argv = new char*[ingen_argc];
-  for (int i = 0; i < ingen_argc; ++i) {
-    ingen_argv[i] = strdup(ingen_argv_data[i]);
-  }
-
-  try {
-    conf.parse(ingen_argc, ingen_argv);
-  }
-  catch (std::exception& e) {
-    qFatal("ingen: %s\n", e.what());
-  }
-
-  // FIXME: Don't hardcode path like a noob
-  Shared::set_bundle_path("/usr/local/bin");
-
-  //Glib::thread_init();
-
-  world = new Shared::World(&conf, ingen_argc, ingen_argv);
-
-  ingen_try(world->load_module("server"),
-            "Unable to load server module");
-
-  ingen_try(world->local_engine(),
-            "Unable to create engine");
-
-  SharedPtr<ServerInterface> server = world->engine();
-
-  // Activate the engine, if we have one
-  if (world->local_engine()) {
-    ingen_try(world->load_module("jack"),
-              "Unable to load jack module");
-  }
-
-  world->set_engine(server);
-
-  // Activate
-  world->local_engine()->activate();
-
-  SharedPtr<Client::SigClientInterface> client(new Client::SigClientInterface());
-  server->register_client(client.get());
-
-  // Just playing around for now...
-
-  BackgroundStuff* bkgrnd = new BackgroundStuff(qApp, world);
-
-  Client::ClientStore* store = new Client::ClientStore(world->uris(), world->engine(), client);
-  PluginModel::set_lilv_world(world->lilv_world());
-  PluginModel::set_rdf_world(*world->rdf_world());
-
-  QObject::connect(client.get(), SIGNAL(signal_connection(Raul::Path, Raul::Path)),
-                   bkgrnd, SLOT(printConnected(Raul::Path, Raul::Path)));
-
-  QObject::connect(store, SIGNAL(signal_new_object(SharedPtr<ObjectModel>)),
-                   bkgrnd, SLOT(printObject(SharedPtr<ObjectModel>)));
-
-  // Is this even needed?
-  server->get("ingen:plugins"); // TODO: QIngen::Server or QIngen::ServerInterface
-
-  // DEMO
-
-  server->bundle_begin();
-
-  Resource::Properties props;
-  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#AudioPort")));
-  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#InputPort")));
-  props.insert(make_pair("http://lv2plug.in/ns/lv2core#index",  Atom(int32_t(2))));
-  props.insert(make_pair("http://lv2plug.in/ns/lv2core#name",   "Wire L"));
-  server->put("path:/wire_l_in", props);
-
-  props = Resource::Properties();
-  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#AudioPort")));
-  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#OutputPort")));
-  props.insert(make_pair("http://lv2plug.in/ns/lv2core#index",  Atom(int32_t(3))));
-  props.insert(make_pair("http://lv2plug.in/ns/lv2core#name",   "Wire L"));
-  server->put("path:/wire_l_out", props);
-
-  props = Resource::Properties();
-  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#AudioPort")));
-  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#InputPort")));
-  props.insert(make_pair("http://lv2plug.in/ns/lv2core#index",  Atom(int32_t(4))));
-  props.insert(make_pair("http://lv2plug.in/ns/lv2core#name",   "Wire R"));
-  server->put("path:/wire_r_in", props);
-
-  props = Resource::Properties();
-  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#AudioPort")));
-  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#OutputPort")));
-  props.insert(make_pair("http://lv2plug.in/ns/lv2core#index",  Atom(int32_t(5))));
-  props.insert(make_pair("http://lv2plug.in/ns/lv2core#name",   "Wire R"));
-  server->put("path:/wire_r_out", props);
-
-  server->connect("path:/wire_l_in", "path:/wire_l_out");
-  server->connect("path:/wire_r_in", "path:/wire_r_out");
-
-  server->bundle_end();
-
-  // Do this after the event loop has started
   return app->exec();
-
-  delete store;
-
-  for (int i = 0; i < ingen_argc; ++i) {
-    free(ingen_argv[i]);
-  }
-  delete[] ingen_argv;
-
-  return 0;
 }
 
 

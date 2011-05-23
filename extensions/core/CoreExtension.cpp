@@ -22,27 +22,30 @@
  *
  */
 
+#define USE_QT_SIGNALS
+
 #include "CoreExtension.hpp"
 
-#include "IBackendProvider.hpp"
+#include "IDriverProvider.hpp"
 #include "ISampleBufferReader.hpp"
 
+#include "ingen/EngineBase.hpp"
+#include "ingen/ServerInterface.hpp"
+#include "ingen/client/ClientStore.hpp"
+#include "ingen/shared/World.hpp"
+
 // For Engine
+#include "BackgroundStuff.hpp"
 #include "Engine.hpp"
-#include <unison/Backend.hpp>
-#include <unison/BufferProvider.hpp>
-#include <unison/Commander.hpp>
-#include <unison/Patch.hpp>
-#include <unison/PooledBufferProvider.hpp>
-#include <unison/SampleBuffer.hpp>
-
-// For connection frenzy
-#include "FxLine.hpp"
-#include "StupidSamplerDemo.hpp"
-#include "PluginManager.hpp"
-#include <unison/Plugin.hpp>
-
+#include "ingen/client/PluginModel.hpp"
+#include "ingen/client/SigClientInterface.hpp"
+#include "ingen/shared/runtime_paths.hpp"
 #include <extensionsystem/ExtensionManager.hpp>
+
+// For Silly demo
+#include "raul/SharedPtr.hpp"                                                                                      
+#include "ingen/Resource.hpp"                                                                                      
+#include "ingen/ServerInterface.hpp"                                                                               
 
 #include <QtDebug>
 #include <QtPlugin>
@@ -50,14 +53,32 @@
 #include <QTimer>
 
 using namespace ExtensionSystem;
-using namespace Unison;
+using namespace Raul;
 
 namespace Core {
   namespace Internal {
 
-CoreExtension::CoreExtension() :
-  m_lineCount(4)
-//  m_mainWindow(new MainWindow), m_editMode(0)
+void ingen_interrupt (Ingen::Shared::World* world, int)
+{
+  qWarning("ingen: Interrupted");
+  if (world->local_engine())
+    world->local_engine()->quit();
+  delete world;
+  exit(EXIT_FAILURE);
+}
+
+
+void ingen_try (Ingen::Shared::World* world, bool cond, const char* msg)
+{
+  if (!cond) {
+    qCritical("ingen: Error: %s", msg);
+    delete world;
+    exit(EXIT_FAILURE);
+  }
+}
+
+
+CoreExtension::CoreExtension()
 {
 }
 
@@ -65,8 +86,10 @@ CoreExtension::CoreExtension() :
 CoreExtension::~CoreExtension()
 {
   qDebug() << "CORE dtor";
-  if (Engine::backend()) {
-    delete Engine::backend();
+
+  if (m_engine) {
+    removeObject(m_engine);
+    delete m_engine;
   }
   /*
   if (m_editMode) {
@@ -90,24 +113,12 @@ CoreExtension::~CoreExtension()
 void CoreExtension::parseArguments(const QStringList& arguments)
 {
   for (int i = 0; i < arguments.size() - 1; i++) {
-    if (arguments.at(i) == QLatin1String("--infile")) {
-      i++; // skip to argument
-      m_sampleInfile = arguments.at(i);
-    }
     if (arguments.at(i) == QLatin1String("--seconds")) {
       bool ok;
       float timeout = arguments.at(i + 1).toFloat(&ok);
       if (ok) {
         int timeoutMS = timeout*1000;
         QTimer::singleShot(timeoutMS, qApp, SLOT(quit()));
-      }
-      i++; // skip the value
-    }
-    if (arguments.at(i) == QLatin1String("--lines")) {
-      bool ok;
-      int count = arguments.at(i + 1).toInt(&ok);
-      if (ok) {
-        m_lineCount = count;
       }
       i++; // skip the value
     }
@@ -120,13 +131,41 @@ bool CoreExtension::initialize(const QStringList& arguments, QString* errorMessa
   Q_UNUSED(errorMessage);
   parseArguments(arguments);
 
-  PooledBufferProvider* bufProvider = new PooledBufferProvider();
-  bufProvider->setBufferLength(1024);
-  Engine::setBufferProvider(bufProvider);
+  int         ingen_argc = 3;
+  const char* ingen_argv_data[] = {"ingen", "-n", "Unison"};
+  char**      ingen_argv = new char*[ingen_argc];
+  for (int i = 0; i < ingen_argc; ++i) {
+    ingen_argv[i] = strdup(ingen_argv_data[i]);
+  }
 
-  PluginManager::initializeInstance();
+  try {
+    conf.parse(ingen_argc, ingen_argv);
+  }
+  catch (std::exception& e) {
+    qFatal("ingen: %s\n", e.what());
+  }
 
-  Unison::Internal::Commander::initialize();
+  // FIXME: Don't hardcode path like a noob
+  Ingen::Shared::set_bundle_path("/usr/local/bin");
+
+  Ingen::Shared::World* world = new Ingen::Shared::World(&conf, ingen_argc, ingen_argv);
+
+  ingen_try(world, world->load_module("server"),
+            "Unable to load server module");
+
+  ingen_try(world, world->local_engine(),
+            "Unable to create engine");
+
+  m_engine = new Engine();
+  m_engine->setIngenWorld(world);
+  addObject(m_engine);
+
+  /*
+  for (int i = 0; i < ingen_argc; ++i) {
+    free(ingen_argv[i]);
+  }
+  delete[] ingen_argv;
+  */
 
   /*
   const bool success = m_mainWindow->init(errorMessage);
@@ -149,6 +188,84 @@ bool CoreExtension::initialize(const QStringList& arguments, QString* errorMessa
  * at the moment, but should be cleaned-up anyways */
 void CoreExtension::extensionsInitialized()
 {
+  Ingen::Shared::World* world = m_engine->ingenWorld();
+  SharedPtr<Ingen::ServerInterface> server = world->engine();
+
+  // Activate the engine, if we have one (only allow for one right now)
+  IDriverProvider* driverPrvdr = ExtensionManager::instance()->getObject<IDriverProvider>();
+  ingen_try(world, driverPrvdr->loadDriver(),
+            "Unable to load jack module");
+
+  world->set_engine(server);
+
+  // Activate
+  world->local_engine()->activate();
+
+  SharedPtr<Ingen::Client::SigClientInterface> client(new Ingen::Client::SigClientInterface());
+  server->register_client(client.get());
+
+  // Just playing around for now...
+
+  BackgroundStuff* bkgrnd = new BackgroundStuff(this, world);
+
+  Ingen::Client::ClientStore* store =
+      new Ingen::Client::ClientStore(world->uris(), world->engine(), client);
+  PluginModel::set_lilv_world(world->lilv_world());
+  PluginModel::set_rdf_world(*world->rdf_world());
+  m_engine->setStore(store);
+
+  ////////////////////////////////////
+  // Silly Demo:
+
+  // Is this even needed?
+  server->get("ingen:plugins"); // TODO: QIngen::Server or QIngen::ServerInterface
+
+  server->bundle_begin();
+
+  Ingen::Resource::Properties props;
+  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#AudioPort")));
+  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#InputPort")));
+  props.insert(make_pair("http://lv2plug.in/ns/lv2core#index",  Atom(int32_t(2))));
+  props.insert(make_pair("http://lv2plug.in/ns/lv2core#name",   "Wire L"));
+  server->put("path:/wire_l_in", props);
+
+  props = Ingen::Resource::Properties();
+  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#AudioPort")));
+  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#OutputPort")));
+  props.insert(make_pair("http://lv2plug.in/ns/lv2core#index",  Atom(int32_t(3))));
+  props.insert(make_pair("http://lv2plug.in/ns/lv2core#name",   "Wire L"));
+  server->put("path:/wire_l_out", props);
+
+  props = Ingen::Resource::Properties();
+  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#AudioPort")));
+  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#InputPort")));
+  props.insert(make_pair("http://lv2plug.in/ns/lv2core#index",  Atom(int32_t(4))));
+  props.insert(make_pair("http://lv2plug.in/ns/lv2core#name",   "Wire R"));
+  server->put("path:/wire_r_in", props);
+
+  props = Ingen::Resource::Properties();
+  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#AudioPort")));
+  props.insert(make_pair("http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                         Atom(Atom::URI, "http://lv2plug.in/ns/lv2core#OutputPort")));
+  props.insert(make_pair("http://lv2plug.in/ns/lv2core#index",  Atom(int32_t(5))));
+  props.insert(make_pair("http://lv2plug.in/ns/lv2core#name",   "Wire R"));
+  server->put("path:/wire_r_out", props);
+
+  server->connect("path:/wire_l_in", "path:/wire_l_out");
+  server->connect("path:/wire_r_in", "path:/wire_r_out");
+
+  server->bundle_end();
+
+  // Do this after the event loop has started
+
+  /*
   ExtensionManager* extMgr = ExtensionManager::instance();
 
   // Loading a mix of LADSPA and LV2
@@ -227,7 +344,7 @@ void CoreExtension::extensionsInitialized()
   if (buf) {
     ssd->setSampleBuffer(buf);
   }
-
+*/
   //m_mainWindow->extensionsInitialized();
 }
 
@@ -250,12 +367,6 @@ void CoreExtension::fileOpenRequest(const QString& f)
 void CoreExtension::shutdown()
 {
   qDebug() << "CORE shutdown";
-
-  // We don't need to be processing while shutting down
-  // TODO: Probably end up killing the whole engine here
-  if (Engine::backend()) {
-    Engine::backend()->deactivate();
-  }
 
   //m_mainWindow->shutdown();
 }

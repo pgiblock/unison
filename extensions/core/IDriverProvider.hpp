@@ -1,5 +1,5 @@
 /*
- * Engine.hpp
+ * IDriverProvider.hpp
  *
  * Copyright (c) 2010-2011 Paul Giblock <pgib/at/users.sourceforge.net>
  *
@@ -22,60 +22,31 @@
  *
  */
 
-#ifndef CORE_ENGINE_H
-#define CORE_ENGINE_H
+#ifndef UNISON_IDRIVER_PROVIDER_H
+#define UNISON_IDRIVER_PROVIDER_H
 
 #include "Core_global.hpp"
 
 #include <QObject>
 
-namespace Ingen {
-namespace Client {
-class ClientStore;
-} // namespace Client
-
-namespace Shared {
-class World;
-} // namespace Shared
-} // namespace Ingen
-
 namespace Core {
 
-class CORE_EXPORT Engine : public QObject
+/**
+ * Enumerates and creates a backend.  Used to describe which backends are
+ * available, so that engine can pick the right one during startup. */
+class CORE_EXPORT IDriverProvider : public QObject
 {
   Q_OBJECT
-  Q_DISABLE_COPY(Engine)
-
   public:
-    Engine () {};
-    virtual ~Engine ();
+    IDriverProvider (QObject* parent = 0) : QObject(parent) {}
+    virtual ~IDriverProvider () {}
 
-    inline Ingen::Shared::World* ingenWorld ()
-    {
-      return m_world;
-    }
-
-    inline Ingen::Client::ClientStore* store ()
-    {
-      return m_store;
-    }
-
-    /**
-     * Not public API - do not call
-     */
-    void setIngenWorld (Ingen::Shared::World* world);
-
-    /**
-     * Not public API - do not call
-     */
-    void setStore (Ingen::Client::ClientStore* store);
-
-  private:
-    Ingen::Shared::World*       m_world;
-    Ingen::Client::ClientStore* m_store;
+    virtual QString displayName () const = 0;
+    virtual bool loadDriver () = 0;
 };
 
 } // Core
+
 
 #endif
 

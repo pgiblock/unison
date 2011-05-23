@@ -26,7 +26,6 @@ set(UNISONSTUDIO_SRCS
 )
 
 set(UNISONSTUDIO_MOC_HEADERS
-  BackgroundStuff.hpp
 )
 
 qt4_wrap_cpp(UNISONSTUDIO_MOC_SRCS ${UNISONSTUDIO_MOC_HEADERS})
@@ -38,6 +37,7 @@ set(EXTSYSTEM_INCLUDE_DIRS ${AGGREGATION_INCLUDE_DIR} ${EXTSYSTEM_INCLUDE_DIR})
 set(EXTSYSTEM_LIBRARIES extensionsystem)
 
 include_directories(
+  ${CMAKE_SOURCE_DIR}/extensions
   ${EXTSYSTEM_INCLUDE_DIRS}
   ${Ingen_client_qt_INCLUDE_DIRS}
   ${IngenConfig_INCLUDE_DIR}

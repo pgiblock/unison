@@ -32,10 +32,6 @@ include(DefineCMakeDefaults)
 include(DefineCompilerFlags)
 include(MacroLogFeature)
 
-find_package(PkgConfig)
-find_package(Raul)
-find_package(Ingen)
-
 # TODO: use these to ensure the user has at least one backend supported.
 # Since JACK is the only backend right now, we simply require JACK
 set(BACKENDS_AVAILABLE "")
@@ -44,7 +40,7 @@ set(BACKENDS_ENABLED "")
 ## Options ########
 
 option(WANT_FLAC_EXTENSION "Include FLAC file support extension" OFF)
-option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" OFF)
+option(WANT_JACK_EXTENSION "Include JACK (Jack Audio Connection Kit) backend extension" ON)
 option(WANT_LADSPA_EXTENSION "Include LADSPA plugin support extension" OFF)
 option(WANT_LV2_EXTENSION "Include LV2 plugin support extension" OFF)
 option(WANT_OGGVORBIS_EXTENSION "Include OGG/Vorbis file support extension" OFF)
@@ -58,6 +54,18 @@ find_package(Qt4 4.6.0 COMPONENTS QtCore QtGui QtXml QtNetwork) # REQUIRED)
 macro_log_feature(QT4_FOUND "Qt4"
     "Needed for cross-platform data, UI, XML, and Network support"
     "http://qt.nokia.com/"
+    TRUE "" "")
+
+#find_package(Raul)
+#macro_log_feature(Raul_FOUND "Raul"
+#    "A set of utilities used for audio related processing"
+#    "http://drobilla.net/software/raul/"
+#    TRUE "" "")
+
+find_package(Ingen)
+macro_log_feature(Ingen_FOUND "Ingen"
+    "The DSP engine used by Unison"
+    "http://drobilla.net/software/ingen"
     TRUE "" "")
 
 ## Find dependencies based on features selected ########

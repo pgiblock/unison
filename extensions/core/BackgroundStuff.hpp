@@ -12,7 +12,10 @@
 using namespace std;
 using namespace Ingen::Client;
 
-// A crappy class to whip (Q)Ingen.  Temporary.
+namespace Core {
+  namespace Internal {
+
+// A crappy class to whip Ingen.  Temporary.
 class BackgroundStuff : public QObject
 {
   Q_OBJECT
@@ -30,16 +33,6 @@ public:
   virtual ~BackgroundStuff() {};
 
 public Q_SLOTS:
-  void printConnected (Raul::Path s, Raul::Path d)
-  {
-    std::cout << "CONNECTED!!!!" << std::endl;
-  }
-
-  void printObject(SharedPtr<ObjectModel> obj)
-  {
-    std::cout << "New Object: " << obj->symbol().c_str() << std::endl;
-  }
-
   void fire ()
   {
     m_world->local_engine()->main_iteration();
@@ -48,5 +41,8 @@ public Q_SLOTS:
 private:
   Ingen::Shared::World* m_world;
 };
+
+  } // namespace Internal
+} // namespace Core
 
 // vim: tw=90 ts=8 sw=2 sts=4 et ci pi cin cino=l1,g0,+2s,\:0,(0,u0,U0,W2s
