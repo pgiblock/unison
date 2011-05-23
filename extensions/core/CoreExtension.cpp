@@ -31,8 +31,9 @@
 
 #include "ingen/EngineBase.hpp"
 #include "ingen/ServerInterface.hpp"
-#include "ingen/client/ClientStore.hpp"
+#include "ingen/shared/LV2URIMap.hpp"
 #include "ingen/shared/World.hpp"
+#include "ingen/client/ClientStore.hpp"
 
 // For Engine
 #include "BackgroundStuff.hpp"
