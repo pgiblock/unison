@@ -51,10 +51,10 @@ static const char *VERSION_OPTION      = "--version";
 void signalHandler(int sig)
 {
   switch (sig){
-    case SIGHUP:  printf("SIGHUP");  break;
-    case SIGINT:  printf("SIGINT");  break;
-    case SIGQUIT: printf("SIGQUIT"); break;
-    case SIGTERM: printf("SIGTERM"); break;
+    case SIGHUP:  printf("SIGHUP\n");  break;
+    case SIGINT:  printf("SIGINT\n");  break;
+    case SIGQUIT: printf("SIGQUIT\n"); break;
+    case SIGTERM: printf("SIGTERM\n"); break;
     default: break;
   }
   QApplication::quit();
@@ -77,7 +77,7 @@ void printDisclaimer()
 {
   QTextStream str(stdout);
   str <<
-      "Unison version 0, Copyright (C) 2010 Paul R Giblock\n"
+      "Unison version 0, Copyright (C) 2010-2011 Paul R Giblock\n"
       "Unison comes with ABSOLUTELY NO WARRANTY; for details type `show w'.\n"
       "This is free software, and you are welcome to redistribute it\n"
       "under certain conditions; type `show c' for details.\n\n";
