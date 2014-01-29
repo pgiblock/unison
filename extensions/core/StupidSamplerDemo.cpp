@@ -146,7 +146,13 @@ Port* Sampler::port (int idx) const
 
 Port* Sampler::port (const QString& name) const
 {
-  // TODO: Find port with name
+  if (name == "left") {
+    return port(0);
+  } else if (name == "right") {
+    return port(1);
+  } else {
+    return 0;
+  }
 }
 
 void Sampler::activate (BufferProvider& bp)

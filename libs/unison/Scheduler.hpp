@@ -51,7 +51,7 @@ class Worker;
  * This represents an individual unit of work.  A WorkUnit can be summed up as a
  * Processor along with the dependents and count of dependencies.  For performance, we
  * also store the current state of the work unit (wait count).  Work units are only
- * used by a single  Backend, so there is no harm in keeping a single state.  Finally,
+ * used by a single Backend, so there is no harm in keeping a single state.  Finally,
  * the WorkUnit participates in an intrusive doubly-linked list (There is one list per
  * Worker). The WorkUnit only exists in a single list, so this restriction is fine. */
 struct WorkUnit

@@ -18,25 +18,33 @@ if (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
   # in cache already
   set(RDF_FOUND TRUE)
 else (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
+  find_package(PkgConfig)
+  if (PKG_CONFIG_FOUND)
+    pkg_check_modules(RDF redland)
+  endif (PKG_CONFIG_FOUND)
 
-  find_path(RDF_INCLUDE_DIR
-      NAMES rdf_init.h
-  )
-
-  find_library(RDF_LIBRARY
-      NAMES rdf
-  )
-
-  set(RDF_INCLUDE_DIRS
-      ${RDF_INCLUDE_DIR}
-  )
-
-  if (RDF_LIBRARY)
-    set(RDF_LIBRARIES
-        ${RDF_LIBRARIES}
-        ${RDF_LIBRARY}
+  if (NOT RDF_INCLUDE_DIRS)
+    find_path(RDF_INCLUDE_DIR
+        NAMES rdf_init.h
     )
-  endif (RDF_LIBRARY)
+
+    set(RDF_INCLUDE_DIRS
+        ${RDF_INCLUDE_DIR}
+    )
+  endif (NOT RDF_INCLUDE_DIRS)
+
+  if (NOT RDF_LIBRARIES)
+    find_library(RDF_LIBRARY
+        NAMES rdf
+    )
+
+    if (RDF_LIBRARY)
+      set(RDF_LIBRARIES
+          ${RDF_LIBRARIES}
+          ${RDF_LIBRARY}
+      )
+    endif (RDF_LIBRARY)
+  endif (NOT RDF_LIBRARIES)
 
   include(FindPackageHandleStandardArgs)
   find_package_handle_standard_args(Rdf DEFAULT_MSG RDF_LIBRARIES RDF_INCLUDE_DIRS)

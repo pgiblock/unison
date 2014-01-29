@@ -30,8 +30,6 @@
 #include <unison/Port.hpp>
 #include <unison/types.hpp>
 
-#include <slv2/slv2.h>
-
 namespace Ladspa {
   namespace Internal {
 

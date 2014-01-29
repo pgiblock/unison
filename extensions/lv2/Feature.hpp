@@ -52,6 +52,8 @@ class Feature
 
     Feature (const QString& uri, FeatureType type);
 
+    virtual ~Feature () {};
+
     /**
      * The URI of the Feature.
      * @return The URI of this feature. */

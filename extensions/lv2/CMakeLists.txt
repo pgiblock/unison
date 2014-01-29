@@ -45,14 +45,14 @@ set(LV2_MOC_HEADERS
 
 qt4_wrap_cpp(LV2_MOC_SRCS ${LV2_MOC_HEADERS})
 
-include_directories(.. ${COMMON_LIBS_INCLUDE_DIR} ${PRG_INCLUDE_DIR})
+include_directories(.. ${COMMON_LIBS_INCLUDE_DIR} ${PRG_INCLUDE_DIR} ${RDF_INCLUDE_DIRS})
 
 add_library(Lv2 SHARED ${LV2_MOC_SRCS} ${LV2_SRCS})
 
 target_link_libraries(Lv2
     ${QT_LIBRARIES}
     ${SLV2_LIBRARY}
-    #${RDF_LIBRARY}
+    ${RDF_LIBRARIES}
     aggregation
     extensionsystem
     unison

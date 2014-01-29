@@ -58,7 +58,8 @@ FeatureArray::FeatureArray (const FeatureArray& rhs) :
   m_array( NULL),
   m_features( rhs.m_features )
 {
-  memcpy(m_array, rhs.m_array, sizeof(rhs.m_array));
+  m_array = new LV2_Feature*[m_features.count()+1];
+  memcpy(m_array, rhs.m_array, (m_features.count()+1) * sizeof(m_array[0]));
 }
 
 

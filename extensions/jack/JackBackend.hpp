@@ -52,7 +52,7 @@ class JackBackendProvider : public Core::IBackendProvider
       m_workerCount(workerCount)
     {}
 
-    ~JackBackendProvider ()
+    virtual ~JackBackendProvider ()
     {}
 
     QString displayName () const

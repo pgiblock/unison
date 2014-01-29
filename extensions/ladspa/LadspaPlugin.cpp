@@ -234,7 +234,7 @@ LadspaPluginInfo::LadspaPluginInfo (const QString &path,
   m_path(path),
   m_descriptor(desc)
 {
-  printf("PATH %s %s\n",qPrintable(path), desc->Name);
+  qDebug() << "PATH" << path << desc->Name << "\n";
   setName(desc->Name);
   setAuthorName(desc->Maker);
   setUniqueId(QString("%1%2").arg( UriRoot ).arg( m_descriptor->UniqueID ));

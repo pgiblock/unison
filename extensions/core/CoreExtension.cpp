@@ -153,9 +153,11 @@ void CoreExtension::extensionsInitialized()
 
   // Loading a mix of LADSPA and LV2
   QStringList plugins;
-  plugins //<< "http://ladspa.org/plugins/2143"
-          << "http://calf.sourceforge.net/plugins/Reverb"
-          << "http://calf.sourceforge.net/plugins/Phaser";
+  plugins //<< "http://ladspa.org/plugins/1773"
+          << "http://ladspa.org/plugins/2143"
+          //<< "http://calf.sourceforge.net/plugins/Reverb"
+          //<< "http://calf.sourceforge.net/plugins/Phaser"
+  ;
 
   // Find backends, load the first one
   QList<IBackendProvider*> backends = extMgr->getObjects<IBackendProvider>();

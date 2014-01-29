@@ -92,11 +92,11 @@ int SampleBuffer::seek (nframes_t frame)
 int SampleBuffer::write (sample_t* ptr, nframes_t frames)
 {
   size_t chunkSize = frames * m_channels;
-  if (m_pos + chunkSize > (void*)m_frames) {
+  if (m_pos + chunkSize > m_data + (m_frames * m_channels)) {
     return 0;
   }
 
-  std::memcpy(m_pos, ptr, frames * m_channels * sizeof(sample_t));
+  std::memcpy(m_pos, ptr, chunkSize * sizeof(sample_t));
   return frames;
 }
 
