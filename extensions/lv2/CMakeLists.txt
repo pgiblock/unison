@@ -51,7 +51,7 @@ add_library(Lv2 SHARED ${LV2_MOC_SRCS} ${LV2_SRCS})
 
 target_link_libraries(Lv2
     ${QT_LIBRARIES}
-    ${SLV2_LIBRARY}
+    ${SLV2_LIBRARIES}
     ${RDF_LIBRARIES}
     aggregation
     extensionsystem
