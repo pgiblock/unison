@@ -7,51 +7,45 @@
 #  RDF_DEFINITIONS - Compiler switches required for using Rdf
 #
 #  Copyright (c) 2010 Paul Giblock <pgib@users.sourceforge.net>
+#  Copyright (c) 2014 Lukas W <lukaswhl@gmail.com>
 #
 #  Redistribution and use is allowed according to the terms of the New
 #  BSD license.
 #  For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 #
 
+find_package(PkgConfig)
+# XXX: Redland depends on raptor and rasqal. Their include dirs are provided
+# by pkg-config. When pkg-config is not available, building might fail.
+# Additional FindRaptor.cmake and FindRasqal.cmake scripts may be needed?
+if (PKG_CONFIG_FOUND)
+  pkg_check_modules(PC_RDF redland)
+endif (PKG_CONFIG_FOUND)
 
-if (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
-  # in cache already
-  set(RDF_FOUND TRUE)
-else (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
-  find_package(PkgConfig)
-  if (PKG_CONFIG_FOUND)
-    pkg_check_modules(RDF redland)
-  endif (PKG_CONFIG_FOUND)
+find_path(RDF_INCLUDE_DIR
+    HINTS ${PC_RDF_INCLUDEDIR}
+    NAMES rdf_init.h
+)
 
-  if (NOT RDF_INCLUDE_DIRS)
-    find_path(RDF_INCLUDE_DIR
-        NAMES rdf_init.h
-    )
+find_library(RDF_LIBRARY
+    HINTS ${PC_RDF_LIBDIR}
+    NAMES rdf
+)
 
-    set(RDF_INCLUDE_DIRS
-        ${RDF_INCLUDE_DIR}
-    )
-  endif (NOT RDF_INCLUDE_DIRS)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Rdf DEFAULT_MSG RDF_LIBRARY RDF_INCLUDE_DIR)
 
-  if (NOT RDF_LIBRARIES)
-    find_library(RDF_LIBRARY
-        NAMES rdf
-    )
+set(RDF_INCLUDE_DIRS
+    ${PC_RDF_INCLUDE_DIRS}
+    ${RDF_INCLUDE_DIR}
+)
 
-    if (RDF_LIBRARY)
-      set(RDF_LIBRARIES
-          ${RDF_LIBRARIES}
-          ${RDF_LIBRARY}
-      )
-    endif (RDF_LIBRARY)
-  endif (NOT RDF_LIBRARIES)
+set(RDF_LIBRARIES
+    ${RDF_LIBRARIES}
+    ${RDF_LIBRARY}
+)
 
-  include(FindPackageHandleStandardArgs)
-  find_package_handle_standard_args(Rdf DEFAULT_MSG RDF_LIBRARIES RDF_INCLUDE_DIRS)
-
-  # show the RDF_INCLUDE_DIRS and RDF_LIBRARIES variables only in the advanced view
-  mark_as_advanced(RDF_INCLUDE_DIRS RDF_LIBRARIES)
-
-endif (RDF_LIBRARIES AND RDF_INCLUDE_DIRS)
+# show the RDF_INCLUDE_DIR and RDF_LIBRARY variables only in the advanced view
+mark_as_advanced(RDF_INCLUDE_DIR RDF_LIBRARY)
 
 # vim: tw=90 ts=8 sw=2 sts=2 et sta noai
